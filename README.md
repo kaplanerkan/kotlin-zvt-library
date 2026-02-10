@@ -117,7 +117,7 @@ The Registration Config dialog (gear icon on connection screen) allows customizi
 | **Reversal** | `06 30` | Cancels a previous payment (as if it never happened) | Receipt number + Card |
 | **Pre-Auth** | `06 22` | Blocks (reserves) an amount on the card without charging | Amount + Card |
 | **Book Total** | `06 24` | Completes a Pre-Auth by charging the actual amount | Receipt number + Trace + AID |
-| **Partial Reversal** | `06 25` | Releases part of a Pre-Auth blocked amount | Receipt number + Amount |
+| **Pre-Auth Reversal** | `06 25` | Fully cancels a Pre-Auth, releasing the blocked amount | Receipt number |
 | **Abort** | `06 B0` | Cancels the currently running operation | - |
 
 **Payment (06 01):** Standard card payment. Customer presents card, amount is charged immediately. Returns receipt number, trace number, and card data.
@@ -130,9 +130,23 @@ The Registration Config dialog (gear icon on connection screen) allows customizi
 
 **Book Total (06 24) - Buchung:** Completes a Pre-Auth by charging the final amount. The charged amount can be less than or equal to the reserved amount — the difference is automatically released. Requires the **receipt number**, **trace number** (BMP 0x0B), and **AID** (BMP 0x3B) from the original Pre-Auth response. The spec mandates trace and AID for reservation booking. Does **not** send a password (unlike Payment/Refund). Customer must present the card again.
 
-**Partial Reversal (06 25) - Teilstorno:** Releases part of a Pre-Auth blocked amount without charging. Useful when the final amount is known to be less than the reservation.
+**Pre-Auth Reversal (06 25) - Vorautorisierung Storno:** Fully cancels a pre-authorization, releasing the entire blocked amount back to the customer. Does **not** send a password. Requires the **receipt number** from the Pre-Auth. Amount is optional. Customer must present the card again. Note: The real "Partial Reversal" (reducing a reserved amount) is command `06 23`, which is a different command.
 
 **Abort (06 B0) - Abbruch:** Cancels the currently running operation on the terminal (e.g., if the customer changes their mind while the card is being read).
+
+### Test Results (CCV A920, February 2025)
+
+All 7 operations have been tested on a real CCV A920 terminal with Debit Mastercard and girocard:
+
+| # | Operation | Command | Test | Result |
+|---|-----------|---------|------|--------|
+| 1 | Payment | `06 01` | 0.10 EUR, girocard | Successful |
+| 2 | Refund | `06 31` | 0.10 EUR, Debit Mastercard | Successful |
+| 3 | Reversal | `06 30` | Cancel payment by receipt number | Successful |
+| 4 | Pre-Auth | `06 22` | 0.30 EUR, Debit Mastercard | Successful |
+| 5 | Book Total | `06 24` | Book pre-auth with trace + AID | Successful |
+| 6 | Pre-Auth Reversal | `06 25` | Cancel pre-auth by receipt number | Successful |
+| 7 | Abort | `06 B0` | Cancel running operation | Successful |
 
 ## Reversal (Storno) vs Refund (Gutschrift)
 
@@ -207,10 +221,15 @@ Pre-Authorization is used to **reserve (block) an amount** on a customer's card 
 
 **APDU format:** `06 24 xx  87(receipt-no) [04(amount)] 0B(trace) 3B(AID)`
 
-**Step 2b: Partial Reversal (06 25)**
-- Releases part of the blocked amount without charging
-- Requires the **receipt number** and the amount to release
-- Example: Pre-Auth 100 EUR, Partial Reversal 30 EUR (70 EUR remains blocked)
+**Step 2b: Pre-Auth Reversal (06 25)**
+- Fully cancels the pre-authorization, releasing the entire blocked amount
+- Requires the **receipt number** (BMP 0x87) from the Pre-Auth
+- Does **not** send a password (same as Book Total)
+- Amount is optional (if omitted, full pre-auth is reversed)
+- Customer must present the card again
+- Example: Pre-Auth 100 EUR, Pre-Auth Reversal → 100 EUR released
+
+**APDU format:** `06 25 xx  87(receipt-no) [04(amount)]`
 
 **Summary:**
 
@@ -218,7 +237,7 @@ Pre-Authorization is used to **reserve (block) an amount** on a customer's card 
 |---------|-----|---------|----------|
 | Pre-Authorization | `06 22` | Block amount on card | Amount + Card |
 | Book Total | `06 24` | Charge blocked amount | Receipt number + Trace + AID (+ optional Amount) |
-| Partial Reversal | `06 25` | Release part of blocked amount | Receipt number + Amount |
+| Pre-Auth Reversal | `06 25` | Cancel pre-auth, release blocked amount | Receipt number (+ optional Amount) |
 
 ## ZVT Command Hex Codes
 

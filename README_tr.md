@@ -117,7 +117,7 @@ Baglanti ekranindaki disli ikonu ile acilan bu pencere, Registration (06 00) kom
 | **Storno** | `06 30` | Onceki odemeyi iptal eder (sanki hic olmamis gibi) | Receipt no + Kart |
 | **On Yetki** | `06 22` | Kartta tutar bloke eder (tahsil etmeden) | Tutar + Kart |
 | **Book Total** | `06 24` | On Yetki'yi tamamlayarak gercek tutari tahsil eder | Receipt no + Trace + AID |
-| **Kismi Iptal** | `06 25` | On Yetki blokesinin bir kismini serbest birakir | Receipt no + Tutar |
+| **On Yetki Iptali** | `06 25` | On Yetki'yi tamamen iptal eder, bloke tutari serbest birakir | Receipt no |
 | **Islem Durdur** | `06 B0` | Devam eden islemi iptal eder | - |
 
 **Odeme (06 01):** Standart kart odemesi. Musteri kartini okutturur, tutar aninda tahsil edilir. Receipt number, trace number ve kart bilgileri doner.
@@ -130,9 +130,23 @@ Baglanti ekranindaki disli ikonu ile acilan bu pencere, Registration (06 00) kom
 
 **Book Total (06 24) - Buchung:** On Yetki'yi tamamlayarak gercek tutari tahsil eder. Tahsil edilen tutar, bloke edilen tutardan az veya esit olabilir — aradaki fark otomatik serbest kalir. On Yetki cevabindan gelen **receipt number** (BMP 0x87), **trace number** (BMP 0x0B) ve **AID** (BMP 0x3B) zorunludur — spec, rezervasyon kapatmasi icin trace ve AID gönderilmesini sart kosar. Password gönderilmez (Payment/Refund'dan farkli). Kart tekrar okutulmalidir.
 
-**Kismi Iptal (06 25) - Teilstorno:** On Yetki blokesinin bir kismini tahsil etmeden serbest birakir. Son tutarin rezervasyondan az olacagi bilindiginde kullanislidir.
+**On Yetki Iptali (06 25) - Pre-Auth Reversal:** Bir on yetkilendirmeyi tamamen iptal eder, bloke edilen tutarin tamami musterinin kartina serbest birakilir. Password gönderilmez. On Yetki'den gelen **receipt number** gereklidir. Tutar opsiyoneldir. Kart tekrar okutulmalidir. Not: Gercek "Kismi Iptal" (bloke tutari azaltma) komutu `06 23`'tür ve farkli bir komuttur.
 
 **Islem Durdur (06 B0) - Abort:** Terminalde devam eden islemi iptal eder (ornegin musteri kart okunurken fikrini degistirirse).
+
+### Test Sonuclari (CCV A920, Subat 2025)
+
+Tüm 7 islem gercek CCV A920 terminalde Debit Mastercard ve girocard ile test edilmistir:
+
+| # | Islem | Komut | Test | Sonuc |
+|---|-------|-------|------|-------|
+| 1 | Odeme | `06 01` | 0.10 EUR, girocard | Basarili |
+| 2 | Iade (Gutschrift) | `06 31` | 0.10 EUR, Debit Mastercard | Basarili |
+| 3 | Storno (Reversal) | `06 30` | Receipt number ile iptal | Basarili |
+| 4 | On Yetki (Pre-Auth) | `06 22` | 0.30 EUR, Debit Mastercard | Basarili |
+| 5 | On Yetki Kapatma (Book Total) | `06 24` | Trace + AID ile kapatma | Basarili |
+| 6 | On Yetki Iptali | `06 25` | Receipt number ile iptal | Basarili |
+| 7 | Islem Durdur (Abort) | `06 B0` | Devam eden islemi iptal | Basarili |
 
 ## Storno (Reversal) ve Gutschrift (Refund) Farki
 
@@ -207,10 +221,15 @@ On Yetkilendirme, musterinin kartindan **tutar ayirmak (bloke etmek)** icin kull
 
 **APDU formati:** `06 24 xx  87(receipt-no) [04(tutar)] 0B(trace) 3B(AID)`
 
-**Adim 2b: Kismi Iptal / Partial Reversal (06 25)**
-- Bloke edilen tutarin bir kismini tahsil etmeden serbest birakir
-- **Receipt number** ve serbest birakilacak tutar gereklidir
-- Ornek: Pre-Auth 100 EUR, Partial Reversal 30 EUR (70 EUR bloke kalir)
+**Adim 2b: On Yetki Iptali / Pre-Auth Reversal (06 25)**
+- On yetkilendirmeyi tamamen iptal eder, bloke edilen tutarin tamami serbest kalir
+- **Receipt number** (BMP 0x87) gereklidir
+- Password gönderilmez (Book Total ile ayni)
+- Tutar opsiyoneldir (gönderilmezse tam tutar iptal edilir)
+- Kart tekrar okutulmalidir
+- Ornek: Pre-Auth 100 EUR, Pre-Auth Reversal → 100 EUR serbest kalir
+
+**APDU formati:** `06 25 xx  87(receipt-no) [04(tutar)]`
 
 **Ozet:**
 
@@ -218,7 +237,7 @@ On Yetkilendirme, musterinin kartindan **tutar ayirmak (bloke etmek)** icin kull
 |-------|-----|------|---------|
 | On Yetkilendirme | `06 22` | Kartta tutar bloke et | Tutar + Kart |
 | Book Total | `06 24` | Bloke tutari tahsil et | Receipt number + Trace + AID (+ opsiyonel Tutar) |
-| Kismi Iptal | `06 25` | Blokenin bir kismini serbest birak | Receipt number + Tutar |
+| On Yetki Iptali | `06 25` | On yetkiyi iptal et, blokeyi kaldir | Receipt number (+ opsiyonel Tutar) |
 
 ## ZVT Komut Hex Kodlari
 

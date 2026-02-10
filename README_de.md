@@ -117,7 +117,7 @@ Der Registrierungskonfigurationsdialog (Zahnrad-Symbol auf dem Verbindungsbildsc
 | **Storno** | `06 30` | Storniert eine vorherige Zahlung (als waere sie nie passiert) | Belegnr. + Karte |
 | **Vorautorisierung** | `06 22` | Blockiert (reserviert) einen Betrag auf der Karte ohne Abbuchung | Betrag + Karte |
 | **Buchung** | `06 24` | Schliesst eine Vorautorisierung durch Abbuchung des Betrags ab | Belegnr. + Trace + AID |
-| **Teilstorno** | `06 25` | Gibt einen Teil des blockierten Betrags frei | Belegnr. + Betrag |
+| **Vorautorisierung-Storno** | `06 25` | Storniert eine Vorautorisierung vollstaendig, gibt den blockierten Betrag frei | Belegnr. |
 | **Abbruch** | `06 B0` | Bricht die laufende Operation ab | - |
 
 **Zahlung (06 01):** Standard-Kartenzahlung. Kunde legt die Karte vor, der Betrag wird sofort abgebucht. Gibt Belegnummer, Verfolgungsnummer und Kartendaten zurueck.
@@ -130,9 +130,23 @@ Der Registrierungskonfigurationsdialog (Zahnrad-Symbol auf dem Verbindungsbildsc
 
 **Buchung (06 24) - Book Total:** Schliesst eine Vorautorisierung ab, indem der endgueltige Betrag abgebucht wird. Der abgebuchte Betrag kann kleiner oder gleich dem reservierten Betrag sein — die Differenz wird automatisch freigegeben. Aus der Pre-Auth-Antwort werden **Belegnummer** (BMP 0x87), **Trace-Nummer** (BMP 0x0B) und **AID** (BMP 0x3B) benoetigt — die Spezifikation schreibt Trace und AID fuer die Reservierungsbuchung zwingend vor. Es wird kein Passwort gesendet (anders als bei Zahlung/Gutschrift). Die Karte muss erneut vorgelegt werden.
 
-**Teilstorno (06 25) - Partial Reversal:** Gibt einen Teil des blockierten Vorautorisierungsbetrags frei, ohne abzubuchen. Nuetzlich, wenn der Endbetrag voraussichtlich geringer als die Reservierung ist.
+**Vorautorisierung-Storno (06 25) - Pre-Auth Reversal:** Storniert eine Vorautorisierung vollstaendig, der gesamte blockierte Betrag wird auf die Kundenkarte freigegeben. Es wird kein Passwort gesendet. Die **Belegnummer** der Vorautorisierung ist erforderlich. Der Betrag ist optional. Die Karte muss erneut vorgelegt werden. Hinweis: Die echte "Teilstorno" (Reduzierung eines reservierten Betrags) ist Befehl `06 23`, ein anderer Befehl.
 
 **Abbruch (06 B0) - Abort:** Bricht die aktuell laufende Operation am Terminal ab (z.B. wenn der Kunde seine Meinung aendert, waehrend die Karte gelesen wird).
+
+### Testergebnisse (CCV A920, Februar 2025)
+
+Alle 7 Operationen wurden auf einem echten CCV A920 Terminal mit Debit Mastercard und girocard getestet:
+
+| # | Operation | Befehl | Test | Ergebnis |
+|---|-----------|--------|------|----------|
+| 1 | Zahlung | `06 01` | 0,10 EUR, girocard | Erfolgreich |
+| 2 | Gutschrift (Refund) | `06 31` | 0,10 EUR, Debit Mastercard | Erfolgreich |
+| 3 | Storno (Reversal) | `06 30` | Stornierung per Belegnummer | Erfolgreich |
+| 4 | Vorautorisierung | `06 22` | 0,30 EUR, Debit Mastercard | Erfolgreich |
+| 5 | Buchung (Book Total) | `06 24` | Buchung mit Trace + AID | Erfolgreich |
+| 6 | Vorautorisierung-Storno | `06 25` | Stornierung per Belegnummer | Erfolgreich |
+| 7 | Abbruch (Abort) | `06 B0` | Laufende Operation abbrechen | Erfolgreich |
 
 ## Storno (Reversal) vs Gutschrift (Refund)
 
@@ -207,10 +221,15 @@ Die Vorautorisierung dient dazu, einen Betrag auf der Kundenkarte zu **reservier
 
 **APDU-Format:** `06 24 xx  87(Belegnr.) [04(Betrag)] 0B(Trace) 3B(AID)`
 
-**Schritt 2b: Teilstorno (Partial Reversal, 06 25)**
-- Gibt einen Teil des blockierten Betrags frei, ohne abzubuchen
-- **Belegnummer** und der freizugebende Betrag sind erforderlich
-- Beispiel: Pre-Auth 100 EUR, Teilstorno 30 EUR (70 EUR bleiben blockiert)
+**Schritt 2b: Vorautorisierung-Storno (Pre-Auth Reversal, 06 25)**
+- Storniert die Vorautorisierung vollstaendig, der gesamte blockierte Betrag wird freigegeben
+- **Belegnummer** (BMP 0x87) ist erforderlich
+- Es wird **kein Passwort** gesendet (wie bei Buchung)
+- Der Betrag ist optional (wird er weggelassen, wird die volle Vorautorisierung storniert)
+- Die Karte muss erneut vorgelegt werden
+- Beispiel: Pre-Auth 100 EUR, Vorautorisierung-Storno → 100 EUR werden freigegeben
+
+**APDU-Format:** `06 25 xx  87(Belegnr.) [04(Betrag)]`
 
 **Zusammenfassung:**
 
@@ -218,7 +237,7 @@ Die Vorautorisierung dient dazu, einen Betrag auf der Kundenkarte zu **reservier
 |--------|-----|-------|-----------|
 | Vorautorisierung | `06 22` | Betrag auf Karte blockieren | Betrag + Karte |
 | Buchung (Book Total) | `06 24` | Blockierten Betrag abbuchen | Belegnummer + Trace + AID (+ optionaler Betrag) |
-| Teilstorno | `06 25` | Teil des blockierten Betrags freigeben | Belegnummer + Betrag |
+| Vorautorisierung-Storno | `06 25` | Vorautorisierung stornieren, Blockierung aufheben | Belegnummer (+ optionaler Betrag) |
 
 ## ZVT-Befehls-Hex-Codes
 
