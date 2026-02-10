@@ -57,8 +57,8 @@ object ZvtConstants {
     /** Book Total / Pre-Auth Completion command (06 24) */
     val CMD_BOOK_TOTAL = byteArrayOf(0x06, 0x24)
 
-    /** Partial Reversal command (06 25) */
-    val CMD_PARTIAL_REVERSAL = byteArrayOf(0x06, 0x25)
+    /** Pre-Authorisation Reversal command (06 25) — full reversal of a pre-auth */
+    val CMD_PRE_AUTH_REVERSAL = byteArrayOf(0x06, 0x25)
 
     // =====================================================
     // Terminal -> ECR Responses
@@ -530,7 +530,7 @@ object ZvtConstants {
             command.contentEquals(CMD_REPEAT_RECEIPT) -> "Repeat Receipt ($hex)"
             command.contentEquals(CMD_PRE_AUTHORIZATION) -> "Pre-Authorization ($hex)"
             command.contentEquals(CMD_BOOK_TOTAL) -> "Book Total ($hex)"
-            command.contentEquals(CMD_PARTIAL_REVERSAL) -> "Partial Reversal ($hex)"
+            command.contentEquals(CMD_PRE_AUTH_REVERSAL) -> "Pre-Auth Reversal ($hex)"
             command.contentEquals(RESP_COMPLETION) -> "Completion ($hex)"
             command.contentEquals(RESP_STATUS_INFO) -> "Status Info ($hex)"
             command.contentEquals(RESP_INTERMEDIATE_STATUS) -> "Intermediate Status ($hex)"

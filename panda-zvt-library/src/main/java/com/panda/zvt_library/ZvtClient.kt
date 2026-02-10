@@ -417,47 +417,60 @@ class ZvtClient(
 
     /**
      * Sends a Book Total command (06 24) to complete a pre-authorization.
+     * Per ZVT spec: no password, receipt-no mandatory, amount optional.
+     * Trace number and AID from the original pre-auth are required for reservation booking.
      *
-     * @param amountInCents Final amount to book in cents.
-     * @param receiptNumber Receipt number from the original pre-authorization.
+     * @param receiptNumber Receipt number from the original pre-authorization. Mandatory.
+     * @param amountInCents Final amount to book in cents. Optional — if null, full pre-auth amount is booked.
+     * @param traceNumber Trace number from the original pre-auth. Required for reservation booking.
+     * @param aid AID from the original pre-auth (hex string). Required for reservation booking.
      * @return [TransactionResult] with the book total outcome.
      * @throws ZvtError on protocol or connection errors.
      */
-    suspend fun bookTotal(amountInCents: Long, receiptNumber: Int): TransactionResult =
+    suspend fun bookTotal(
+        receiptNumber: Int,
+        amountInCents: Long? = null,
+        traceNumber: Int? = null,
+        aid: String? = null
+    ): TransactionResult =
         withContext(Dispatchers.IO) {
             ensureConnected()
             ensureTerminalReady()
             receiptLines.clear()
 
             val packet = ZvtCommandBuilder.buildBookTotal(
+                receiptNumber = receiptNumber,
                 amountInCents = amountInCents,
-                receiptNumber = receiptNumber
+                traceNumber = traceNumber,
+                aid = aid
             )
-            log("=== BOOK TOTAL (06 24) === amount=$amountInCents cents, receipt=$receiptNumber")
+            val amountStr = if (amountInCents != null) "$amountInCents cents" else "full pre-auth"
+            log("=== BOOK TOTAL (06 24) === amount=$amountStr, receipt=$receiptNumber, trace=$traceNumber, aid=$aid")
             val result = executeCommand(packet)
             result.copy(receiptLines = receiptLines.toList())
         }
 
     /**
-     * Sends a Partial Reversal command (06 25) to partially reverse a transaction.
+     * Sends a Pre-Authorisation Reversal command (06 25) to reverse a pre-authorization.
+     * Per ZVT spec: no password, receipt-no mandatory, amount optional.
      *
-     * @param amountInCents Amount to partially reverse in cents.
-     * @param receiptNumber Receipt number of the original transaction.
-     * @return [TransactionResult] with the partial reversal outcome.
+     * @param receiptNumber Receipt number of the original pre-authorization. Mandatory.
+     * @param amountInCents Amount to reverse in cents. Optional — if null, full pre-auth is reversed.
+     * @return [TransactionResult] with the pre-auth reversal outcome.
      * @throws ZvtError on protocol or connection errors.
      */
-    suspend fun partialReversal(amountInCents: Long, receiptNumber: Int): TransactionResult =
+    suspend fun preAuthReversal(receiptNumber: Int, amountInCents: Long? = null): TransactionResult =
         withContext(Dispatchers.IO) {
             ensureConnected()
             ensureTerminalReady()
             receiptLines.clear()
 
-            val packet = ZvtCommandBuilder.buildPartialReversal(
-                amountInCents = amountInCents,
+            val packet = ZvtCommandBuilder.buildPreAuthReversal(
                 receiptNumber = receiptNumber,
-                currencyCode = config.currencyCode
+                amountInCents = amountInCents
             )
-            log("=== PARTIAL REVERSAL (06 25) === amount=$amountInCents cents, receipt=$receiptNumber")
+            val amountStr = if (amountInCents != null) "$amountInCents cents" else "full pre-auth"
+            log("=== PRE-AUTH REVERSAL (06 25) === amount=$amountStr, receipt=$receiptNumber")
             val result = executeCommand(packet)
             result.copy(receiptLines = receiptLines.toList())
         }

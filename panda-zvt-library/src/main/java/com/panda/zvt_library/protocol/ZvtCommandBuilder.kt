@@ -423,87 +423,98 @@ object ZvtCommandBuilder {
      *
      * After a successful pre-authorization, this command books the final amount.
      * The receipt number from the original pre-authorization must be provided.
+     * Per ZVT spec v13.13 section 2.13: No password, receipt-no is mandatory, amount is optional.
+     * Trace number and AID must be sent for reservation booking (spec requirement).
+     * APDU: 06 24 xx  87(receipt-no) [04(amount)] [0B(trace)] [3B(AID)]
      *
-     * @param amountInCents Final amount to book in cents.
-     * @param receiptNumber Receipt number of the original pre-authorization (BCD 2 bytes).
-     * @param currencyCode ISO 4217 currency code.
+     * @param receiptNumber Receipt number of the original pre-authorization (BCD 2 bytes). Mandatory.
+     * @param amountInCents Final amount to book in cents. Optional — if null, full pre-auth amount is booked.
+     * @param traceNumber Trace number from the original pre-auth (BCD 3 bytes). Required for reservation booking.
+     * @param aid AID (authorisation-attribute) from the original pre-auth (8 bytes). Required for reservation booking.
      * @return [ZvtPacket] containing the Book Total command.
-     * @throws IllegalArgumentException if the amount is not positive.
      */
     fun buildBookTotal(
-        amountInCents: Long,
-        receiptNumber: Int
+        receiptNumber: Int,
+        amountInCents: Long? = null,
+        traceNumber: Int? = null,
+        aid: String? = null
     ): ZvtPacket {
-        require(amountInCents > 0) { "Amount must be greater than 0" }
-
         val data = mutableListOf<Byte>()
 
-        // Password (3 byte BCD)
-        data.addAll(BcdHelper.stringToBcd("000000").toList())
-
-        // Amount (BMP 0x04, 6 byte BCD)
-        data.add(ZvtConstants.BMP_AMOUNT)
-        data.addAll(BcdHelper.amountToBcd(amountInCents).toList())
-
-        // Receipt number (BMP 0x87, BCD 2 bytes)
+        // Receipt number (BMP 0x87, BCD 2 bytes) — MANDATORY, must be first
         data.add(ZvtConstants.BMP_RECEIPT_NR)
         data.addAll(BcdHelper.stringToBcd(receiptNumber.toString().padStart(4, '0')).toList())
+
+        // Amount (BMP 0x04, 6 byte BCD) — optional
+        if (amountInCents != null && amountInCents > 0) {
+            data.add(ZvtConstants.BMP_AMOUNT)
+            data.addAll(BcdHelper.amountToBcd(amountInCents).toList())
+        }
+
+        // Trace number (BMP 0x0B, BCD 3 bytes) — must be sent for reservation booking
+        if (traceNumber != null) {
+            data.add(ZvtConstants.BMP_TRACE_NUMBER)
+            data.addAll(BcdHelper.stringToBcd(traceNumber.toString().padStart(6, '0')).toList())
+        }
+
+        // AID (BMP 0x3B, 8 bytes fixed) — must be sent for reservation booking
+        if (aid != null && aid.isNotEmpty()) {
+            data.add(ZvtConstants.BMP_AID)
+            val aidBytes = aid.chunked(2).map { it.toInt(16).toByte() }
+            // Pad to 8 bytes if shorter
+            val padded = aidBytes.toMutableList()
+            while (padded.size < 8) padded.add(0x00)
+            data.addAll(padded.take(8))
+        }
 
         val packet = ZvtPacket(
             command = ZvtConstants.CMD_BOOK_TOTAL,
             data = data.toByteArray()
         )
 
-        Timber.tag(TAG).d("[CommandBuilder] Built Book Total: amount=%d cents (%.2f EUR), receiptNr=%d",
-            amountInCents, amountInCents / 100.0, receiptNumber)
+        val amountStr = if (amountInCents != null) "${amountInCents} cents (%.2f EUR)".format(amountInCents / 100.0) else "full pre-auth amount"
+        Timber.tag(TAG).d("[CommandBuilder] Built Book Total: amount=%s, receiptNr=%d, trace=%s, aid=%s",
+            amountStr, receiptNumber, traceNumber?.toString() ?: "n/a", aid ?: "n/a")
 
         return packet
     }
 
     // =====================================================
-    // Partial Reversal (06 25)
+    // Pre-Authorisation Reversal (06 25)
     // =====================================================
 
     /**
-     * Builds a Partial Reversal command (06 25) to partially reverse a transaction.
+     * Builds a Pre-Authorisation Reversal command (06 25) to reverse a pre-authorization.
+     * Per ZVT spec v13.13 section 2.14: No password, receipt-no is mandatory, amount is optional.
+     * APDU: 06 25 xx  87(receipt-no) [04(amount)] [49(CC)]
      *
-     * @param amountInCents Amount to partially reverse in cents.
-     * @param receiptNumber Receipt number of the original transaction (BCD 2 bytes).
-     * @param currencyCode ISO 4217 currency code.
-     * @return [ZvtPacket] containing the Partial Reversal command.
-     * @throws IllegalArgumentException if the amount is not positive.
+     * @param receiptNumber Receipt number of the original pre-authorization (BCD 2 bytes). Mandatory.
+     * @param amountInCents Amount to reverse in cents. Optional — if null, full pre-auth is reversed.
+     * @return [ZvtPacket] containing the Pre-Auth Reversal command.
      */
-    fun buildPartialReversal(
-        amountInCents: Long,
+    fun buildPreAuthReversal(
         receiptNumber: Int,
-        currencyCode: Int = ZvtConstants.CURRENCY_EUR
+        amountInCents: Long? = null
     ): ZvtPacket {
-        require(amountInCents > 0) { "Amount must be greater than 0" }
-
         val data = mutableListOf<Byte>()
 
-        // Password (3 byte BCD)
-        data.addAll(BcdHelper.stringToBcd("000000").toList())
-
-        // Amount (BMP 0x04, 6 byte BCD)
-        data.add(ZvtConstants.BMP_AMOUNT)
-        data.addAll(BcdHelper.amountToBcd(amountInCents).toList())
-
-        // Currency (BMP 0x49)
-        data.add(ZvtConstants.BMP_CURRENCY_CODE)
-        data.addAll(BcdHelper.currencyToBcd(currencyCode).toList())
-
-        // Receipt number (BMP 0x87, BCD 2 bytes)
+        // Receipt number (BMP 0x87, BCD 2 bytes) — MANDATORY, must be first
         data.add(ZvtConstants.BMP_RECEIPT_NR)
         data.addAll(BcdHelper.stringToBcd(receiptNumber.toString().padStart(4, '0')).toList())
 
+        // Amount (BMP 0x04, 6 byte BCD) — optional
+        if (amountInCents != null && amountInCents > 0) {
+            data.add(ZvtConstants.BMP_AMOUNT)
+            data.addAll(BcdHelper.amountToBcd(amountInCents).toList())
+        }
+
         val packet = ZvtPacket(
-            command = ZvtConstants.CMD_PARTIAL_REVERSAL,
+            command = ZvtConstants.CMD_PRE_AUTH_REVERSAL,
             data = data.toByteArray()
         )
 
-        Timber.tag(TAG).d("[CommandBuilder] Built Partial Reversal: amount=%d cents (%.2f EUR), receiptNr=%d",
-            amountInCents, amountInCents / 100.0, receiptNumber)
+        val amountStr = if (amountInCents != null) "${amountInCents} cents (%.2f EUR)".format(amountInCents / 100.0) else "full pre-auth amount"
+        Timber.tag(TAG).d("[CommandBuilder] Built Pre-Auth Reversal: amount=%s, receiptNr=%d", amountStr, receiptNumber)
 
         return packet
     }

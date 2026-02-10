@@ -79,26 +79,26 @@ class PaymentFragment : Fragment() {
         binding.btnBookTotal.setOnClickListener {
             val amount = binding.etAmount.text.toString()
             val receiptNo = binding.etReceiptNumber.text.toString().toIntOrNull()
-            if (amount.isEmpty()) {
-                binding.etAmount.error = getString(R.string.error_amount_required)
-            } else if (receiptNo == null) {
+            if (receiptNo == null) {
                 binding.etReceiptNumber.error = getString(R.string.receipt_no_required)
             } else {
+                // Pass trace number and AID from the last transaction result (Pre-Auth)
+                val lastResult = viewModel.transactionResult.value
+                val trace = lastResult?.traceNumber?.takeIf { it > 0 }
+                val aid = lastResult?.cardData?.aid?.takeIf { it.isNotEmpty() }
                 setOperation(getString(R.string.op_book_total), "\u2705")
-                viewModel.bookTotal(amount, receiptNo)
+                viewModel.bookTotal(amount, receiptNo, trace, aid)
             }
         }
 
         binding.btnPartialReversal.setOnClickListener {
             val amount = binding.etAmount.text.toString()
             val receiptNo = binding.etReceiptNumber.text.toString().toIntOrNull()
-            if (amount.isEmpty()) {
-                binding.etAmount.error = getString(R.string.error_amount_required)
-            } else if (receiptNo == null) {
+            if (receiptNo == null) {
                 binding.etReceiptNumber.error = getString(R.string.receipt_no_required)
             } else {
                 setOperation(getString(R.string.op_partial_reversal), "\u2702\uFE0F")
-                viewModel.partialReversal(amount, receiptNo)
+                viewModel.preAuthReversal(amount, receiptNo)
             }
         }
     }

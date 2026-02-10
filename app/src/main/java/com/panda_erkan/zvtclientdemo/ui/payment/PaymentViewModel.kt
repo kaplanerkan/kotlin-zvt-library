@@ -140,17 +140,14 @@ class PaymentViewModel(
         }
     }
 
-    fun bookTotal(amountText: String, receiptNumber: Int) {
-        val cents = parseAmount(amountText) ?: run {
-            _errorMessage.value = ctx.getString(R.string.invalid_amount, amountText)
-            return
-        }
+    fun bookTotal(amountText: String, receiptNumber: Int, traceNumber: Int? = null, aid: String? = null) {
+        val cents = parseAmount(amountText)
 
         viewModelScope.launch {
             resetState()
             _isProcessing.value = true
 
-            val result = repository.bookTotal(cents, receiptNumber)
+            val result = repository.bookTotal(receiptNumber, cents, traceNumber, aid)
             result.fold(
                 onSuccess = { txResult ->
                     _transactionResult.value = txResult
@@ -166,17 +163,14 @@ class PaymentViewModel(
         }
     }
 
-    fun partialReversal(amountText: String, receiptNumber: Int) {
-        val cents = parseAmount(amountText) ?: run {
-            _errorMessage.value = ctx.getString(R.string.invalid_amount, amountText)
-            return
-        }
+    fun preAuthReversal(amountText: String, receiptNumber: Int) {
+        val cents = parseAmount(amountText)
 
         viewModelScope.launch {
             resetState()
             _isProcessing.value = true
 
-            val result = repository.partialReversal(cents, receiptNumber)
+            val result = repository.preAuthReversal(receiptNumber, cents)
             result.fold(
                 onSuccess = { txResult ->
                     _transactionResult.value = txResult

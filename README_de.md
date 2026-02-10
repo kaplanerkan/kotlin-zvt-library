@@ -116,7 +116,7 @@ Der Registrierungskonfigurationsdialog (Zahnrad-Symbol auf dem Verbindungsbildsc
 | **Gutschrift** | `06 31` | Neue unabhaengige Erstattung — Geld geht zurueck an den Kunden | Betrag + Karte |
 | **Storno** | `06 30` | Storniert eine vorherige Zahlung (als waere sie nie passiert) | Belegnr. + Karte |
 | **Vorautorisierung** | `06 22` | Blockiert (reserviert) einen Betrag auf der Karte ohne Abbuchung | Betrag + Karte |
-| **Buchung** | `06 24` | Schliesst eine Vorautorisierung durch Abbuchung des Betrags ab | Belegnr. + Betrag |
+| **Buchung** | `06 24` | Schliesst eine Vorautorisierung durch Abbuchung des Betrags ab | Belegnr. + Trace + AID |
 | **Teilstorno** | `06 25` | Gibt einen Teil des blockierten Betrags frei | Belegnr. + Betrag |
 | **Abbruch** | `06 B0` | Bricht die laufende Operation ab | - |
 
@@ -128,7 +128,7 @@ Der Registrierungskonfigurationsdialog (Zahnrad-Symbol auf dem Verbindungsbildsc
 
 **Vorautorisierung (06 22) - Pre-Auth:** Blockiert einen Betrag auf der Karte, ohne ihn tatsaechlich abzubuchen. Wird fuer Hotels, Autovermietungen, Restaurants verwendet. Gibt eine Belegnummer zurueck, die fuer die Buchung benoetigt wird.
 
-**Buchung (06 24) - Book Total:** Schliesst eine Vorautorisierung ab, indem der endgueltige Betrag abgebucht wird. Der abgebuchte Betrag kann kleiner oder gleich dem reservierten Betrag sein — die Differenz wird automatisch freigegeben. Die Belegnummer aus dem Vorautorisierungs-Schritt ist erforderlich. Die Karte muss **nicht** erneut vorgelegt werden.
+**Buchung (06 24) - Book Total:** Schliesst eine Vorautorisierung ab, indem der endgueltige Betrag abgebucht wird. Der abgebuchte Betrag kann kleiner oder gleich dem reservierten Betrag sein — die Differenz wird automatisch freigegeben. Aus der Pre-Auth-Antwort werden **Belegnummer** (BMP 0x87), **Trace-Nummer** (BMP 0x0B) und **AID** (BMP 0x3B) benoetigt — die Spezifikation schreibt Trace und AID fuer die Reservierungsbuchung zwingend vor. Es wird kein Passwort gesendet (anders als bei Zahlung/Gutschrift). Die Karte muss erneut vorgelegt werden.
 
 **Teilstorno (06 25) - Partial Reversal:** Gibt einen Teil des blockierten Vorautorisierungsbetrags frei, ohne abzubuchen. Nuetzlich, wenn der Endbetrag voraussichtlich geringer als die Reservierung ist.
 
@@ -196,9 +196,16 @@ Die Vorautorisierung dient dazu, einen Betrag auf der Kundenkarte zu **reservier
 
 **Schritt 2a: Buchung (Book Total, 06 24)**
 - Schliesst die Vorautorisierung ab, indem der tatsaechliche Betrag abgebucht wird
-- Die **Belegnummer** aus dem Pre-Auth-Schritt ist erforderlich
-- Der abgebuchte Betrag kann **kleiner oder gleich** dem blockierten Betrag sein
+- Drei Werte aus der Pre-Auth-Antwort sind erforderlich:
+  - **Belegnummer** (BMP 0x87) — identifiziert die urspruengliche Vorautorisierung
+  - **Trace-Nummer** (BMP 0x0B) — muss laut Spezifikation fuer die Reservierungsbuchung gesendet werden
+  - **AID** (BMP 0x3B) — muss laut Spezifikation fuer die Reservierungsbuchung gesendet werden
+- Es wird **kein Passwort** gesendet (anders als bei Zahlung/Gutschrift/Storno)
+- Der abgebuchte Betrag kann **kleiner oder gleich** dem blockierten Betrag sein (Betrag ist optional — wird er weggelassen, wird der volle Pre-Auth-Betrag gebucht)
+- Die Karte muss erneut vorgelegt werden
 - Beispiel: Pre-Auth 100 EUR, Book Total 85 EUR (verbleibende 15 EUR werden freigegeben)
+
+**APDU-Format:** `06 24 xx  87(Belegnr.) [04(Betrag)] 0B(Trace) 3B(AID)`
 
 **Schritt 2b: Teilstorno (Partial Reversal, 06 25)**
 - Gibt einen Teil des blockierten Betrags frei, ohne abzubuchen
@@ -210,7 +217,7 @@ Die Vorautorisierung dient dazu, einen Betrag auf der Kundenkarte zu **reservier
 | Befehl | Hex | Zweck | Erfordert |
 |--------|-----|-------|-----------|
 | Vorautorisierung | `06 22` | Betrag auf Karte blockieren | Betrag + Karte |
-| Buchung (Book Total) | `06 24` | Blockierten Betrag abbuchen | Belegnummer + Betrag |
+| Buchung (Book Total) | `06 24` | Blockierten Betrag abbuchen | Belegnummer + Trace + AID (+ optionaler Betrag) |
 | Teilstorno | `06 25` | Teil des blockierten Betrags freigeben | Belegnummer + Betrag |
 
 ## ZVT-Befehls-Hex-Codes

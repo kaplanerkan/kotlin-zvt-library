@@ -116,7 +116,7 @@ Baglanti ekranindaki disli ikonu ile acilan bu pencere, Registration (06 00) kom
 | **Iade** | `06 31` | Yeni bagimsiz iade islemi — para musteriye geri doner | Tutar + Kart |
 | **Storno** | `06 30` | Onceki odemeyi iptal eder (sanki hic olmamis gibi) | Receipt no + Kart |
 | **On Yetki** | `06 22` | Kartta tutar bloke eder (tahsil etmeden) | Tutar + Kart |
-| **Book Total** | `06 24` | On Yetki'yi tamamlayarak gercek tutari tahsil eder | Receipt no + Tutar |
+| **Book Total** | `06 24` | On Yetki'yi tamamlayarak gercek tutari tahsil eder | Receipt no + Trace + AID |
 | **Kismi Iptal** | `06 25` | On Yetki blokesinin bir kismini serbest birakir | Receipt no + Tutar |
 | **Islem Durdur** | `06 B0` | Devam eden islemi iptal eder | - |
 
@@ -128,7 +128,7 @@ Baglanti ekranindaki disli ikonu ile acilan bu pencere, Registration (06 00) kom
 
 **On Yetki (06 22) - Vorautorisierung:** Kartta tutar bloke eder ama tahsil etmez. Otel, arac kiralama, restoran gibi senaryolarda kullanilir. Book Total icin gerekli olan receipt number doner.
 
-**Book Total (06 24) - Buchung:** On Yetki'yi tamamlayarak gercek tutari tahsil eder. Tahsil edilen tutar, bloke edilen tutardan az veya esit olabilir — aradaki fark otomatik serbest kalir. On Yetki'den gelen receipt number gereklidir. Karti tekrar okutmak **gerekmez**.
+**Book Total (06 24) - Buchung:** On Yetki'yi tamamlayarak gercek tutari tahsil eder. Tahsil edilen tutar, bloke edilen tutardan az veya esit olabilir — aradaki fark otomatik serbest kalir. On Yetki cevabindan gelen **receipt number** (BMP 0x87), **trace number** (BMP 0x0B) ve **AID** (BMP 0x3B) zorunludur — spec, rezervasyon kapatmasi icin trace ve AID gönderilmesini sart kosar. Password gönderilmez (Payment/Refund'dan farkli). Kart tekrar okutulmalidir.
 
 **Kismi Iptal (06 25) - Teilstorno:** On Yetki blokesinin bir kismini tahsil etmeden serbest birakir. Son tutarin rezervasyondan az olacagi bilindiginde kullanislidir.
 
@@ -196,9 +196,16 @@ On Yetkilendirme, musterinin kartindan **tutar ayirmak (bloke etmek)** icin kull
 
 **Adim 2a: Book Total (06 24)**
 - On yetkilendirmeyi tamamlayarak gercek tutari tahsil eder
-- Pre-Auth adimindaki **receipt number** gereklidir
-- Tahsil edilen tutar, bloke edilen tutardan **az veya esit** olabilir
+- Pre-Auth cevabindan gelen uc deger gereklidir:
+  - **Receipt number** (BMP 0x87) — orijinal on yetkilendirmeyi tanimlar
+  - **Trace number** (BMP 0x0B) — spec, rezervasyon kapatmasi icin zorunlu kilar
+  - **AID** (BMP 0x3B) — spec, rezervasyon kapatmasi icin zorunlu kilar
+- Password gönderilmez (Payment/Refund/Reversal'dan farkli)
+- Tahsil edilen tutar, bloke edilen tutardan **az veya esit** olabilir (tutar opsiyoneldir — gönderilmezse tam tutar kitlenir)
+- Kart tekrar okutulmalidir
 - Ornek: Pre-Auth 100 EUR, Book Total 85 EUR (kalan 15 EUR serbest kalir)
+
+**APDU formati:** `06 24 xx  87(receipt-no) [04(tutar)] 0B(trace) 3B(AID)`
 
 **Adim 2b: Kismi Iptal / Partial Reversal (06 25)**
 - Bloke edilen tutarin bir kismini tahsil etmeden serbest birakir
@@ -210,7 +217,7 @@ On Yetkilendirme, musterinin kartindan **tutar ayirmak (bloke etmek)** icin kull
 | Komut | Hex | Amac | Gerekli |
 |-------|-----|------|---------|
 | On Yetkilendirme | `06 22` | Kartta tutar bloke et | Tutar + Kart |
-| Book Total | `06 24` | Bloke tutari tahsil et | Receipt number + Tutar |
+| Book Total | `06 24` | Bloke tutari tahsil et | Receipt number + Trace + AID (+ opsiyonel Tutar) |
 | Kismi Iptal | `06 25` | Blokenin bir kismini serbest birak | Receipt number + Tutar |
 
 ## ZVT Komut Hex Kodlari

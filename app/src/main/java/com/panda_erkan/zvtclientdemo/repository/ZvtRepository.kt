@@ -146,14 +146,19 @@ class ZvtRepository(
             client.preAuthorize(amountInCents)
         }
 
-    suspend fun bookTotal(amountInCents: Long, receiptNumber: Int): Result<TransactionResult> =
+    suspend fun bookTotal(
+        receiptNumber: Int,
+        amountInCents: Long? = null,
+        traceNumber: Int? = null,
+        aid: String? = null
+    ): Result<TransactionResult> =
         runSafe("Book Total") {
-            client.bookTotal(amountInCents, receiptNumber)
+            client.bookTotal(receiptNumber, amountInCents, traceNumber, aid)
         }
 
-    suspend fun partialReversal(amountInCents: Long, receiptNumber: Int): Result<TransactionResult> =
-        runSafe("Partial Reversal") {
-            client.partialReversal(amountInCents, receiptNumber)
+    suspend fun preAuthReversal(receiptNumber: Int, amountInCents: Long? = null): Result<TransactionResult> =
+        runSafe("Pre-Auth Reversal") {
+            client.preAuthReversal(receiptNumber, amountInCents)
         }
 
     suspend fun repeatReceipt(): Result<TransactionResult> =

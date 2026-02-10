@@ -116,7 +116,7 @@ The Registration Config dialog (gear icon on connection screen) allows customizi
 | **Refund** | `06 31` | New independent refund transaction — money goes back to customer | Amount + Card |
 | **Reversal** | `06 30` | Cancels a previous payment (as if it never happened) | Receipt number + Card |
 | **Pre-Auth** | `06 22` | Blocks (reserves) an amount on the card without charging | Amount + Card |
-| **Book Total** | `06 24` | Completes a Pre-Auth by charging the actual amount | Receipt number + Amount |
+| **Book Total** | `06 24` | Completes a Pre-Auth by charging the actual amount | Receipt number + Trace + AID |
 | **Partial Reversal** | `06 25` | Releases part of a Pre-Auth blocked amount | Receipt number + Amount |
 | **Abort** | `06 B0` | Cancels the currently running operation | - |
 
@@ -128,7 +128,7 @@ The Registration Config dialog (gear icon on connection screen) allows customizi
 
 **Pre-Auth (06 22) - Vorautorisierung:** Blocks an amount on the card without actually charging it. Used for hotels, car rentals, restaurants. Returns a receipt number needed for Book Total.
 
-**Book Total (06 24) - Buchung:** Completes a Pre-Auth by charging the final amount. The charged amount can be less than or equal to the reserved amount — the difference is automatically released. Requires the receipt number from the Pre-Auth step. Does **not** require the card again.
+**Book Total (06 24) - Buchung:** Completes a Pre-Auth by charging the final amount. The charged amount can be less than or equal to the reserved amount — the difference is automatically released. Requires the **receipt number**, **trace number** (BMP 0x0B), and **AID** (BMP 0x3B) from the original Pre-Auth response. The spec mandates trace and AID for reservation booking. Does **not** send a password (unlike Payment/Refund). Customer must present the card again.
 
 **Partial Reversal (06 25) - Teilstorno:** Releases part of a Pre-Auth blocked amount without charging. Useful when the final amount is known to be less than the reservation.
 
@@ -196,9 +196,16 @@ Pre-Authorization is used to **reserve (block) an amount** on a customer's card 
 
 **Step 2a: Book Total (06 24)**
 - Completes the pre-authorization by charging the actual amount
-- Requires the **receipt number** from the Pre-Auth step
-- The charged amount can be **less than or equal to** the blocked amount
+- Requires three values from the Pre-Auth response:
+  - **Receipt number** (BMP 0x87) — identifies the original pre-authorization
+  - **Trace number** (BMP 0x0B) — must be sent for reservation booking (spec requirement)
+  - **AID** (BMP 0x3B) — must be sent for reservation booking (spec requirement)
+- Does **not** send a password (unlike Payment/Refund/Reversal)
+- The charged amount can be **less than or equal to** the blocked amount (amount is optional — if omitted, full pre-auth is booked)
+- Customer must present the card again
 - Example: Pre-Auth 100 EUR, Book Total 85 EUR (remaining 15 EUR is released)
+
+**APDU format:** `06 24 xx  87(receipt-no) [04(amount)] 0B(trace) 3B(AID)`
 
 **Step 2b: Partial Reversal (06 25)**
 - Releases part of the blocked amount without charging
@@ -210,7 +217,7 @@ Pre-Authorization is used to **reserve (block) an amount** on a customer's card 
 | Command | Hex | Purpose | Requires |
 |---------|-----|---------|----------|
 | Pre-Authorization | `06 22` | Block amount on card | Amount + Card |
-| Book Total | `06 24` | Charge blocked amount | Receipt number + Amount |
+| Book Total | `06 24` | Charge blocked amount | Receipt number + Trace + AID (+ optional Amount) |
 | Partial Reversal | `06 25` | Release part of blocked amount | Receipt number + Amount |
 
 ## ZVT Command Hex Codes
@@ -406,10 +413,16 @@ if (result.success) {
 
 // Pre-Authorization flow
 val preAuth = client.preAuthorize(amountInCents = 5000) // Reserve 50.00 EUR
-val booking = client.bookTotal(amountInCents = 4200, receiptNumber = preAuth.receiptNumber) // Book 42.00
+// Book Total requires receipt, trace, and AID from the Pre-Auth response
+val booking = client.bookTotal(
+    receiptNumber = preAuth.receiptNumber,
+    amountInCents = 4200, // Book 42.00 EUR (optional — omit to book full amount)
+    traceNumber = preAuth.traceNumber,
+    aid = preAuth.cardData?.aid
+)
 
-// Partial Reversal
-val partial = client.partialReversal(amountInCents = 500, receiptNumber = 123) // Reverse 5.00
+// Pre-Auth Reversal
+val reversal = client.preAuthReversal(receiptNumber = preAuth.receiptNumber) // Full reversal
 
 // Repeat last receipt
 val receipt = client.repeatReceipt()
