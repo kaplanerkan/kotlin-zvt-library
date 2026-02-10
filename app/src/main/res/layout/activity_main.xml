@@ -167,11 +167,23 @@
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
+            <!-- TCP Keep-Alive checkbox -->
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/cbKeepAlive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:checked="true"
+                android:fontFamily="@font/montserrat_medium"
+                android:text="@string/tcp_keep_alive"
+                android:textColor="@color/onSurfaceVariant"
+                android:textSize="12sp" />
+
             <!-- Connect / Disconnect / Config Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:gravity="end"
                 android:orientation="horizontal">
 

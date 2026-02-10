@@ -63,14 +63,15 @@ class ZvtClient(
     }
 
     /**
-     * Updates the connection parameters (host and port) before connecting.
+     * Updates the connection parameters before connecting.
      *
      * @param host Terminal IP address.
      * @param port Terminal TCP port (default 20007).
+     * @param keepAlive Whether to enable TCP Keep-Alive on the socket.
      */
-    fun updateConnectionParams(host: String, port: Int) {
-        config = config.copy(host = host, port = port)
-        Timber.tag(TAG).d("Connection params updated: host=$host, port=$port")
+    fun updateConnectionParams(host: String, port: Int, keepAlive: Boolean = true) {
+        config = config.copy(host = host, port = port, keepAlive = keepAlive)
+        Timber.tag(TAG).d("Connection params updated: host=$host, port=$port, keepAlive=$keepAlive")
     }
 
     // =====================================================
@@ -130,10 +131,11 @@ class ZvtClient(
 
         try {
             updateState(ConnectionState.CONNECTING)
-            log("Connecting to ${config.host}:${config.port} (connectTimeout=${config.connectTimeoutMs}ms, readTimeout=${config.readTimeoutMs}ms)")
+            log("Connecting to ${config.host}:${config.port} (connectTimeout=${config.connectTimeoutMs}ms, readTimeout=${config.readTimeoutMs}ms, keepAlive=${config.keepAlive})")
 
             socket = Socket().apply {
                 soTimeout = config.readTimeoutMs
+                keepAlive = config.keepAlive
                 connect(
                     InetSocketAddress(config.host, config.port),
                     config.connectTimeoutMs
@@ -515,7 +517,12 @@ class ZvtClient(
         // Wait for ACK
         val response = readPacket()
         val success = response?.isAck == true
-        log("Log Off ${if (success) "acknowledged" else "not acknowledged"}")
+        if (success) {
+            updateState(ConnectionState.CONNECTED)
+            log("Log Off acknowledged — terminal unregistered")
+        } else {
+            log("Log Off not acknowledged")
+        }
         success
     }
 

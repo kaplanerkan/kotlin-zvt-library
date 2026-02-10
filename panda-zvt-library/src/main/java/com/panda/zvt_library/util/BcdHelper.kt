@@ -237,6 +237,38 @@ object BcdHelper {
     }
 
     /**
+     * Converts a BCD-encoded PAN to a masked string.
+     *
+     * In the ZVT protocol, masked PAN digits use nibble `E` (14) as placeholder
+     * and nibble `F` (15) as trailing padding. Valid BCD digits (0-9) are kept as-is.
+     *
+     * Example: `[0x68, 0x05, 0x40, 0xEE, 0xEE, 0xEE, 0xEE, 0xE3, 0x18, 0x6F]`
+     *          -> `"680540********3186"`
+     *
+     * @param bcd BCD-encoded PAN byte array.
+     * @return Masked PAN string with `*` for hidden digits.
+     */
+    fun bcdToPan(bcd: ByteArray): String {
+        val sb = StringBuilder(bcd.size * 2)
+        for (b in bcd) {
+            val unsigned = b.toInt() and 0xFF
+            val high = unsigned shr 4
+            val low = unsigned and 0x0F
+            when {
+                high in 0..9 -> sb.append(high)
+                high == 0x0E -> sb.append('*')
+                // 0x0F = padding, skip
+            }
+            when {
+                low in 0..9 -> sb.append(low)
+                low == 0x0E -> sb.append('*')
+                // 0x0F = padding, skip
+            }
+        }
+        return sb.toString()
+    }
+
+    /**
      * Formats a cent amount into a human-readable Euro string.
      *
      * Example: `1250` -> `"12,50"`

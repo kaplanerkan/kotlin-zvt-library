@@ -131,12 +131,18 @@ class ProgressStatusDialog : DialogFragment() {
     }
 
     /**
-     * Show the final result in the dialog, then auto-dismiss after delay.
+     * Show the final result in the dialog.
      * @param success true = green success, false = red error/abort
      * @param message result message to display
+     * @param details optional detailed transaction info (shown below message)
      * @param autoDismissMs delay before auto-dismiss (0 = no auto-dismiss)
      */
-    fun showResult(success: Boolean, message: String, autoDismissMs: Long = 4000) {
+    fun showResult(
+        success: Boolean,
+        message: String,
+        details: String = "",
+        autoDismissMs: Long = 4000
+    ) {
         if (_binding == null) return
         if (resultShown) return
         resultShown = true
@@ -176,6 +182,12 @@ class ProgressStatusDialog : DialogFragment() {
             binding.cardResult.strokeColor = resources.getColor(R.color.error, null)
         }
 
+        // Show transaction details if provided
+        if (details.isNotEmpty()) {
+            binding.scrollResultDetails.visibility = View.VISIBLE
+            binding.tvResultDetails.text = details
+        }
+
         // Update header
         val headerBg = if (success) resources.getColor(R.color.success, null)
         else resources.getColor(R.color.error, null)
@@ -183,16 +195,19 @@ class ProgressStatusDialog : DialogFragment() {
             (parent as? View)?.setBackgroundColor(headerBg)
         }
 
-        // Change cancel button to close button
+        // Change cancel button to OK button (dismiss on click)
         binding.btnDialogCancel.visibility = View.VISIBLE
         binding.btnDialogCancel.isEnabled = true
-        binding.btnDialogCancel.text = "\u2716"
-        binding.btnDialogCancel.setTextColor(resources.getColor(R.color.onSurfaceVariant, null))
+        binding.btnDialogCancel.text = getString(R.string.btn_ok)
+        binding.btnDialogCancel.setTextColor(
+            if (success) resources.getColor(R.color.success, null)
+            else resources.getColor(R.color.onSurfaceVariant, null)
+        )
         binding.btnDialogCancel.iconTint = null
         binding.btnDialogCancel.icon = null
         binding.btnDialogCancel.setOnClickListener { dismissAllowingStateLoss() }
 
-        // Auto-dismiss after delay
+        // Auto-dismiss after delay (0 = stay open until user taps OK)
         if (autoDismissMs > 0) {
             handler.postDelayed({
                 dismissAllowingStateLoss()

@@ -23,6 +23,7 @@ package com.panda.zvt_library.model
  * @property password Terminal password (6-digit BCD, default: "000000").
  * @property currencyCode ISO 4217 currency code (default: 978 = EUR).
  * @property autoAck Whether to automatically send ACK responses.
+ * @property keepAlive Whether to enable TCP Keep-Alive on the socket.
  * @property debugMode Whether to forward debug logs to the callback.
  */
 data class ZvtConfig(
@@ -33,6 +34,7 @@ data class ZvtConfig(
     val password: String = "000000",
     val currencyCode: Int = 978,
     val autoAck: Boolean = true,
+    val keepAlive: Boolean = true,
     val debugMode: Boolean = false
 )
 

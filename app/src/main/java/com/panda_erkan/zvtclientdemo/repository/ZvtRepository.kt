@@ -85,8 +85,14 @@ class ZvtRepository(
         client.register(configByte, tlvEnabled)
     }
 
-    suspend fun connectAndRegister(host: String, port: Int, configByte: Byte = 0x08, tlvEnabled: Boolean = false): Result<Boolean> = runSafe("Connect & Register") {
-        client.updateConnectionParams(host, port)
+    suspend fun connectAndRegister(
+        host: String,
+        port: Int,
+        configByte: Byte = 0x08,
+        tlvEnabled: Boolean = false,
+        keepAlive: Boolean = true
+    ): Result<Boolean> = runSafe("Connect & Register") {
+        client.updateConnectionParams(host, port, keepAlive)
         client.connect()
         client.register(configByte, tlvEnabled)
     }

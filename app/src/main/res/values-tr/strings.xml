@@ -121,4 +121,10 @@
     <string name="reg_tlv_warning">Genişletilmiş kart verileri için TLV desteği gereklidir</string>
     <string name="btn_save">Kaydet</string>
     <string name="btn_reg_config">Ayarlar</string>
+    <string name="btn_ok">Tamam</string>
+    <string name="tcp_keep_alive">TCP Keep-Alive</string>
+    <string name="label_vu_number">VU No</string>
+    <string name="label_expiry">Son Kull.</string>
+    <string name="label_seq_no">Sıra No</string>
+    <string name="label_aid">AID</string>
 </resources>

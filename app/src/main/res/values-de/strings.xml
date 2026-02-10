@@ -121,4 +121,10 @@
     <string name="reg_tlv_warning">TLV-Unterstützung erforderlich für erweiterte Kartendaten</string>
     <string name="btn_save">Speichern</string>
     <string name="btn_reg_config">Konfig.</string>
+    <string name="btn_ok">OK</string>
+    <string name="tcp_keep_alive">TCP Keep-Alive</string>
+    <string name="label_vu_number">VU-Nr</string>
+    <string name="label_expiry">Ablauf</string>
+    <string name="label_seq_no">Seq-Nr</string>
+    <string name="label_aid">AID</string>
 </resources>

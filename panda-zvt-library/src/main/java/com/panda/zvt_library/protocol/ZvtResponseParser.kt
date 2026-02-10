@@ -270,7 +270,7 @@ object ZvtResponseParser {
                             Timber.tag(TAG).d("[ResponseParser] BMP 0x22 PAN/EF_ID: LLVAR len=%d", len)
                             offset += 2
                             if (offset + len <= data.size) {
-                                maskedPan = BcdHelper.bcdToString(data.copyOfRange(offset, offset + len))
+                                maskedPan = BcdHelper.bcdToPan(data.copyOfRange(offset, offset + len))
                                 Timber.tag(TAG).d("[ResponseParser]   PAN: %s", maskedPan)
                                 offset += len
                             }
@@ -575,16 +575,19 @@ object ZvtResponseParser {
      * @return Human-readable card type name.
      */
     private fun resolveCardType(typeByte: Byte): String = when (typeByte.toUnsignedInt()) {
-        0x01 -> "EC / Girocard"
-        0x02 -> "Maestro"
-        0x05 -> "AMEX"
+        0x01 -> "EC"
+        0x02 -> "ec-cash"
+        0x05 -> "girocard"
         0x06 -> "VISA"
         0x07 -> "VISA Electron"
+        0x08 -> "VISA V PAY"
         0x0A -> "Mastercard"
-        0x0B -> "JCB"
+        0x0B -> "Maestro"
         0x0C -> "Diners Club"
+        0x0D -> "AMEX"
         0x0E -> "Discover"
         0x0F -> "UnionPay"
+        0x10 -> "JCB"
         0x46 -> "girocard contactless"
         else -> "Unknown (${String.format("0x%02X", typeByte)})"
     }

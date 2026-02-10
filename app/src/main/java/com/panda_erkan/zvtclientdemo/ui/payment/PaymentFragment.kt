@@ -163,14 +163,42 @@ class PaymentFragment : Fragment() {
                 return@observe
             }
 
-            // Show result in popup dialog first, then auto-dismiss
+            // Build detailed result for the popup dialog
             val resultMsg = if (result.success) {
                 getString(R.string.transaction_success)
             } else {
                 result.resultMessage
             }
-            progressDialog?.showResult(result.success, resultMsg)
-                ?: run { progressDialog = null }
+            val pad = 12
+            val detailsForDialog = buildString {
+                appendLine("${getString(R.string.label_amount).padEnd(pad)}: ${result.amountFormatted}")
+                appendLine("${getString(R.string.label_result).padEnd(pad)}: ${result.resultMessage}")
+                if (result.traceNumber > 0) appendLine("${getString(R.string.label_trace_no).padEnd(pad)}: ${result.traceNumber}")
+                if (result.receiptNumber > 0) appendLine("${getString(R.string.label_receipt_no).padEnd(pad)}: ${result.receiptNumber}")
+                if (result.terminalId.isNotEmpty()) appendLine("${getString(R.string.label_terminal).padEnd(pad)}: ${result.terminalId}")
+                if (result.vuNumber.isNotEmpty()) appendLine("${getString(R.string.label_vu_number).padEnd(pad)}: ${result.vuNumber}")
+                result.cardData?.let { card ->
+                    appendLine("\u2500".repeat(30))
+                    if (card.cardType.isNotEmpty()) appendLine("${getString(R.string.label_card_type).padEnd(pad)}: ${card.cardType}")
+                    if (card.maskedPan.isNotEmpty()) appendLine("${getString(R.string.label_card_no).padEnd(pad)}: ${card.maskedPan}")
+                    if (card.cardName.isNotEmpty()) appendLine("${getString(R.string.label_card_name).padEnd(pad)}: ${card.cardName}")
+                    if (card.expiryDate.isNotEmpty()) appendLine("${getString(R.string.label_expiry).padEnd(pad)}: ${card.expiryDate}")
+                    if (card.sequenceNumber > 0) appendLine("${getString(R.string.label_seq_no).padEnd(pad)}: ${card.sequenceNumber}")
+                    if (card.aid.isNotEmpty()) appendLine("${getString(R.string.label_aid).padEnd(pad)}: ${card.aid}")
+                }
+                if (result.date.isNotEmpty()) {
+                    appendLine("\u2500".repeat(30))
+                    appendLine("${getString(R.string.label_date).padEnd(pad)}: ${result.date}")
+                    appendLine("${getString(R.string.label_time).padEnd(pad)}: ${result.time}")
+                }
+            }.trimEnd()
+            // Show in popup — no auto-dismiss, stay open until OK
+            progressDialog?.showResult(
+                success = result.success,
+                message = resultMsg,
+                details = detailsForDialog,
+                autoDismissMs = 0
+            ) ?: run { progressDialog = null }
 
             binding.cardResult.visibility = View.VISIBLE
             binding.cardIntermediateStatus.visibility = View.GONE
@@ -191,27 +219,7 @@ class PaymentFragment : Fragment() {
                 binding.tvResultTitle.text = getString(R.string.transaction_failed)
                 binding.tvResultTitle.setTextColor(0xFFF44336.toInt())
             }
-
-            val pad = 10
-            val details = buildString {
-                appendLine("${getString(R.string.label_amount).padEnd(pad)}: ${result.amountFormatted}")
-                appendLine("${getString(R.string.label_result).padEnd(pad)}: ${result.resultMessage}")
-                if (result.traceNumber > 0) appendLine("${getString(R.string.label_trace_no).padEnd(pad)}: ${result.traceNumber}")
-                if (result.receiptNumber > 0) appendLine("${getString(R.string.label_receipt_no).padEnd(pad)}: ${result.receiptNumber}")
-                if (result.terminalId.isNotEmpty()) appendLine("${getString(R.string.label_terminal).padEnd(pad)}: ${result.terminalId}")
-                result.cardData?.let { card ->
-                    appendLine("─".repeat(30))
-                    if (card.cardType.isNotEmpty()) appendLine("${getString(R.string.label_card_type).padEnd(pad)}: ${card.cardType}")
-                    if (card.maskedPan.isNotEmpty()) appendLine("${getString(R.string.label_card_no).padEnd(pad)}: ${card.maskedPan}")
-                    if (card.cardName.isNotEmpty()) appendLine("${getString(R.string.label_card_name).padEnd(pad)}: ${card.cardName}")
-                }
-                if (result.date.isNotEmpty()) {
-                    appendLine("─".repeat(30))
-                    appendLine("${getString(R.string.label_date).padEnd(pad)}: ${result.date}")
-                    appendLine("${getString(R.string.label_time).padEnd(pad)}: ${result.time}")
-                }
-            }
-            binding.tvResultDetails.text = details
+            binding.tvResultDetails.text = detailsForDialog
         }
 
         viewModel.receiptText.observe(viewLifecycleOwner) { text ->

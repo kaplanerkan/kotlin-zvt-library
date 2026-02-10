@@ -121,4 +121,10 @@
     <string name="reg_tlv_warning">TLV support required for extended card data</string>
     <string name="btn_save">Save</string>
     <string name="btn_reg_config">Config</string>
+    <string name="btn_ok">OK</string>
+    <string name="tcp_keep_alive">TCP Keep-Alive</string>
+    <string name="label_vu_number">VU No</string>
+    <string name="label_expiry">Expiry</string>
+    <string name="label_seq_no">Seq No</string>
+    <string name="label_aid">AID</string>
 </resources>
