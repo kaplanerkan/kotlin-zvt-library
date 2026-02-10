@@ -5,13 +5,16 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.panda.zvt.simulator.SimulatorServer
 import com.panda.zvt_library.model.ConnectionState
 import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.repository.LogEntry
 import com.panda_erkan.zvtclientdemo.repository.ZvtRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel(
     application: Application,
@@ -33,6 +36,15 @@ class MainViewModel(
     val logEntries: LiveData<List<LogEntry>> = _logEntries
 
     private val logBuffer = mutableListOf<LogEntry>()
+
+    // Embedded simulator
+    private var simulatorServer: SimulatorServer? = null
+
+    private val _simulatorRunning = MutableLiveData(false)
+    val simulatorRunning: LiveData<Boolean> = _simulatorRunning
+
+    private val _simulatorStarting = MutableLiveData(false)
+    val simulatorStarting: LiveData<Boolean> = _simulatorStarting
 
     init {
         repository.connectionState
@@ -85,10 +97,42 @@ class MainViewModel(
         _logEntries.value = emptyList()
     }
 
+    fun startSimulator() {
+        viewModelScope.launch {
+            _simulatorStarting.value = true
+            try {
+                withContext(Dispatchers.IO) {
+                    val server = SimulatorServer()
+                    server.start()
+                    simulatorServer = server
+                }
+                _simulatorRunning.value = true
+            } catch (e: Exception) {
+                _statusMessage.value = ctx.getString(R.string.status_error, e.message)
+            }
+            _simulatorStarting.value = false
+        }
+    }
+
+    fun stopSimulator() {
+        viewModelScope.launch {
+            _simulatorStarting.value = true
+            try {
+                withContext(Dispatchers.IO) {
+                    simulatorServer?.stop()
+                    simulatorServer = null
+                }
+                _simulatorRunning.value = false
+            } catch (e: Exception) {
+                _statusMessage.value = ctx.getString(R.string.status_error, e.message)
+            }
+            _simulatorStarting.value = false
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
-        // Don't call repository.destroy() here — ZvtClient is a Koin singleton.
-        // Destroying it would break the client on Activity re-creation.
-        // The socket connection is managed explicitly via Connect/Disconnect buttons.
+        simulatorServer?.stop()
+        simulatorServer = null
     }
 }

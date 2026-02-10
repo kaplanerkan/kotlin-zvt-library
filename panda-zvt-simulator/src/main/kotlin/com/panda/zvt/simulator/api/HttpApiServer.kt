@@ -5,8 +5,8 @@ import com.panda.zvt.simulator.state.TransactionStore
 import com.panda.zvt.simulator.tcp.ZvtTcpServer
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.cio.*
 import io.ktor.server.engine.*
-import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.routing.*
@@ -19,11 +19,11 @@ class HttpApiServer(
     private val tcpServer: ZvtTcpServer
 ) {
     private val logger = LoggerFactory.getLogger(HttpApiServer::class.java)
-    private var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
+    private var server: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
 
     fun start() {
         val port = state.config.apiPort
-        server = embeddedServer(Netty, port = port) {
+        server = embeddedServer(CIO, port = port) {
             install(ContentNegotiation) {
                 json(Json {
                     prettyPrint = true

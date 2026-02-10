@@ -45,6 +45,11 @@ dependencies {
     // ZVT Library
     implementation(project(":panda-zvt-library"))
 
+    // ZVT Simulator (embedded, runs on device)
+    implementation(project(":panda-zvt-simulator")) {
+        exclude(group = "ch.qos.logback")
+    }
+
     // AndroidX
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

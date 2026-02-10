@@ -53,14 +53,6 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Remember simulator IP if in simulator mode
-            if (binding.switchSimulator.isChecked) {
-                prefs.edit()
-                    .putString("simulator_host", host)
-                    .putInt("simulator_port", port)
-                    .apply()
-            }
-
             val configByte = RegistrationConfigDialog.getSavedConfigByte(this)
             val tlvEnabled = RegistrationConfigDialog.isTlvEnabled(this)
             val keepAlive = binding.cbKeepAlive.isChecked
@@ -77,14 +69,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSimulatorToggle() {
-        val simulatorMode = prefs.getBoolean("simulator_mode", false)
-        binding.switchSimulator.isChecked = simulatorMode
-        if (simulatorMode) {
-            showDeviceIpHint()
-            binding.etHost.setText(prefs.getString("simulator_host", "10.0.2.2"))
-            binding.etPort.setText(prefs.getInt("simulator_port", 20007).toString())
-        }
-
         binding.switchSimulator.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean("simulator_mode", isChecked).apply()
 
@@ -94,29 +78,42 @@ class MainActivity : AppCompatActivity() {
                     .putString("real_terminal_host", binding.etHost.text.toString())
                     .putInt("real_terminal_port", binding.etPort.text.toString().toIntOrNull() ?: 20007)
                     .apply()
-                // Set simulator defaults
-                binding.etHost.setText(prefs.getString("simulator_host", "10.0.2.2"))
-                binding.etPort.setText(prefs.getInt("simulator_port", 20007).toString())
-                showDeviceIpHint()
+                // Start embedded simulator
+                viewModel.startSimulator()
             } else {
+                // Stop embedded simulator
+                viewModel.stopSimulator()
                 // Restore real terminal values
                 binding.etHost.setText(prefs.getString("real_terminal_host", "192.168.1.135"))
                 binding.etPort.setText(prefs.getInt("real_terminal_port", 20007).toString())
                 binding.tvSimulatorHint.visibility = View.GONE
             }
         }
+
+        // Observe simulator state
+        viewModel.simulatorRunning.observe(this) { running ->
+            if (running) {
+                // Server started — set localhost and show hint
+                binding.etHost.setText("127.0.0.1")
+                binding.etPort.setText("20007")
+                showDeviceIpHint()
+            }
+        }
+
+        viewModel.simulatorStarting.observe(this) { starting ->
+            binding.progressConnection.visibility = if (starting) View.VISIBLE else View.GONE
+            binding.switchSimulator.isEnabled = !starting
+            binding.btnConnect.isEnabled = !starting
+        }
     }
 
     private fun showDeviceIpHint() {
         val ips = getDeviceIpAddresses()
-        val simulatorHost = binding.etHost.text.toString().ifBlank { "10.0.2.2" }
-        val apiUrl = "http://$simulatorHost:8080"
-        val hint = if (ips.isNotEmpty()) {
-            getString(R.string.simulator_device_ip, ips.joinToString(", ")) + "\nAPI: $apiUrl"
-        } else {
-            "API: $apiUrl"
-        }
-        binding.tvSimulatorHint.text = hint
+        val deviceIp = ips.firstOrNull() ?: "N/A"
+        val lines = mutableListOf<String>()
+        lines.add("ZVT: 127.0.0.1:20007")
+        lines.add(getString(R.string.simulator_api_url, deviceIp))
+        binding.tvSimulatorHint.text = lines.joinToString("\n")
         binding.tvSimulatorHint.visibility = View.VISIBLE
     }
 
