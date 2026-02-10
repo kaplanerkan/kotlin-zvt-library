@@ -11,6 +11,7 @@ import java.io.StringWriter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class FileLoggingTree(context: Context) : Timber.Tree() {
@@ -79,6 +80,10 @@ class FileLoggingTree(context: Context) : Timber.Tree() {
                 // Ignore cleanup errors
             }
         }
+    }
+
+    fun shutdown() {
+        executor.shutdown()
     }
 
     companion object {

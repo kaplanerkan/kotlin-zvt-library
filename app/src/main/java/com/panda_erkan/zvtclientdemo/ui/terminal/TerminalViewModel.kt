@@ -69,7 +69,24 @@ class TerminalViewModel(
             val result = repository.endOfDay()
             result.fold(
                 onSuccess = { eod ->
-                    _endOfDayResult.value = eod
+                    if (eod.success) {
+                        // Auto-fetch last receipt for detailed transaction info
+                        _statusMessage.value = ctx.getString(R.string.running_repeat_receipt)
+                        val receiptResult = repository.repeatReceipt()
+                        receiptResult.fold(
+                            onSuccess = { txResult ->
+                                _endOfDayResult.value = eod.copy(
+                                    receiptLines = txResult.receiptLines.ifEmpty { eod.receiptLines }
+                                )
+                            },
+                            onFailure = {
+                                // Repeat receipt failed, still show EndOfDay result
+                                _endOfDayResult.value = eod
+                            }
+                        )
+                    } else {
+                        _endOfDayResult.value = eod
+                    }
                     _statusMessage.value = if (eod.success) ctx.getString(R.string.end_of_day_successful) else eod.message
                 },
                 onFailure = { error ->

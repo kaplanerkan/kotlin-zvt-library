@@ -123,77 +123,108 @@ class TerminalFragment : Fragment() {
 
         viewModel.diagnosisResult.observe(viewLifecycleOwner) { result ->
             result ?: return@observe
-            // Show result in dialog
-            progressDialog?.showResult(result.success,
-                if (result.success) getString(R.string.diagnosis_successful) else result.errorMessage)
-                ?: run { progressDialog = null }
             val pad = 10
-            showResult(
-                title = getString(R.string.diagnosis_result),
-                details = buildString {
-                    appendLine("${getString(R.string.label_status).padEnd(pad)}: ${if (result.success) getString(R.string.status_success) else getString(R.string.status_failed)}")
-                    appendLine("${getString(R.string.label_connection).padEnd(pad)}: ${if (result.status.isConnected) getString(R.string.connection_active) else getString(R.string.connection_lost)}")
-                    if (result.status.terminalId.isNotEmpty())
-                        appendLine("TID".padEnd(pad) + ": ${result.status.terminalId}")
-                    if (result.errorMessage.isNotEmpty())
-                        appendLine("${getString(R.string.label_error).padEnd(pad)}: ${result.errorMessage}")
-                }
-            )
+            val resultMsg = if (result.success) getString(R.string.diagnosis_successful) else result.errorMessage
+            val detailsForDialog = buildString {
+                appendLine("${getString(R.string.label_status).padEnd(pad)}: ${if (result.success) getString(R.string.status_success) else getString(R.string.status_failed)}")
+                appendLine("${getString(R.string.label_connection).padEnd(pad)}: ${if (result.status.isConnected) getString(R.string.connection_active) else getString(R.string.connection_lost)}")
+                if (result.status.terminalId.isNotEmpty())
+                    appendLine("TID".padEnd(pad) + ": ${result.status.terminalId}")
+                if (result.errorMessage.isNotEmpty())
+                    appendLine("${getString(R.string.label_error).padEnd(pad)}: ${result.errorMessage}")
+            }.trimEnd()
+            progressDialog?.showResult(
+                success = result.success,
+                message = resultMsg,
+                details = detailsForDialog,
+                autoDismissMs = 0
+            ) ?: run { progressDialog = null }
+            showResult(title = getString(R.string.diagnosis_result), details = detailsForDialog)
         }
 
         viewModel.endOfDayResult.observe(viewLifecycleOwner) { result ->
             result ?: return@observe
-            progressDialog?.showResult(result.success,
-                if (result.success) getString(R.string.end_of_day_successful) else result.message)
-                ?: run { progressDialog = null }
             val pad = 10
-            showResult(
-                title = getString(R.string.end_of_day_result),
-                details = buildString {
-                    appendLine("${getString(R.string.label_status).padEnd(pad)}: ${if (result.success) getString(R.string.status_success) else getString(R.string.status_failed)}")
-                    appendLine("${getString(R.string.label_message).padEnd(pad)}: ${result.message}")
-                    if (result.receiptLines.isNotEmpty()) {
-                        appendLine("─".repeat(30))
-                        result.receiptLines.forEach { appendLine(it) }
-                    }
+            val resultMsg = if (result.success) getString(R.string.end_of_day_successful) else result.message
+            val detailsForDialog = buildString {
+                appendLine("${getString(R.string.label_status).padEnd(pad)}: ${if (result.success) getString(R.string.status_success) else getString(R.string.status_failed)}")
+                appendLine("${getString(R.string.label_message).padEnd(pad)}: ${result.message}")
+                if (result.totalAmountInCents > 0) {
+                    val euros = result.totalAmountInCents / 100.0
+                    appendLine("${getString(R.string.label_amount).padEnd(pad)}: ${"%.2f EUR".format(euros)}")
                 }
-            )
+                if (result.receiptLines.isNotEmpty()) {
+                    appendLine("─".repeat(30))
+                    result.receiptLines.forEach { appendLine(it) }
+                }
+            }.trimEnd()
+            progressDialog?.showResult(
+                success = result.success,
+                message = resultMsg,
+                details = detailsForDialog,
+                autoDismissMs = 0
+            ) ?: run { progressDialog = null }
+            showResult(title = getString(R.string.end_of_day_result), details = detailsForDialog)
         }
 
         viewModel.terminalStatus.observe(viewLifecycleOwner) { status ->
             status ?: return@observe
-            progressDialog?.showResult(true, status.statusMessage.ifEmpty { getString(R.string.status_success) })
-                ?: run { progressDialog = null }
             val pad = 10
-            showResult(
-                title = getString(R.string.terminal_status),
-                details = buildString {
-                    appendLine("${getString(R.string.label_connection).padEnd(pad)}: ${if (status.isConnected) getString(R.string.connection_active) else getString(R.string.connection_lost)}")
-                    if (status.terminalId.isNotEmpty())
-                        appendLine("TID".padEnd(pad) + ": ${status.terminalId}")
-                    if (status.statusMessage.isNotEmpty())
-                        appendLine("${getString(R.string.label_message).padEnd(pad)}: ${status.statusMessage}")
-                }
-            )
+            val resultMsg = status.statusMessage.ifEmpty { getString(R.string.status_success) }
+            val detailsForDialog = buildString {
+                appendLine("${getString(R.string.label_connection).padEnd(pad)}: ${if (status.isConnected) getString(R.string.connection_active) else getString(R.string.connection_lost)}")
+                if (status.terminalId.isNotEmpty())
+                    appendLine("TID".padEnd(pad) + ": ${status.terminalId}")
+                if (status.statusMessage.isNotEmpty())
+                    appendLine("${getString(R.string.label_message).padEnd(pad)}: ${status.statusMessage}")
+            }.trimEnd()
+            progressDialog?.showResult(
+                success = true,
+                message = resultMsg,
+                details = detailsForDialog,
+                autoDismissMs = 0
+            ) ?: run { progressDialog = null }
+            showResult(title = getString(R.string.terminal_status), details = detailsForDialog)
         }
 
         viewModel.repeatReceiptResult.observe(viewLifecycleOwner) { result ->
             result ?: return@observe
-            progressDialog?.showResult(result.success,
-                if (result.success) getString(R.string.repeat_receipt_result) else result.resultMessage)
-                ?: run { progressDialog = null }
-            val pad = 10
-            showResult(
-                title = getString(R.string.repeat_receipt_result),
-                details = buildString {
-                    appendLine("${getString(R.string.label_status).padEnd(pad)}: ${if (result.success) getString(R.string.status_success) else getString(R.string.status_failed)}")
-                    appendLine("${getString(R.string.label_message).padEnd(pad)}: ${result.resultMessage}")
-                    if (result.receiptLines.isNotEmpty()) {
-                        appendLine("─".repeat(30))
-                        result.receiptLines.forEach { appendLine(it) }
-                    }
+            val pad = 12
+            val resultMsg = if (result.success) getString(R.string.repeat_receipt_result) else result.resultMessage
+            val detailsForDialog = buildString {
+                appendLine("${getString(R.string.label_status).padEnd(pad)}: ${if (result.success) getString(R.string.status_success) else getString(R.string.status_failed)}")
+                appendLine("${getString(R.string.label_result).padEnd(pad)}: ${result.resultMessage}")
+                if (result.amountFormatted.isNotEmpty()) appendLine("${getString(R.string.label_amount).padEnd(pad)}: ${result.amountFormatted}")
+                if (result.traceNumber > 0) appendLine("${getString(R.string.label_trace_no).padEnd(pad)}: ${result.traceNumber}")
+                if (result.receiptNumber > 0) appendLine("${getString(R.string.label_receipt_no).padEnd(pad)}: ${result.receiptNumber}")
+                if (result.terminalId.isNotEmpty()) appendLine("${getString(R.string.label_terminal).padEnd(pad)}: ${result.terminalId}")
+                if (result.vuNumber.isNotEmpty()) appendLine("${getString(R.string.label_vu_number).padEnd(pad)}: ${result.vuNumber}")
+                result.cardData?.let { card ->
+                    appendLine("─".repeat(30))
+                    if (card.cardType.isNotEmpty()) appendLine("${getString(R.string.label_card_type).padEnd(pad)}: ${card.cardType}")
+                    if (card.maskedPan.isNotEmpty()) appendLine("${getString(R.string.label_card_no).padEnd(pad)}: ${card.maskedPan}")
+                    if (card.cardName.isNotEmpty()) appendLine("${getString(R.string.label_card_name).padEnd(pad)}: ${card.cardName}")
+                    if (card.expiryDate.isNotEmpty()) appendLine("${getString(R.string.label_expiry).padEnd(pad)}: ${card.expiryDate}")
+                    if (card.sequenceNumber > 0) appendLine("${getString(R.string.label_seq_no).padEnd(pad)}: ${card.sequenceNumber}")
+                    if (card.aid.isNotEmpty()) appendLine("${getString(R.string.label_aid).padEnd(pad)}: ${card.aid}")
                 }
-            )
+                if (result.date.isNotEmpty()) {
+                    appendLine("─".repeat(30))
+                    appendLine("${getString(R.string.label_date).padEnd(pad)}: ${result.date}")
+                    appendLine("${getString(R.string.label_time).padEnd(pad)}: ${result.time}")
+                }
+                if (result.receiptLines.isNotEmpty()) {
+                    appendLine("─".repeat(30))
+                    result.receiptLines.forEach { appendLine(it) }
+                }
+            }.trimEnd()
+            progressDialog?.showResult(
+                success = result.success,
+                message = resultMsg,
+                details = detailsForDialog,
+                autoDismissMs = 0
+            ) ?: run { progressDialog = null }
+            showResult(title = getString(R.string.repeat_receipt_result), details = detailsForDialog)
         }
     }
 

@@ -210,13 +210,14 @@ class ProgressStatusDialog : DialogFragment() {
         // Auto-dismiss after delay (0 = stay open until user taps OK)
         if (autoDismissMs > 0) {
             handler.postDelayed({
-                dismissAllowingStateLoss()
+                if (_binding != null) dismissAllowingStateLoss()
             }, autoDismissMs)
         }
     }
 
     override fun onDestroyView() {
         handler.removeCallbacksAndMessages(null)
+        onCancelClick = null
         _binding = null
         super.onDestroyView()
     }

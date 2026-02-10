@@ -92,8 +92,9 @@ class ZvtClient(
     /** Observable intermediate status (null when no transaction is in progress). */
     val intermediateStatus: StateFlow<IntermediateStatus?> = _intermediateStatus.asStateFlow()
 
+    @Volatile
     private var callback: ZvtCallback? = null
-    private val receiptLines = mutableListOf<String>()
+    private val receiptLines = java.util.Collections.synchronizedList(mutableListOf<String>())
     private val readBuffer = ByteArray(ZvtConstants.READ_BUFFER_SIZE)
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -149,10 +150,12 @@ class ZvtClient(
             log("Connection established to ${config.host}:${config.port}")
 
         } catch (e: SocketTimeoutException) {
+            closeResources()
             updateState(ConnectionState.ERROR)
             log("Connection timeout: ${config.host}:${config.port}")
             throw ZvtError.TimeoutError("Connection timeout: ${config.host}:${config.port}")
         } catch (e: IOException) {
+            closeResources()
             updateState(ConnectionState.ERROR)
             log("Connection error: ${e.message}")
             throw ZvtError.ConnectionError(
@@ -170,6 +173,9 @@ class ZvtClient(
     suspend fun disconnect() = withContext(Dispatchers.IO) {
         log("Disconnecting from ${config.host}:${config.port}")
         closeResources()
+        callback = null
+        receiptLines.clear()
+        _intermediateStatus.value = null
         updateState(ConnectionState.DISCONNECTED)
         log("Disconnected")
     }
@@ -340,6 +346,7 @@ class ZvtClient(
 
         EndOfDayResult(
             success = result.success,
+            totalAmountInCents = result.amountInCents,
             message = result.resultMessage,
             receiptLines = receiptLines.toList()
         )
@@ -895,9 +902,12 @@ class ZvtClient(
      */
     private fun handleConnectionLost(reason: String) {
         log("Connection lost: $reason")
+        val cb = callback
         closeResources()
+        receiptLines.clear()
+        _intermediateStatus.value = null
         updateState(ConnectionState.DISCONNECTED)
-        callback?.onError(ZvtError.ConnectionError("Connection lost: $reason"))
+        cb?.onError(ZvtError.ConnectionError("Connection lost: $reason"))
     }
 
     /**
@@ -934,6 +944,9 @@ class ZvtClient(
      */
     fun destroy() {
         closeResources()
+        callback = null
+        receiptLines.clear()
+        _intermediateStatus.value = null
         _connectionState.value = ConnectionState.DISCONNECTED
         scope.cancel()
     }
