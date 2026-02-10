@@ -33,6 +33,33 @@ A Kotlin/Android library implementing the ZVT Protocol (v13.13) for ECR-to-PT co
 
 ## Installation
 
+### Maven Central
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("io.github.kaplanerkan:panda-zvt-library:1.0.0")
+}
+```
+
+### JitPack
+
+```kotlin
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        maven("https://jitpack.io")
+    }
+}
+
+// build.gradle.kts
+dependencies {
+    implementation("com.github.kaplanerkan:kotlin-zvt-library:v1.0.1")
+}
+```
+
+### Local Module
+
 ```kotlin
 // settings.gradle.kts
 include(":panda-zvt-library")

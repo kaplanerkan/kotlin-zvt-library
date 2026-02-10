@@ -6,6 +6,8 @@ A pure Kotlin/JVM application that simulates a ZVT payment terminal. It behaves 
 
 Use this to develop and test your ZVT ECR client **without real hardware**.
 
+<img src="../screenshots/09_simulator_mode.png" width="300"/>
+
 ## Quick Start
 
 ```bash

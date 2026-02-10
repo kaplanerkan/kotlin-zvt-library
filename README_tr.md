@@ -4,7 +4,37 @@
 >
 > **Terminal Simulatoru:** [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md) — REST API, curl ornekleri, yapilandirma
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.kaplanerkan/panda-zvt-library)](https://central.sonatype.com/artifact/io.github.kaplanerkan/panda-zvt-library)
+[![JitPack](https://jitpack.io/v/kaplanerkan/kotlin-zvt-library.svg)](https://jitpack.io/#kaplanerkan/kotlin-zvt-library)
+
 Android icin **ZVT Protokolu (v13.13)** uygulayan bir Kotlin kutuphanesi. Yazar Kasa (ECR) ile Odeme Terminalleri (PT) arasinda TCP/IP uzerinden iletisim saglar.
+
+## Kurulum
+
+### Maven Central
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("io.github.kaplanerkan:panda-zvt-library:1.0.0")
+}
+```
+
+### JitPack
+
+```kotlin
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        maven("https://jitpack.io")
+    }
+}
+
+// build.gradle.kts
+dependencies {
+    implementation("com.github.kaplanerkan:kotlin-zvt-library:v1.0.1")
+}
+```
 
 ## ZVT Nedir?
 
@@ -59,6 +89,20 @@ zvt-project/
 +-- gradle/
     +-- libs.versions.toml        # Merkezi bagimlilik yonetimi
 ```
+
+## Ekran Goruntuleri
+
+| Odeme Sekmesi | On Yetki Sekmesi | Terminal Sekmesi |
+|:-------------:|:----------------:|:----------------:|
+| <img src="screenshots/02_payment_tab.png" width="250"/> | <img src="screenshots/03_preauth_tab.png" width="250"/> | <img src="screenshots/04_terminal_tab.png" width="250"/> |
+
+| Baglanti ve Protokol | Islem Sonucu | Kayit Yapilandirmasi |
+|:--------------------:|:------------:|:--------------------:|
+| <img src="screenshots/01_connection_log.png" width="250"/> | <img src="screenshots/08_transaction_result.png" width="250"/> | <img src="screenshots/05_registration_config.png" width="250"/> |
+
+| Simulator Modu | Gercek Terminal (CCV A920) |
+|:--------------:|:--------------------------:|
+| <img src="screenshots/09_simulator_mode.png" width="250"/> | <img src="screenshots/06_real_terminal_payment.jpeg" width="450"/> |
 
 ## Demo Uygulama
 
