@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/paymentFragment">
+
+    <fragment
+        android:id="@+id/paymentFragment"
+        android:name="com.erkan.zvtclient.ui.payment.PaymentFragment"
+        android:label="Ödeme" />
+
+    <fragment
+        android:id="@+id/terminalFragment"
+        android:name="com.erkan.zvtclient.ui.terminal.TerminalFragment"
+        android:label="Terminal" />
+
+    <fragment
+        android:id="@+id/logFragment"
+        android:name="com.erkan.zvtclient.ui.log.LogFragment"
+        android:label="Log" />
+</navigation>

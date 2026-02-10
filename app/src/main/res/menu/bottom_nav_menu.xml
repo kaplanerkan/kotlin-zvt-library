@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/paymentFragment"
+        android:icon="@android:drawable/ic_menu_send"
+        android:title="Ödeme" />
+    <item
+        android:id="@+id/terminalFragment"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="Terminal" />
+    <item
+        android:id="@+id/logFragment"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="Log" />
+</menu>
