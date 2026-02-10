@@ -22,6 +22,34 @@ dependencies {
 }
 ```
 
+### GitHub Packages
+
+```kotlin
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/kaplanerkan/kotlin-zvt-library")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
+// build.gradle.kts
+dependencies {
+    implementation("io.github.kaplanerkan:panda-zvt-library:1.0.0")
+}
+```
+
+> **Note:** GitHub Packages requires authentication. Add your GitHub username and a [Personal Access Token](https://github.com/settings/tokens) (with `read:packages` scope) to your `~/.gradle/gradle.properties`:
+> ```properties
+> gpr.user=YOUR_GITHUB_USERNAME
+> gpr.key=YOUR_GITHUB_TOKEN
+> ```
+
 ### JitPack
 
 ```kotlin
