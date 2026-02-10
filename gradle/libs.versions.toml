@@ -12,6 +12,11 @@ lifecycle = "2.10.0"
 koin = "4.1.1"
 coroutines = "1.10.2"
 junit = "4.13.2"
+mockk = "1.13.10"
+espresso = "3.6.1"
+test-runner = "1.6.2"
+test-rules = "1.6.1"
+test-ext-junit = "1.2.1"
 leakcanary = "2.14"
 timber = "5.0.1"
 room = "2.8.4"
@@ -38,6 +43,11 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+test-runner = { group = "androidx.test", name = "runner", version.ref = "test-runner" }
+test-rules = { group = "androidx.test", name = "rules", version.ref = "test-rules" }
+test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "test-ext-junit" }
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
