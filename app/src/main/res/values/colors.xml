@@ -69,5 +69,6 @@
     <color name="btnRepeatReceipt">#26A69A</color>     <!-- Teal 400 — repeat receipt -->
     <color name="btnLogOff">#C62828</color>            <!-- Red 800 — log off -->
     <color name="btnClear">#4DB6AC</color>             <!-- Teal 300 — clear logs -->
+    <color name="btnRegConfig">#00796B</color>          <!-- Teal 700 — registration config -->
 
 </resources>

@@ -108,4 +108,16 @@
     <string name="nav_payment">Zahlung</string>
     <string name="nav_terminal">Terminal</string>
     <string name="nav_log">Protokoll</string>
+
+    <!-- Registrierungskonfiguration -->
+    <string name="registration_config">Registrierungskonfiguration</string>
+    <string name="reg_receipt_payment">Belegdruck für Zahlung über PT</string>
+    <string name="reg_receipt_admin">Belegdruck für Admin über PT</string>
+    <string name="reg_intermediate_status">Zwischenstatus senden</string>
+    <string name="reg_allow_payment">Zahlung über PT erlauben</string>
+    <string name="reg_allow_admin">Admin über PT erlauben</string>
+    <string name="reg_tlv_support">TLV-Unterstützung aktivieren</string>
+    <string name="reg_tlv_warning">TLV-Unterstützung erforderlich für erweiterte Kartendaten</string>
+    <string name="btn_save">Speichern</string>
+    <string name="btn_reg_config">Konfig.</string>
 </resources>

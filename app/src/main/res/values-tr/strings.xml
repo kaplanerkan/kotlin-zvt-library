@@ -108,4 +108,16 @@
     <string name="nav_payment">Ödeme</string>
     <string name="nav_terminal">Terminal</string>
     <string name="nav_log">Log</string>
+
+    <!-- Kayıt Yapılandırması -->
+    <string name="registration_config">Kayıt Yapılandırması</string>
+    <string name="reg_receipt_payment">PT üzerinden ödeme fişi yazdır</string>
+    <string name="reg_receipt_admin">PT üzerinden admin fişi yazdır</string>
+    <string name="reg_intermediate_status">Ara durum bilgisi gönder</string>
+    <string name="reg_allow_payment">PT üzerinden ödemeye izin ver</string>
+    <string name="reg_allow_admin">PT üzerinden admin işlemine izin ver</string>
+    <string name="reg_tlv_support">TLV desteğini etkinleştir</string>
+    <string name="reg_tlv_warning">Genişletilmiş kart verileri için TLV desteği gereklidir</string>
+    <string name="btn_save">Kaydet</string>
+    <string name="btn_reg_config">Ayarlar</string>
 </resources>

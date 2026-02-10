@@ -175,6 +175,11 @@ class PaymentFragment : Fragment() {
             binding.cardResult.visibility = View.VISIBLE
             binding.cardIntermediateStatus.visibility = View.GONE
 
+            // Auto-fill receipt number for subsequent operations (reversal, book total, etc.)
+            if (result.success && result.receiptNumber > 0) {
+                binding.etReceiptNumber.setText(result.receiptNumber.toString())
+            }
+
             if (result.success) {
                 binding.tvResultIcon.text = "\u2713"
                 binding.tvResultIcon.setTextColor(0xFF4CAF50.toInt())

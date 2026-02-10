@@ -11,6 +11,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.panda.zvt_library.model.ConnectionState
 import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.databinding.ActivityMainBinding
+import com.panda_erkan.zvtclientdemo.ui.common.RegistrationConfigDialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
@@ -46,11 +47,16 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            viewModel.connectAndRegister(host, port)
+            val configByte = RegistrationConfigDialog.getSavedConfigByte(this)
+            viewModel.connectAndRegister(host, port, configByte)
         }
 
         binding.btnDisconnect.setOnClickListener {
             viewModel.disconnect()
+        }
+
+        binding.btnRegConfig.setOnClickListener {
+            RegistrationConfigDialog.newInstance().show(supportFragmentManager, RegistrationConfigDialog.TAG)
         }
     }
 
