@@ -59,7 +59,8 @@ object ZvtCommandBuilder {
     fun buildRegistration(
         password: String = "000000",
         configByte: Byte = ZvtConstants.REG_INTERMEDIATE_STATUS,
-        currencyCode: Int = ZvtConstants.CURRENCY_EUR
+        currencyCode: Int = ZvtConstants.CURRENCY_EUR,
+        serviceByteValue: Byte = 0x00
     ): ZvtPacket {
         val data = mutableListOf<Byte>()
 
@@ -69,29 +70,15 @@ object ZvtCommandBuilder {
         // Config byte
         data.add(configByte)
 
-        // Currency code (BMP 0x49, CC tag)
-        data.add(ZvtConstants.BMP_CURRENCY_CODE)
+        // Currency code CC (2 byte BCD) — positional field, NO BMP tag!
+        // In Registration (06 00), CC is placed directly after config byte
+        // without a 0x49 prefix. This is different from other commands where
+        // CC uses BMP tag 0x49.
         data.addAll(BcdHelper.currencyToBcd(currencyCode).toList())
 
         // Service byte (BMP 0x03)
         data.add(ZvtConstants.BMP_SERVICE_BYTE)
-        data.add(0x00) // Service byte value
-
-        // TLV container (BMP 0x06) with list of permitted commands (tag 26)
-        // Strongly recommended per ZVT spec v13.13
-        val permittedCommands = buildPermittedCommandsList()
-        val tlvData = TlvParser.buildTlv(TLV_TAG_PERMITTED_COMMANDS, permittedCommands)
-
-        data.add(ZvtConstants.BMP_TLV_CONTAINER)
-        // BER-TLV length encoding
-        val tlvLen = tlvData.size
-        if (tlvLen <= 0x7F) {
-            data.add(tlvLen.toByte())
-        } else {
-            data.add(0x81.toByte())
-            data.add(tlvLen.toByte())
-        }
-        data.addAll(tlvData.toList())
+        data.add(serviceByteValue)
 
         val packet = ZvtPacket(
             command = ZvtConstants.CMD_REGISTRATION,
