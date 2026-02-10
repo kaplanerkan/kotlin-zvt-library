@@ -251,6 +251,30 @@ TX: 06 01 07 04 00 00 00 01 00 19 40
 | `A0` | Sonuc Kodu AS | 1 bayt |
 | `BA` | AID Parametresi | 5 bayt sabit |
 
+## Kart Tipi Kimlikleri (BMP 0x8A)
+
+ZVT Spec v13.13, Bolum 12: "ZVT-card-type ID Listesi" temel alinmistir.
+
+| ID (dec) | Hex | Kart Tipi |
+|----------|-----|-----------|
+| 5 | `0x05` | girocard |
+| 6 | `0x06` | Mastercard |
+| 8 | `0x08` | American Express |
+| 10 | `0x0A` | Visa |
+| 11 | `0x0B` | Visa Electron |
+| 12 | `0x0C` | Diners |
+| 13 | `0x0D` | V PAY |
+| 14 | `0x0E` | JCB |
+| 30 | `0x1E` | Geldkarte |
+| 46 | `0x2E` | Maestro |
+| 87 | `0x57` | Bancontact |
+| 97 | `0x61` | Alipay |
+| 198 | `0xC6` | CUP (China UnionPay) |
+| 232 | `0xE8` | Discover |
+| 255 | `0xFF` | TLV tag 41'e bakin (ID >= 256) |
+
+> Tam liste: ZVT Spec Bolum 12'de 280+ kart tipi tanimli. 256 ve uzeri ID'ler BMP 0x8A yerine TLV tag 41 kullanir.
+
 ## Kullanim
 
 ```kotlin

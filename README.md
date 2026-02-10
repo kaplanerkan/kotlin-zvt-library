@@ -251,6 +251,30 @@ TX: 06 01 07 04 00 00 00 01 00 19 40
 | `A0` | Result Code AS | 1 byte |
 | `BA` | AID Parameter | 5 byte fixed |
 
+## Card Type IDs (BMP 0x8A)
+
+Based on ZVT Spec v13.13, Chapter 12: "List of ZVT-card-type IDs".
+
+| ID (dec) | Hex | Card Type |
+|----------|-----|-----------|
+| 5 | `0x05` | girocard |
+| 6 | `0x06` | Mastercard |
+| 8 | `0x08` | American Express |
+| 10 | `0x0A` | Visa |
+| 11 | `0x0B` | Visa Electron |
+| 12 | `0x0C` | Diners |
+| 13 | `0x0D` | V PAY |
+| 14 | `0x0E` | JCB |
+| 30 | `0x1E` | Geldkarte |
+| 46 | `0x2E` | Maestro |
+| 87 | `0x57` | Bancontact |
+| 97 | `0x61` | Alipay |
+| 198 | `0xC6` | CUP (China UnionPay) |
+| 232 | `0xE8` | Discover |
+| 255 | `0xFF` | See TLV tag 41 (ID >= 256) |
+
+> Full list: 280+ card types defined in ZVT Spec Chapter 12. IDs >= 256 use TLV tag 41 instead of BMP 0x8A.
+
 ## Usage
 
 ```kotlin
