@@ -39,6 +39,7 @@ class HttpApiServer(
             }
             routing {
                 simulatorRoutes(state, store, tcpServer)
+                operationRoutes(state, store)
             }
         }.start(wait = false)
         logger.info("HTTP API server listening on port $port")

@@ -99,11 +99,11 @@ Simulator -> ECR:  Completion (06 0F 00)
 
 All card data can be changed at runtime via the REST API.
 
-## REST API (Management)
+## REST API
 
 Base URL: `http://localhost:8080`
 
-### Endpoints
+### Management Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -117,6 +117,26 @@ Base URL: `http://localhost:8080`
 | `GET` | `/api/transactions/last` | Get last transaction |
 | `DELETE` | `/api/transactions` | Clear all transactions |
 | `POST` | `/api/reset` | Full simulator reset (counters, state, transactions) |
+
+### Operation Endpoints
+
+Trigger payment/terminal operations directly via HTTP — same logic as the TCP/ZVT handlers, but with JSON input/output.
+
+| Method | Path | Body | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/operations/payment` | `{"amount": 12.50}` | Payment (Authorization) |
+| `POST` | `/api/operations/refund` | `{"amount": 12.50}` | Refund |
+| `POST` | `/api/operations/reversal` | `{"receiptNo": 1}` | Reverse last transaction |
+| `POST` | `/api/operations/pre-auth` | `{"amount": 50.00}` | Pre-Authorization |
+| `POST` | `/api/operations/book-total` | `{"amount": 50.00, "receiptNo": 1}` | Book Total (capture) |
+| `POST` | `/api/operations/pre-auth-reversal` | `{"receiptNo": 1}` | Pre-Auth Reversal |
+| `POST` | `/api/operations/end-of-day` | _(empty)_ | End of Day (clears batch) |
+| `POST` | `/api/operations/diagnosis` | _(empty)_ | Diagnosis |
+| `POST` | `/api/operations/status-enquiry` | _(empty)_ | Status Enquiry |
+| `POST` | `/api/operations/repeat-receipt` | _(empty)_ | Repeat last receipt |
+| `POST` | `/api/operations/registration` | _(empty)_ | Registration |
+| `POST` | `/api/operations/log-off` | _(empty)_ | Log Off |
+| `POST` | `/api/operations/abort` | _(empty)_ | Abort |
 
 ### Examples
 
@@ -135,6 +155,73 @@ curl http://localhost:8080/api/status
   "currentReceipt": 1,
   "zvtPort": 20007,
   "apiPort": 8080
+}
+```
+
+**Payment via REST:**
+```bash
+curl -X POST http://localhost:8080/api/operations/payment \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 12.50}'
+```
+```json
+{
+  "success": true,
+  "operation": "Payment",
+  "resultCode": 0,
+  "resultMessage": "Success",
+  "amount": "12.50 EUR",
+  "amountCents": 1250,
+  "trace": 1,
+  "receipt": 1,
+  "turnover": 1,
+  "terminalId": "29001234",
+  "cardData": {
+    "pan": "6763890000001230",
+    "cardType": 6,
+    "cardName": "Mastercard",
+    "expiryDate": "2812",
+    "sequenceNumber": 1,
+    "aid": "A000000004101001"
+  },
+  "timestamp": "2026-02-10T18:30:00"
+}
+```
+
+**Refund via REST:**
+```bash
+curl -X POST http://localhost:8080/api/operations/refund \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 5.00}'
+```
+
+**Reversal via REST:**
+```bash
+curl -X POST http://localhost:8080/api/operations/reversal \
+  -H "Content-Type: application/json" \
+  -d '{"receiptNo": 1}'
+```
+
+**End of Day via REST:**
+```bash
+curl -X POST http://localhost:8080/api/operations/end-of-day
+```
+```json
+{
+  "success": true,
+  "operation": "End of Day",
+  "resultCode": 0,
+  "resultMessage": "Success",
+  "terminalId": "29001234",
+  "timestamp": "2026-02-10T18:35:00",
+  "transactionCount": 3,
+  "totalAmount": "30.00 EUR",
+  "receiptLines": [
+    "================================",
+    "       TAGESABSCHLUSS          ",
+    "...",
+    "================================"
+  ]
 }
 ```
 
@@ -242,8 +329,10 @@ panda-zvt-simulator/
 |   |   +-- ClientSession.kt       # Per-connection APDU read/write
 |   +-- api/
 |       +-- HttpApiServer.kt       # Ktor Netty HTTP server (port 8080)
-|       +-- ApiRoutes.kt           # REST endpoint definitions
-|       +-- ApiModels.kt           # JSON request/response models
+|       +-- ApiRoutes.kt           # Management REST endpoints
+|       +-- ApiModels.kt           # Management request/response models
+|       +-- OperationRoutes.kt     # Operation REST endpoints (payment, refund, etc.)
+|       +-- OperationModels.kt     # Operation request/response models
 +-- src/main/resources/
     +-- logback.xml                # Logging configuration
 ```
