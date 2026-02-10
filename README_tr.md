@@ -300,12 +300,25 @@ Bir sorunla karsilastiginizda, hata bildirirken lutfen ilgili gunluk dosyasini e
 ./gradlew :app:assembleDebug                 # Demo uygulama
 ```
 
-## Gereksinimler
+## Gereksinimler & Teknoloji Yigini
 
-- Android SDK 36
-- Kotlin 1.9.22
-- Min SDK 24
-- JVM Target 17
+| Kategori | Teknoloji | Surum |
+|----------|-----------|-------|
+| Dil | Kotlin | 2.3.10 |
+| Min SDK | Android | API 24 (Android 7.0) |
+| Hedef/Derleme SDK | Android | API 36 |
+| JVM Hedefi | Java | 17 |
+| Derleme Sistemi | Gradle (AGP) | 8.13.2 |
+| UI Framework | Material Design 3 | 1.13.0 |
+| Mimari | MVVM | - |
+| DI Framework | Koin | 4.1.1 |
+| Asenkron | Kotlin Coroutines | 1.10.2 |
+| Gezinme | Jetpack Navigation | 2.9.7 |
+| Yasam Dongusu | Jetpack Lifecycle (ViewModel, LiveData, StateFlow) | 2.10.0 |
+| View Binding | Android Data Binding | - |
+| Loglama | Timber | 5.0.1 |
+| Bellek Izleme | LeakCanary (sadece debug) | 2.14 |
+| UI Bilesenleri | RecyclerView, CardView, ConstraintLayout | guncel |
 
 ## Lisans
 

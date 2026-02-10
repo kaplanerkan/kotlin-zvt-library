@@ -300,12 +300,25 @@ If you encounter a problem, please attach the relevant log file when reporting a
 ./gradlew :app:assembleDebug                 # Demo app
 ```
 
-## Requirements
+## Requirements & Tech Stack
 
-- Android SDK 36
-- Kotlin 1.9.22
-- Min SDK 24
-- JVM Target 17
+| Category | Technology | Version |
+|----------|-----------|---------|
+| Language | Kotlin | 2.3.10 |
+| Min SDK | Android | API 24 (Android 7.0) |
+| Target/Compile SDK | Android | API 36 |
+| JVM Target | Java | 17 |
+| Build System | Gradle (AGP) | 8.13.2 |
+| UI Framework | Material Design 3 | 1.13.0 |
+| Architecture | MVVM | - |
+| DI Framework | Koin | 4.1.1 |
+| Async | Kotlin Coroutines | 1.10.2 |
+| Navigation | Jetpack Navigation | 2.9.7 |
+| Lifecycle | Jetpack Lifecycle (ViewModel, LiveData, StateFlow) | 2.10.0 |
+| View Binding | Android Data Binding | - |
+| Logging | Timber | 5.0.1 |
+| Leak Detection | LeakCanary (debug only) | 2.14 |
+| UI Components | RecyclerView, CardView, ConstraintLayout | latest |
 
 ## License
 
