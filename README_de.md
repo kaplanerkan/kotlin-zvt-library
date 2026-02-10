@@ -1,6 +1,8 @@
 # ZVT-Client-Bibliothek fuer Android (Kotlin)
 
 > [English](README.md) | [Turkce](README_tr.md) | **Deutsch**
+>
+> **Terminal-Simulator:** [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md) — REST-API, Curl-Beispiele, Konfiguration
 
 Eine Kotlin/Android-Bibliothek, die das **ZVT-Protokoll (v13.13)** fuer die Kommunikation zwischen einer Elektronischen Registrierkasse (ECR) und Zahlungsterminals (PT) ueber TCP/IP implementiert.
 

@@ -1,6 +1,8 @@
 # Android icin ZVT Istemci Kutuphanesi (Kotlin)
 
 > [English](README.md) | **Turkce** | [Deutsch](README_de.md)
+>
+> **Terminal Simulatoru:** [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md) — REST API, curl ornekleri, yapilandirma
 
 Android icin **ZVT Protokolu (v13.13)** uygulayan bir Kotlin kutuphanesi. Yazar Kasa (ECR) ile Odeme Terminalleri (PT) arasinda TCP/IP uzerinden iletisim saglar.
 
