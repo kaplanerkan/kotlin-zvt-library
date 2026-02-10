@@ -100,14 +100,12 @@ class TerminalFragment : Fragment() {
             updateButtonStates()
             if (loading == true) {
                 showProgressDialog()
-            } else {
-                dismissProgressDialog()
             }
+            // Dialog is dismissed via showResult() auto-dismiss, not here
         }
 
         viewModel.statusMessage.observe(viewLifecycleOwner) { message ->
             binding.tvTerminalStatus.text = message
-            // Update dialog status too
             if (message.isNotEmpty()) {
                 progressDialog?.updateStatus(message)
             }
@@ -115,6 +113,10 @@ class TerminalFragment : Fragment() {
 
         viewModel.diagnosisResult.observe(viewLifecycleOwner) { result ->
             result ?: return@observe
+            // Show result in dialog
+            progressDialog?.showResult(result.success,
+                if (result.success) getString(R.string.diagnosis_successful) else result.errorMessage)
+                ?: run { progressDialog = null }
             val pad = 10
             showResult(
                 title = getString(R.string.diagnosis_result),
@@ -131,6 +133,9 @@ class TerminalFragment : Fragment() {
 
         viewModel.endOfDayResult.observe(viewLifecycleOwner) { result ->
             result ?: return@observe
+            progressDialog?.showResult(result.success,
+                if (result.success) getString(R.string.end_of_day_successful) else result.message)
+                ?: run { progressDialog = null }
             val pad = 10
             showResult(
                 title = getString(R.string.end_of_day_result),
@@ -147,6 +152,8 @@ class TerminalFragment : Fragment() {
 
         viewModel.terminalStatus.observe(viewLifecycleOwner) { status ->
             status ?: return@observe
+            progressDialog?.showResult(true, status.statusMessage.ifEmpty { getString(R.string.status_success) })
+                ?: run { progressDialog = null }
             val pad = 10
             showResult(
                 title = getString(R.string.terminal_status),
@@ -162,6 +169,9 @@ class TerminalFragment : Fragment() {
 
         viewModel.repeatReceiptResult.observe(viewLifecycleOwner) { result ->
             result ?: return@observe
+            progressDialog?.showResult(result.success,
+                if (result.success) getString(R.string.repeat_receipt_result) else result.resultMessage)
+                ?: run { progressDialog = null }
             val pad = 10
             showResult(
                 title = getString(R.string.repeat_receipt_result),

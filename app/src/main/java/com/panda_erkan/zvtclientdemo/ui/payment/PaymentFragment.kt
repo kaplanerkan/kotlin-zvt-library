@@ -143,9 +143,8 @@ class PaymentFragment : Fragment() {
             updateButtonStates()
             if (processing == true) {
                 showProgressDialog()
-            } else {
-                dismissProgressDialog()
             }
+            // Dialog is dismissed via showResult() auto-dismiss, not here
         }
 
         viewModel.intermediateStatus.observe(viewLifecycleOwner) { status ->
@@ -154,7 +153,6 @@ class PaymentFragment : Fragment() {
             } else {
                 binding.cardIntermediateStatus.visibility = View.VISIBLE
                 binding.tvIntermediateStatus.text = status
-                // Update dialog status too
                 progressDialog?.updateStatus(status)
             }
         }
@@ -165,16 +163,25 @@ class PaymentFragment : Fragment() {
                 return@observe
             }
 
+            // Show result in popup dialog first, then auto-dismiss
+            val resultMsg = if (result.success) {
+                getString(R.string.transaction_success)
+            } else {
+                result.resultMessage
+            }
+            progressDialog?.showResult(result.success, resultMsg)
+                ?: run { progressDialog = null }
+
             binding.cardResult.visibility = View.VISIBLE
             binding.cardIntermediateStatus.visibility = View.GONE
 
             if (result.success) {
-                binding.tvResultIcon.text = "✓"
+                binding.tvResultIcon.text = "\u2713"
                 binding.tvResultIcon.setTextColor(0xFF4CAF50.toInt())
                 binding.tvResultTitle.text = getString(R.string.transaction_success)
                 binding.tvResultTitle.setTextColor(0xFF4CAF50.toInt())
             } else {
-                binding.tvResultIcon.text = "✗"
+                binding.tvResultIcon.text = "\u2717"
                 binding.tvResultIcon.setTextColor(0xFFF44336.toInt())
                 binding.tvResultTitle.text = getString(R.string.transaction_failed)
                 binding.tvResultTitle.setTextColor(0xFFF44336.toInt())
@@ -217,6 +224,9 @@ class PaymentFragment : Fragment() {
             } else {
                 binding.cardError.visibility = View.VISIBLE
                 binding.tvError.text = error
+                // Show error in dialog if still visible
+                progressDialog?.showResult(false, error)
+                    ?: run { progressDialog = null }
             }
         }
     }

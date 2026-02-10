@@ -56,6 +56,7 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
             binding.logItemRoot.setBackgroundColor(info.rowBg)
         }
 
+        @Suppress("RedundantCallOfConversionMethod")
         private fun resolveLogInfo(entry: LogEntry): LogInfo {
             val msg = entry.message
 
@@ -67,7 +68,7 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
                     icon = "\u2713",      // checkmark
                     iconColor = 0xFF2E7D32.toInt(),  // green 800
                     textColor = 0xFF1B5E20.toInt(),  // green 900
-                    rowBg = 0x0C4CAF50.toInt(),      // green 5% alpha
+                    rowBg = 0x0C4CAF50,              // green 5% alpha
                     label = "OK"
                 )
 
@@ -77,7 +78,7 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
                     icon = "\u25B6",      // play triangle
                     iconColor = 0xFF00897B.toInt(),  // teal 600
                     textColor = 0xFF00695C.toInt(),  // teal 800
-                    rowBg = 0x0C00897B.toInt(),      // teal 5% alpha
+                    rowBg = 0x0C00897B,              // teal 5% alpha
                     label = "RUN"
                 )
 
@@ -87,7 +88,7 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
                     icon = "\u2716",      // heavy X
                     iconColor = 0xFFD32F2F.toInt(),  // red 700
                     textColor = 0xFFC62828.toInt(),  // red 800
-                    rowBg = 0x0CF44336.toInt(),      // red 5% alpha
+                    rowBg = 0x0CF44336,              // red 5% alpha
                     label = "ERR"
                 )
 
@@ -96,7 +97,7 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
                     icon = "\u26A0",      // warning triangle
                     iconColor = 0xFFEF6C00.toInt(),  // orange 800
                     textColor = 0xFFE65100.toInt(),  // orange 900
-                    rowBg = 0x0CFF9800.toInt(),      // orange 5% alpha
+                    rowBg = 0x0CFF9800,              // orange 5% alpha
                     label = "WRN"
                 )
 
@@ -105,7 +106,7 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
                     icon = "\u21C5",      // up-down arrows
                     iconColor = 0xFF0097A7.toInt(),  // cyan 700
                     textColor = 0xFF006064.toInt(),  // cyan 900
-                    rowBg = 0x0C0097A7.toInt(),      // cyan 5% alpha
+                    rowBg = 0x0C0097A7,              // cyan 5% alpha
                     label = "NET"
                 )
 
@@ -114,7 +115,7 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
                     icon = "\u25A0",      // filled square
                     iconColor = 0xFF7B1FA2.toInt(),  // purple 700
                     textColor = 0xFF4A148C.toInt(),  // purple 900
-                    rowBg = 0x0C9C27B0.toInt(),      // purple 5% alpha
+                    rowBg = 0x0C9C27B0,              // purple 5% alpha
                     label = "PT"
                 )
 
@@ -123,7 +124,7 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
                     icon = "\u2399",      // print icon
                     iconColor = 0xFF5D4037.toInt(),  // brown 700
                     textColor = 0xFF3E2723.toInt(),  // brown 900
-                    rowBg = 0x0C795548.toInt(),      // brown 5% alpha
+                    rowBg = 0x0C795548,              // brown 5% alpha
                     label = "PRN"
                 )
 
@@ -132,14 +133,14 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
                     icon = "\u2191",      // up arrow
                     iconColor = 0xFF1565C0.toInt(),  // blue 800
                     textColor = 0xFF0D47A1.toInt(),  // blue 900
-                    rowBg = 0x0C2196F3.toInt(),      // blue 5% alpha
+                    rowBg = 0x0C2196F3,              // blue 5% alpha
                     label = "TX"
                 )
                 msg.contains("PT -> ECR") || msg.contains("RX ") -> LogInfo(
                     icon = "\u2193",      // down arrow
                     iconColor = 0xFF00838F.toInt(),  // cyan 800
                     textColor = 0xFF006064.toInt(),  // cyan 900
-                    rowBg = 0x0C00BCD4.toInt(),      // cyan 5% alpha
+                    rowBg = 0x0C00BCD4,              // cyan 5% alpha
                     label = "RX"
                 )
 
@@ -148,7 +149,7 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
                     icon = "\u2022",      // bullet
                     iconColor = 0xFF757575.toInt(),  // gray 600
                     textColor = 0xFF616161.toInt(),  // gray 700
-                    rowBg = 0x00000000.toInt(),       // transparent
+                    rowBg = 0x00000000,       // transparent
                     label = "DBG"
                 )
 
@@ -157,7 +158,7 @@ class LogAdapter : ListAdapter<LogEntry, LogAdapter.LogViewHolder>(LogDiffCallba
                     icon = "\u2139",      // info circle
                     iconColor = 0xFF00897B.toInt(),  // teal 600
                     textColor = 0xFF424242.toInt(),  // gray 800
-                    rowBg = 0x0C00897B.toInt(),      // teal 5% alpha
+                    rowBg = 0x0C00897B,              // teal 5% alpha
                     label = "INF"
                 )
             }

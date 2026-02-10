@@ -90,6 +90,8 @@
     <!-- Fortschrittsdialog -->
     <string name="processing">Verarbeitung…</string>
     <string name="please_wait">Bitte warten, Kommunikation mit Terminal…</string>
+    <string name="abort_sent">Abbruch gesendet…</string>
+    <string name="abort_waiting_terminal">Abbruchbefehl gesendet, warte auf Terminalantwort…</string>
     <string name="op_payment">Zahlung</string>
     <string name="op_refund">Erstattung</string>
     <string name="op_reversal">Storno</string>

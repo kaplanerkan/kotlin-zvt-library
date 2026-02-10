@@ -90,6 +90,8 @@
     <!-- İlerleme Diyaloğu -->
     <string name="processing">İşleniyor…</string>
     <string name="please_wait">Lütfen bekleyin, terminal ile iletişim kuruluyor…</string>
+    <string name="abort_sent">İptal gönderildi…</string>
+    <string name="abort_waiting_terminal">İptal komutu gönderildi, terminal yanıtı bekleniyor…</string>
     <string name="op_payment">Ödeme</string>
     <string name="op_refund">İade</string>
     <string name="op_reversal">İptal</string>

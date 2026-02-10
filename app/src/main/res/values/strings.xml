@@ -90,6 +90,8 @@
     <!-- Progress Dialog -->
     <string name="processing">Processing…</string>
     <string name="please_wait">Please wait, communicating with terminal…</string>
+    <string name="abort_sent">Abort sent…</string>
+    <string name="abort_waiting_terminal">Abort command sent, waiting for terminal response…</string>
     <string name="op_payment">Payment</string>
     <string name="op_refund">Refund</string>
     <string name="op_reversal">Reversal</string>
