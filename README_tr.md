@@ -6,6 +6,7 @@
 [![JitPack](https://jitpack.io/v/kaplanerkan/kotlin-zvt-library.svg)](https://jitpack.io/#kaplanerkan/kotlin-zvt-library)
 [![GitHub Release](https://img.shields.io/github/v/release/kaplanerkan/kotlin-zvt-library)](https://github.com/kaplanerkan/kotlin-zvt-library/releases/latest)
 [![APK Indir](https://img.shields.io/badge/Indir-Demo%20APK-brightgreen?logo=android&logoColor=white)](https://github.com/kaplanerkan/kotlin-zvt-library/releases/latest)
+[![Wiki](https://img.shields.io/badge/Wiki-Dokumantasyon-blue?logo=github&logoColor=white)](https://github.com/kaplanerkan/kotlin-zvt-library/wiki/Home-TR)
 
 Android icin **ZVT Protokolu (v13.13)** uygulayan bir Kotlin kutuphanesi. Yazar Kasa (ECR) ile Odeme Terminalleri (PT) arasinda TCP/IP uzerinden iletisim saglar.
 

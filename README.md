@@ -6,6 +6,7 @@
 [![JitPack](https://jitpack.io/v/kaplanerkan/kotlin-zvt-library.svg)](https://jitpack.io/#kaplanerkan/kotlin-zvt-library)
 [![GitHub Release](https://img.shields.io/github/v/release/kaplanerkan/kotlin-zvt-library)](https://github.com/kaplanerkan/kotlin-zvt-library/releases/latest)
 [![Download APK](https://img.shields.io/badge/Download-Demo%20APK-brightgreen?logo=android&logoColor=white)](https://github.com/kaplanerkan/kotlin-zvt-library/releases/latest)
+[![Wiki](https://img.shields.io/badge/Wiki-Documentation-blue?logo=github&logoColor=white)](https://github.com/kaplanerkan/kotlin-zvt-library/wiki)
 
 A Kotlin/Android library implementing the **ZVT Protocol (v13.13)** for communication between an Electronic Cash Register (ECR) and Payment Terminals (PT) over TCP/IP.
 
