@@ -26,6 +26,10 @@
     <string name="btn_refund">İade</string>
     <string name="btn_reversal">Son İşlemi İptal</string>
     <string name="btn_abort">İptal</string>
+    <string name="btn_pre_auth">Ön Yetki</string>
+    <string name="btn_book_total">Ön Yetki Kapat</string>
+    <string name="btn_partial_reversal">Kısmi İptal</string>
+    <string name="hint_receipt_no">Fiş No</string>
     <string name="receipt">Fiş</string>
     <string name="transaction_success">İşlem Başarılı</string>
     <string name="transaction_failed">İşlem Başarısız</string>
@@ -46,6 +50,14 @@
     <string name="btn_diagnosis">Tanılama</string>
     <string name="btn_status_enquiry">Durum Sorgula</string>
     <string name="btn_end_of_day">Gün Sonu</string>
+    <string name="btn_repeat_receipt">Fiş Tekrarla</string>
+    <string name="btn_log_off">Oturumu Kapat</string>
+    <string name="running_repeat_receipt">Son fiş tekrarlanıyor…</string>
+    <string name="repeat_receipt_result">Fiş Tekrar Sonucu</string>
+    <string name="running_log_off">Oturum kapatılıyor…</string>
+    <string name="log_off_successful">Oturum kapatma başarılı</string>
+    <string name="log_off_failed">Oturum kapatma başarısız</string>
+    <string name="receipt_no_required">Fiş numarası gerekli</string>
     <string name="diagnosis_result">Tanılama Sonucu</string>
     <string name="end_of_day_result">Gün Sonu Sonucu</string>
     <string name="terminal_status">Terminal Durumu</string>

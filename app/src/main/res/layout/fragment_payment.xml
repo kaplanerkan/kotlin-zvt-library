@@ -56,7 +56,7 @@
                         android:textStyle="bold" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Transaction Buttons -->
+                <!-- Transaction Buttons - Row 1: Payment + Refund -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -85,6 +85,7 @@
                         app:iconGravity="textStart" />
                 </LinearLayout>
 
+                <!-- Row 2: Reversal + Abort -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -112,6 +113,79 @@
                         app:icon="@drawable/ic_abort"
                         app:iconGravity="textStart" />
                 </LinearLayout>
+
+                <!-- Pre-Auth Section Divider -->
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_pre_auth"
+                    android:textColor="@color/primary"
+                    android:textStyle="bold" />
+
+                <!-- Receipt Number Input (for Book Total / Partial Reversal) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:hint="@string/hint_receipt_no"
+                    app:boxBackgroundMode="outline"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxStrokeColor="@color/primary">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etReceiptNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Row 3: Pre-Auth + Book Total -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPreAuth"
+                        style="@style/ZvtButton.Tonal"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/btn_pre_auth"
+                        app:icon="@drawable/ic_pre_auth"
+                        app:iconGravity="textStart" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnBookTotal"
+                        style="@style/ZvtButton.Tonal"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="@string/btn_book_total"
+                        app:icon="@drawable/ic_book_total"
+                        app:iconGravity="textStart" />
+                </LinearLayout>
+
+                <!-- Row 4: Partial Reversal -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPartialReversal"
+                    style="@style/ZvtButton.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/btn_partial_reversal"
+                    app:icon="@drawable/ic_partial_reversal"
+                    app:iconGravity="textStart" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

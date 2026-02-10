@@ -110,6 +110,84 @@ class PaymentViewModel(
         }
     }
 
+    fun preAuthorize(amountText: String) {
+        val cents = parseAmount(amountText) ?: run {
+            _errorMessage.value = ctx.getString(R.string.invalid_amount, amountText)
+            return
+        }
+
+        viewModelScope.launch {
+            resetState()
+            _isProcessing.value = true
+
+            val result = repository.preAuthorize(cents)
+            result.fold(
+                onSuccess = { txResult ->
+                    _transactionResult.value = txResult
+                    if (!txResult.success) {
+                        _errorMessage.value = txResult.resultMessage
+                    }
+                },
+                onFailure = { error ->
+                    _errorMessage.value = error.message
+                }
+            )
+            _isProcessing.value = false
+        }
+    }
+
+    fun bookTotal(amountText: String, receiptNumber: Int) {
+        val cents = parseAmount(amountText) ?: run {
+            _errorMessage.value = ctx.getString(R.string.invalid_amount, amountText)
+            return
+        }
+
+        viewModelScope.launch {
+            resetState()
+            _isProcessing.value = true
+
+            val result = repository.bookTotal(cents, receiptNumber)
+            result.fold(
+                onSuccess = { txResult ->
+                    _transactionResult.value = txResult
+                    if (!txResult.success) {
+                        _errorMessage.value = txResult.resultMessage
+                    }
+                },
+                onFailure = { error ->
+                    _errorMessage.value = error.message
+                }
+            )
+            _isProcessing.value = false
+        }
+    }
+
+    fun partialReversal(amountText: String, receiptNumber: Int) {
+        val cents = parseAmount(amountText) ?: run {
+            _errorMessage.value = ctx.getString(R.string.invalid_amount, amountText)
+            return
+        }
+
+        viewModelScope.launch {
+            resetState()
+            _isProcessing.value = true
+
+            val result = repository.partialReversal(cents, receiptNumber)
+            result.fold(
+                onSuccess = { txResult ->
+                    _transactionResult.value = txResult
+                    if (!txResult.success) {
+                        _errorMessage.value = txResult.resultMessage
+                    }
+                },
+                onFailure = { error ->
+                    _errorMessage.value = error.message
+                }
+            )
+            _isProcessing.value = false
+        }
+    }
+
     fun abort() {
         viewModelScope.launch {
             repository.abort()

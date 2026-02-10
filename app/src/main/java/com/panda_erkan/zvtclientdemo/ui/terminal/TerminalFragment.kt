@@ -42,6 +42,14 @@ class TerminalFragment : Fragment() {
         binding.btnEndOfDay.setOnClickListener {
             viewModel.endOfDay()
         }
+
+        binding.btnRepeatReceipt.setOnClickListener {
+            viewModel.repeatReceipt()
+        }
+
+        binding.btnLogOff.setOnClickListener {
+            viewModel.logOff()
+        }
     }
 
     private fun observeViewModel() {
@@ -50,6 +58,8 @@ class TerminalFragment : Fragment() {
             binding.btnDiagnosis.isEnabled = !loading
             binding.btnStatusEnquiry.isEnabled = !loading
             binding.btnEndOfDay.isEnabled = !loading
+            binding.btnRepeatReceipt.isEnabled = !loading
+            binding.btnLogOff.isEnabled = !loading
         }
 
         viewModel.statusMessage.observe(viewLifecycleOwner) { message ->
@@ -99,6 +109,22 @@ class TerminalFragment : Fragment() {
                         appendLine("TID".padEnd(pad) + ": ${status.terminalId}")
                     if (status.statusMessage.isNotEmpty())
                         appendLine("${getString(R.string.label_message).padEnd(pad)}: ${status.statusMessage}")
+                }
+            )
+        }
+
+        viewModel.repeatReceiptResult.observe(viewLifecycleOwner) { result ->
+            result ?: return@observe
+            val pad = 10
+            showResult(
+                title = getString(R.string.repeat_receipt_result),
+                details = buildString {
+                    appendLine("${getString(R.string.label_status).padEnd(pad)}: ${if (result.success) getString(R.string.status_success) else getString(R.string.status_failed)}")
+                    appendLine("${getString(R.string.label_message).padEnd(pad)}: ${result.resultMessage}")
+                    if (result.receiptLines.isNotEmpty()) {
+                        appendLine("─".repeat(30))
+                        result.receiptLines.forEach { appendLine(it) }
+                    }
                 }
             )
         }

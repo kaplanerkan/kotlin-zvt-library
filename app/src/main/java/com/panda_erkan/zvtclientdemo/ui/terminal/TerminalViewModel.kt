@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.panda.zvt_library.model.DiagnosisResult
 import com.panda.zvt_library.model.EndOfDayResult
 import com.panda.zvt_library.model.TerminalStatus
+import com.panda.zvt_library.model.TransactionResult
 import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.repository.ZvtRepository
 import kotlinx.coroutines.launch
@@ -27,6 +28,9 @@ class TerminalViewModel(
 
     private val _terminalStatus = MutableLiveData<TerminalStatus?>()
     val terminalStatus: LiveData<TerminalStatus?> = _terminalStatus
+
+    private val _repeatReceiptResult = MutableLiveData<TransactionResult?>()
+    val repeatReceiptResult: LiveData<TransactionResult?> = _repeatReceiptResult
 
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
@@ -82,6 +86,51 @@ class TerminalViewModel(
                 onSuccess = { status ->
                     _terminalStatus.value = status
                     _statusMessage.value = ctx.getString(R.string.terminal_status_msg, status.statusMessage)
+                },
+                onFailure = { error ->
+                    _statusMessage.value = ctx.getString(R.string.status_error, error.message)
+                }
+            )
+            _isLoading.value = false
+        }
+    }
+
+    fun repeatReceipt() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _statusMessage.value = ctx.getString(R.string.running_repeat_receipt)
+
+            val result = repository.repeatReceipt()
+            result.fold(
+                onSuccess = { txResult ->
+                    _repeatReceiptResult.value = txResult
+                    _statusMessage.value = if (txResult.success) {
+                        ctx.getString(R.string.repeat_receipt_result)
+                    } else {
+                        txResult.resultMessage
+                    }
+                },
+                onFailure = { error ->
+                    _statusMessage.value = ctx.getString(R.string.status_error, error.message)
+                }
+            )
+            _isLoading.value = false
+        }
+    }
+
+    fun logOff() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _statusMessage.value = ctx.getString(R.string.running_log_off)
+
+            val result = repository.logOff()
+            result.fold(
+                onSuccess = { success ->
+                    _statusMessage.value = if (success) {
+                        ctx.getString(R.string.log_off_successful)
+                    } else {
+                        ctx.getString(R.string.log_off_failed)
+                    }
                 },
                 onFailure = { error ->
                     _statusMessage.value = ctx.getString(R.string.status_error, error.message)

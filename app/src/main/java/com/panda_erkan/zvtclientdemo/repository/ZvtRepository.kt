@@ -135,6 +135,31 @@ class ZvtRepository(
             client.abort()
         }
 
+    suspend fun preAuthorize(amountInCents: Long): Result<TransactionResult> =
+        runSafe("Pre-Authorization") {
+            client.preAuthorize(amountInCents)
+        }
+
+    suspend fun bookTotal(amountInCents: Long, receiptNumber: Int): Result<TransactionResult> =
+        runSafe("Book Total") {
+            client.bookTotal(amountInCents, receiptNumber)
+        }
+
+    suspend fun partialReversal(amountInCents: Long, receiptNumber: Int): Result<TransactionResult> =
+        runSafe("Partial Reversal") {
+            client.partialReversal(amountInCents, receiptNumber)
+        }
+
+    suspend fun repeatReceipt(): Result<TransactionResult> =
+        runSafe("Repeat Receipt") {
+            client.repeatReceipt()
+        }
+
+    suspend fun logOff(): Result<Boolean> =
+        runSafe("Log Off") {
+            client.logOff()
+        }
+
     // =====================================================
     // Helper
     // =====================================================

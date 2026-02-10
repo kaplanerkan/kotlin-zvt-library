@@ -26,6 +26,10 @@
     <string name="btn_refund">Erstattung</string>
     <string name="btn_reversal">Letzte stornieren</string>
     <string name="btn_abort">Abbruch</string>
+    <string name="btn_pre_auth">Vorautoris.</string>
+    <string name="btn_book_total">Buchung</string>
+    <string name="btn_partial_reversal">Teilstorno</string>
+    <string name="hint_receipt_no">Beleg-Nr</string>
     <string name="receipt">Beleg</string>
     <string name="transaction_success">Transaktion erfolgreich</string>
     <string name="transaction_failed">Transaktion fehlgeschlagen</string>
@@ -46,6 +50,14 @@
     <string name="btn_diagnosis">Diagnose</string>
     <string name="btn_status_enquiry">Statusabfrage</string>
     <string name="btn_end_of_day">Tagesabschluss</string>
+    <string name="btn_repeat_receipt">Beleg wiederholen</string>
+    <string name="btn_log_off">Abmelden</string>
+    <string name="running_repeat_receipt">Letzter Beleg wird wiederholt…</string>
+    <string name="repeat_receipt_result">Belegwiederholung Ergebnis</string>
+    <string name="running_log_off">Abmeldung läuft…</string>
+    <string name="log_off_successful">Abmeldung erfolgreich</string>
+    <string name="log_off_failed">Abmeldung fehlgeschlagen</string>
+    <string name="receipt_no_required">Belegnummer erforderlich</string>
     <string name="diagnosis_result">Diagnoseergebnis</string>
     <string name="end_of_day_result">Tagesabschlussergebnis</string>
     <string name="terminal_status">Terminalstatus</string>

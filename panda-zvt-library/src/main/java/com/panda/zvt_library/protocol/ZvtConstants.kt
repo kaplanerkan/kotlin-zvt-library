@@ -48,11 +48,17 @@ object ZvtConstants {
     /** Status Enquiry command (05 01) */
     val CMD_STATUS_ENQUIRY = byteArrayOf(0x05, 0x01)
 
+    /** Repeat Receipt command (06 20) */
+    val CMD_REPEAT_RECEIPT = byteArrayOf(0x06, 0x20)
+
     /** Pre-Authorization command (06 22) */
     val CMD_PRE_AUTHORIZATION = byteArrayOf(0x06, 0x22)
 
-    /** Partial Reversal command (06 24) */
-    val CMD_PARTIAL_REVERSAL = byteArrayOf(0x06, 0x24)
+    /** Book Total / Pre-Auth Completion command (06 24) */
+    val CMD_BOOK_TOTAL = byteArrayOf(0x06, 0x24)
+
+    /** Partial Reversal command (06 25) */
+    val CMD_PARTIAL_REVERSAL = byteArrayOf(0x06, 0x25)
 
     // =====================================================
     // Terminal -> ECR Responses
@@ -507,7 +513,9 @@ object ZvtConstants {
             command.contentEquals(CMD_ABORT) -> "Abort ($hex)"
             command.contentEquals(CMD_PRINT_LINE) -> "Print Line ($hex)"
             command.contentEquals(CMD_STATUS_ENQUIRY) -> "Status Enquiry ($hex)"
+            command.contentEquals(CMD_REPEAT_RECEIPT) -> "Repeat Receipt ($hex)"
             command.contentEquals(CMD_PRE_AUTHORIZATION) -> "Pre-Authorization ($hex)"
+            command.contentEquals(CMD_BOOK_TOTAL) -> "Book Total ($hex)"
             command.contentEquals(CMD_PARTIAL_REVERSAL) -> "Partial Reversal ($hex)"
             command.contentEquals(RESP_COMPLETION) -> "Completion ($hex)"
             command.contentEquals(RESP_STATUS_INFO) -> "Status Info ($hex)"

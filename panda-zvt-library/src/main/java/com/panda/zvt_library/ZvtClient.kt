@@ -371,6 +371,94 @@ class ZvtClient(
     }
 
     /**
+     * Sends a Pre-Authorization command (06 22) to reserve an amount.
+     *
+     * Used in hotel, car rental, and similar scenarios where the final
+     * amount is not yet known. The reserved amount can later be completed
+     * with [bookTotal] or cancelled with [reversal].
+     *
+     * @param amountInCents Amount to reserve in cents.
+     * @return [TransactionResult] with the pre-authorization outcome (includes receipt number for book total).
+     * @throws ZvtError on protocol or connection errors.
+     */
+    suspend fun preAuthorize(amountInCents: Long): TransactionResult =
+        withContext(Dispatchers.IO) {
+            ensureConnected()
+            receiptLines.clear()
+
+            val packet = ZvtCommandBuilder.buildPreAuthorization(
+                amountInCents = amountInCents,
+                currencyCode = config.currencyCode
+            )
+            log("=== PRE-AUTHORIZATION (06 22) === amount=$amountInCents cents")
+            val result = executeCommand(packet)
+            result.copy(receiptLines = receiptLines.toList())
+        }
+
+    /**
+     * Sends a Book Total command (06 24) to complete a pre-authorization.
+     *
+     * @param amountInCents Final amount to book in cents.
+     * @param receiptNumber Receipt number from the original pre-authorization.
+     * @return [TransactionResult] with the book total outcome.
+     * @throws ZvtError on protocol or connection errors.
+     */
+    suspend fun bookTotal(amountInCents: Long, receiptNumber: Int): TransactionResult =
+        withContext(Dispatchers.IO) {
+            ensureConnected()
+            receiptLines.clear()
+
+            val packet = ZvtCommandBuilder.buildBookTotal(
+                amountInCents = amountInCents,
+                receiptNumber = receiptNumber,
+                currencyCode = config.currencyCode
+            )
+            log("=== BOOK TOTAL (06 24) === amount=$amountInCents cents, receipt=$receiptNumber")
+            val result = executeCommand(packet)
+            result.copy(receiptLines = receiptLines.toList())
+        }
+
+    /**
+     * Sends a Partial Reversal command (06 25) to partially reverse a transaction.
+     *
+     * @param amountInCents Amount to partially reverse in cents.
+     * @param receiptNumber Receipt number of the original transaction.
+     * @return [TransactionResult] with the partial reversal outcome.
+     * @throws ZvtError on protocol or connection errors.
+     */
+    suspend fun partialReversal(amountInCents: Long, receiptNumber: Int): TransactionResult =
+        withContext(Dispatchers.IO) {
+            ensureConnected()
+            receiptLines.clear()
+
+            val packet = ZvtCommandBuilder.buildPartialReversal(
+                amountInCents = amountInCents,
+                receiptNumber = receiptNumber,
+                currencyCode = config.currencyCode
+            )
+            log("=== PARTIAL REVERSAL (06 25) === amount=$amountInCents cents, receipt=$receiptNumber")
+            val result = executeCommand(packet)
+            result.copy(receiptLines = receiptLines.toList())
+        }
+
+    /**
+     * Sends a Repeat Receipt command (06 20) to re-print the last receipt.
+     *
+     * @return [TransactionResult] with the receipt data.
+     * @throws ZvtError on protocol or connection errors.
+     */
+    suspend fun repeatReceipt(): TransactionResult =
+        withContext(Dispatchers.IO) {
+            ensureConnected()
+            receiptLines.clear()
+
+            val packet = ZvtCommandBuilder.buildRepeatReceipt()
+            log("=== REPEAT RECEIPT (06 20) ===")
+            val result = executeCommand(packet)
+            result.copy(receiptLines = receiptLines.toList())
+        }
+
+    /**
      * Sends an Abort command (06 1E) to cancel an ongoing operation.
      *
      * @return `true` if the abort was sent successfully.

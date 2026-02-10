@@ -15,7 +15,10 @@ import timber.log.Timber
  * - Registration (06 00)
  * - Authorization (06 01)
  * - Log Off (06 02)
+ * - Repeat Receipt (06 20)
  * - Pre-Authorization (06 22)
+ * - Book Total (06 24)
+ * - Partial Reversal (06 25)
  * - Reversal (06 30)
  * - Refund (06 31)
  * - End of Day (06 50)
@@ -396,6 +399,130 @@ object ZvtCommandBuilder {
 
         Timber.tag(TAG).d("[CommandBuilder] Built Pre-Authorization: amount=%d cents (%.2f EUR), currency=%d",
             amountInCents, amountInCents / 100.0, currencyCode)
+
+        return packet
+    }
+
+    // =====================================================
+    // Book Total / Pre-Auth Completion (06 24)
+    // =====================================================
+
+    /**
+     * Builds a Book Total command (06 24) to complete a pre-authorization.
+     *
+     * After a successful pre-authorization, this command books the final amount.
+     * The receipt number from the original pre-authorization must be provided.
+     *
+     * @param amountInCents Final amount to book in cents.
+     * @param receiptNumber Receipt number of the original pre-authorization (BCD 2 bytes).
+     * @param currencyCode ISO 4217 currency code.
+     * @return [ZvtPacket] containing the Book Total command.
+     * @throws IllegalArgumentException if the amount is not positive.
+     */
+    fun buildBookTotal(
+        amountInCents: Long,
+        receiptNumber: Int,
+        currencyCode: Int = ZvtConstants.CURRENCY_EUR
+    ): ZvtPacket {
+        require(amountInCents > 0) { "Amount must be greater than 0" }
+
+        val data = mutableListOf<Byte>()
+
+        // Password (3 byte BCD)
+        data.addAll(BcdHelper.stringToBcd("000000").toList())
+
+        // Amount (BMP 0x04, 6 byte BCD)
+        data.add(ZvtConstants.BMP_AMOUNT)
+        data.addAll(BcdHelper.amountToBcd(amountInCents).toList())
+
+        // Currency (BMP 0x49)
+        data.add(ZvtConstants.BMP_CURRENCY_CODE)
+        data.addAll(BcdHelper.currencyToBcd(currencyCode).toList())
+
+        // Receipt number (BMP 0x87, BCD 2 bytes)
+        data.add(ZvtConstants.BMP_RECEIPT_NR)
+        data.addAll(BcdHelper.stringToBcd(receiptNumber.toString().padStart(4, '0')).toList())
+
+        val packet = ZvtPacket(
+            command = ZvtConstants.CMD_BOOK_TOTAL,
+            data = data.toByteArray()
+        )
+
+        Timber.tag(TAG).d("[CommandBuilder] Built Book Total: amount=%d cents (%.2f EUR), receiptNr=%d",
+            amountInCents, amountInCents / 100.0, receiptNumber)
+
+        return packet
+    }
+
+    // =====================================================
+    // Partial Reversal (06 25)
+    // =====================================================
+
+    /**
+     * Builds a Partial Reversal command (06 25) to partially reverse a transaction.
+     *
+     * @param amountInCents Amount to partially reverse in cents.
+     * @param receiptNumber Receipt number of the original transaction (BCD 2 bytes).
+     * @param currencyCode ISO 4217 currency code.
+     * @return [ZvtPacket] containing the Partial Reversal command.
+     * @throws IllegalArgumentException if the amount is not positive.
+     */
+    fun buildPartialReversal(
+        amountInCents: Long,
+        receiptNumber: Int,
+        currencyCode: Int = ZvtConstants.CURRENCY_EUR
+    ): ZvtPacket {
+        require(amountInCents > 0) { "Amount must be greater than 0" }
+
+        val data = mutableListOf<Byte>()
+
+        // Password (3 byte BCD)
+        data.addAll(BcdHelper.stringToBcd("000000").toList())
+
+        // Amount (BMP 0x04, 6 byte BCD)
+        data.add(ZvtConstants.BMP_AMOUNT)
+        data.addAll(BcdHelper.amountToBcd(amountInCents).toList())
+
+        // Currency (BMP 0x49)
+        data.add(ZvtConstants.BMP_CURRENCY_CODE)
+        data.addAll(BcdHelper.currencyToBcd(currencyCode).toList())
+
+        // Receipt number (BMP 0x87, BCD 2 bytes)
+        data.add(ZvtConstants.BMP_RECEIPT_NR)
+        data.addAll(BcdHelper.stringToBcd(receiptNumber.toString().padStart(4, '0')).toList())
+
+        val packet = ZvtPacket(
+            command = ZvtConstants.CMD_PARTIAL_REVERSAL,
+            data = data.toByteArray()
+        )
+
+        Timber.tag(TAG).d("[CommandBuilder] Built Partial Reversal: amount=%d cents (%.2f EUR), receiptNr=%d",
+            amountInCents, amountInCents / 100.0, receiptNumber)
+
+        return packet
+    }
+
+    // =====================================================
+    // Repeat Receipt (06 20)
+    // =====================================================
+
+    /**
+     * Builds a Repeat Receipt command (06 20) to re-print the last receipt.
+     *
+     * @return [ZvtPacket] containing the Repeat Receipt command.
+     */
+    fun buildRepeatReceipt(): ZvtPacket {
+        val data = mutableListOf<Byte>()
+
+        // Password (3 byte BCD)
+        data.addAll(BcdHelper.stringToBcd("000000").toList())
+
+        val packet = ZvtPacket(
+            command = ZvtConstants.CMD_REPEAT_RECEIPT,
+            data = data.toByteArray()
+        )
+
+        Timber.tag(TAG).d("[CommandBuilder] Built Repeat Receipt")
 
         return packet
     }

@@ -52,6 +52,33 @@ class PaymentFragment : Fragment() {
         binding.btnAbort.setOnClickListener {
             viewModel.abort()
         }
+
+        binding.btnPreAuth.setOnClickListener {
+            val amount = binding.etAmount.text.toString()
+            if (amount.isNotEmpty()) {
+                viewModel.preAuthorize(amount)
+            }
+        }
+
+        binding.btnBookTotal.setOnClickListener {
+            val amount = binding.etAmount.text.toString()
+            val receiptNo = binding.etReceiptNumber.text.toString().toIntOrNull()
+            if (amount.isNotEmpty() && receiptNo != null) {
+                viewModel.bookTotal(amount, receiptNo)
+            } else if (receiptNo == null) {
+                binding.etReceiptNumber.error = getString(R.string.receipt_no_required)
+            }
+        }
+
+        binding.btnPartialReversal.setOnClickListener {
+            val amount = binding.etAmount.text.toString()
+            val receiptNo = binding.etReceiptNumber.text.toString().toIntOrNull()
+            if (amount.isNotEmpty() && receiptNo != null) {
+                viewModel.partialReversal(amount, receiptNo)
+            } else if (receiptNo == null) {
+                binding.etReceiptNumber.error = getString(R.string.receipt_no_required)
+            }
+        }
     }
 
     private fun observeViewModel() {
@@ -59,6 +86,9 @@ class PaymentFragment : Fragment() {
             binding.btnAuthorize.isEnabled = !processing
             binding.btnRefund.isEnabled = !processing
             binding.btnReversal.isEnabled = !processing
+            binding.btnPreAuth.isEnabled = !processing
+            binding.btnBookTotal.isEnabled = !processing
+            binding.btnPartialReversal.isEnabled = !processing
         }
 
         viewModel.intermediateStatus.observe(viewLifecycleOwner) { status ->
