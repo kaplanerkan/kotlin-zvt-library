@@ -147,6 +147,47 @@ Alle 7 Operationen wurden auf einem echten CCV A920 Terminal mit Debit Mastercar
 | 5 | Buchung (Book Total) | `06 24` | Buchung mit Trace + AID | Erfolgreich |
 | 6 | Vorautorisierung-Storno | `06 25` | Stornierung per Belegnummer | Erfolgreich |
 | 7 | Abbruch (Abort) | `06 B0` | Laufende Operation abbrechen | Erfolgreich |
+| 8 | Diagnose | `06 70` | Terminal-Host-Konnektivitaetspruefung | Erfolgreich |
+| 9 | Statusabfrage | `05 01` | Terminalstatus-Abfrage | Erfolgreich |
+| 10 | Tagesabschluss | `06 50` | Tagesabschluss (0,60 EUR gesamt) | Erfolgreich |
+| 11 | Belegwiederholung | `06 20` | Letzte Belegkopie (vollstaendige Details) | Erfolgreich |
+| 12 | Abmeldung (Log Off) | `06 02` | Ordnungsgemaesse Trennung | Erfolgreich |
+
+## Terminal-Operationen (Detail-Popups)
+
+Alle Terminal-Operationen zeigen ihre Ergebnisse in einem **Vollbild-Detail-Popup**, das offen bleibt, bis der Benutzer OK drueckt:
+
+| Operation | Popup zeigt |
+|-----------|------------|
+| **Diagnose** | Status, Verbindungszustand, Terminal-ID, Fehlerdetails |
+| **Statusabfrage** | Verbindungszustand, Terminal-ID, Statusnachricht |
+| **Tagesabschluss** | Status, Gesamtbetrag, Nachricht + automatisch abgerufener letzter Beleg |
+| **Belegwiederholung** | Vollstaendige Transaktionsdetails: Betrag, Trace, Beleg, Kartendaten, Datum/Uhrzeit, Belegzeilen |
+| **Abmeldung** | Erfolg/Fehler-Status |
+
+### Tagesabschluss + Automatische Belegwiederholung
+
+Nach erfolgreichem Tagesabschluss loest die App **automatisch eine Belegwiederholung** aus, um den letzten Transaktionsbeleg abzurufen. Beide Ergebnisse werden in einem einzigen Popup kombiniert:
+- Tagesabschluss-Status und Gesamtbetrag (aus BMP 0x04)
+- Detaillierte Belegzeilen vom Terminal (ueber Belegwiederholung)
+
+Dies gibt dem Benutzer einen vollstaendigen Ueberblick ueber den Tagesabschluss mit den letzten Transaktionsdetails in einem Bildschirm.
+
+## Speicher- und Ressourcensicherheit
+
+Die Bibliothek und App enthalten Schutzmassnahmen gegen Speicher- und Ressourcenlecks:
+
+| Komponente | Schutz |
+|------------|--------|
+| **ZvtClient** | `@Volatile` Callback-Feld fuer thread-sichere Zugriffe |
+| **ZvtClient** | `Collections.synchronizedList()` fuer Belegzeilen (gleichzeitiger Zugriff aus IO-Coroutinen) |
+| **ZvtClient** | Socket-Bereinigung bei Verbindungsfehlern (verhindert Dateideskriptor-Lecks) |
+| **ZvtClient** | Vollstaendige Bereinigung bei `disconnect()` / `destroy()`: Callback, Belegzeilen, Zwischenstatus |
+| **ZvtClient** | `handleConnectionLost()` speichert Callback lokal vor Bereinigung (verhindert Use-after-Clear) |
+| **ProgressStatusDialog** | Handler-Callbacks mit `_binding != null`-Pruefung geschuetzt (verhindert Post-Destroy-Abstuerze) |
+| **ProgressStatusDialog** | `onCancelClick`-Lambda in `onDestroyView()` bereinigt (verhindert Activity/Fragment-Lecks) |
+| **FileLoggingTree** | `shutdown()`-Methode fuer Executor-Bereinigung |
+| **Alle Fragments** | `_binding = null` in `onDestroyView()`, Observer an `viewLifecycleOwner` gebunden |
 
 ## Storno (Reversal) vs Gutschrift (Refund)
 

@@ -147,6 +147,47 @@ All 7 operations have been tested on a real CCV A920 terminal with Debit Masterc
 | 5 | Book Total | `06 24` | Book pre-auth with trace + AID | Successful |
 | 6 | Pre-Auth Reversal | `06 25` | Cancel pre-auth by receipt number | Successful |
 | 7 | Abort | `06 B0` | Cancel running operation | Successful |
+| 8 | Diagnosis | `06 70` | Terminal host connectivity check | Successful |
+| 9 | Status Enquiry | `05 01` | Terminal state query | Successful |
+| 10 | End of Day | `06 50` | Daily batch close (0.60 EUR total) | Successful |
+| 11 | Repeat Receipt | `06 20` | Last receipt copy (full detail) | Successful |
+| 12 | Log Off | `06 02` | Graceful disconnect | Successful |
+
+## Terminal Operations (Detail Popups)
+
+All terminal operations show their results in a **full-screen detail popup** that stays open until the user taps OK:
+
+| Operation | Popup Shows |
+|-----------|------------|
+| **Diagnosis** | Status, connection state, Terminal ID, error details |
+| **Status Enquiry** | Connection state, Terminal ID, status message |
+| **End of Day** | Status, total amount, message + auto-fetched last receipt |
+| **Repeat Receipt** | Full transaction details: amount, trace, receipt, card data, date/time, receipt lines |
+| **Log Off** | Success/failure status |
+
+### End of Day + Auto Repeat Receipt
+
+When End of Day completes successfully, the app **automatically triggers Repeat Receipt** to fetch the last transaction receipt. Both results are combined in a single popup showing:
+- End of Day status and total amount (from BMP 0x04)
+- Detailed receipt lines from the terminal (via Repeat Receipt)
+
+This gives the user a complete view of the daily close with the last transaction details in one screen.
+
+## Memory & Resource Safety
+
+The library and app include defensive measures against memory leaks and resource leaks:
+
+| Component | Protection |
+|-----------|-----------|
+| **ZvtClient** | `@Volatile` callback field for thread-safe access |
+| **ZvtClient** | `Collections.synchronizedList()` for receipt lines (concurrent access from IO coroutines) |
+| **ZvtClient** | Socket cleanup on connection error paths (prevents file descriptor leaks) |
+| **ZvtClient** | Full cleanup on `disconnect()` / `destroy()`: callback, receipt lines, intermediate status |
+| **ZvtClient** | `handleConnectionLost()` saves callback locally before cleanup to prevent use-after-clear |
+| **ProgressStatusDialog** | Handler callbacks guarded with `_binding != null` check (prevents post-destroy crashes) |
+| **ProgressStatusDialog** | `onCancelClick` lambda cleared in `onDestroyView()` (prevents Activity/Fragment leak) |
+| **FileLoggingTree** | `shutdown()` method for executor cleanup |
+| **All Fragments** | Proper `_binding = null` in `onDestroyView()`, observers scoped to `viewLifecycleOwner` |
 
 ## Reversal (Storno) vs Refund (Gutschrift)
 

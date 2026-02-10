@@ -147,6 +147,47 @@ Tüm 7 islem gercek CCV A920 terminalde Debit Mastercard ve girocard ile test ed
 | 5 | On Yetki Kapatma (Book Total) | `06 24` | Trace + AID ile kapatma | Basarili |
 | 6 | On Yetki Iptali | `06 25` | Receipt number ile iptal | Basarili |
 | 7 | Islem Durdur (Abort) | `06 B0` | Devam eden islemi iptal | Basarili |
+| 8 | Tanilama (Diagnosis) | `06 70` | Terminal host baglanti kontrolu | Basarili |
+| 9 | Durum Sorgulama (Status Enquiry) | `05 01` | Terminal durum sorgusu | Basarili |
+| 10 | Gun Sonu (End of Day) | `06 50` | Gunluk toplu kapanisi (toplam 0,60 EUR) | Basarili |
+| 11 | Fis Tekrarlama (Repeat Receipt) | `06 20` | Son fis kopyasi (tam detay) | Basarili |
+| 12 | Oturum Kapatma (Log Off) | `06 02` | Duzgun baglanti kesme | Basarili |
+
+## Terminal Islemleri (Detay Popup)
+
+Tum terminal islemleri sonuclarini, kullanici OK'a basana kadar acik kalan **tam ekran detay popup**'inda gosterir:
+
+| Islem | Popup Icerigi |
+|-------|--------------|
+| **Tanilama** | Durum, baglanti durumu, Terminal ID, hata detaylari |
+| **Durum Sorgulama** | Baglanti durumu, Terminal ID, durum mesaji |
+| **Gun Sonu** | Durum, toplam tutar, mesaj + otomatik son fis |
+| **Fis Tekrarlama** | Tam islem detaylari: tutar, trace, fis, kart bilgisi, tarih/saat, fis satirlari |
+| **Oturum Kapatma** | Basari/basarisizlik durumu |
+
+### Gun Sonu + Otomatik Fis Tekrarlama
+
+Gun Sonu basariyla tamamlandiginda, uygulama **otomatik olarak Fis Tekrarlama**'yi tetikleyerek son islem fisini getirir. Her iki sonuc tek bir popup'ta birlestirilir:
+- Gun Sonu durumu ve toplam tutar (BMP 0x04'ten)
+- Terminalden gelen detayli fis satirlari (Fis Tekrarlama araciligiyla)
+
+Bu, kullaniciya gunluk kapanisinin son islem detaylariyla birlikte tek ekranda tam bir gorunumunu saglar.
+
+## Bellek ve Kaynak Guvenligi
+
+Kutuphane ve uygulama, bellek sizintilari ve kaynak sizintilarina karsi koruyucu onlemler icerir:
+
+| Bilesen | Koruma |
+|---------|--------|
+| **ZvtClient** | Thread-safe erisim icin `@Volatile` callback alani |
+| **ZvtClient** | Fis satirlari icin `Collections.synchronizedList()` (IO coroutine'lerinden eslzamanli erisim) |
+| **ZvtClient** | Baglanti hatasi yollarinda socket temizligi (dosya tanimlayici sizintisini onler) |
+| **ZvtClient** | `disconnect()` / `destroy()` icin tam temizlik: callback, fis satirlari, ara durum |
+| **ZvtClient** | `handleConnectionLost()` temizlik oncesi callback'i yerel degiskene kaydeder (use-after-clear onlenir) |
+| **ProgressStatusDialog** | Handler callback'leri `_binding != null` kontrolu ile korunur (destroy sonrasi cokmeleri onler) |
+| **ProgressStatusDialog** | `onCancelClick` lambda'si `onDestroyView()`'da temizlenir (Activity/Fragment sizintisini onler) |
+| **FileLoggingTree** | Executor temizligi icin `shutdown()` metodu |
+| **Tum Fragment'lar** | `onDestroyView()`'da `_binding = null`, observer'lar `viewLifecycleOwner` kapsaminda |
 
 ## Storno (Reversal) ve Gutschrift (Refund) Farki
 
