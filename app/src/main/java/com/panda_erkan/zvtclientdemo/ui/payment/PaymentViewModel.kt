@@ -2,14 +2,14 @@ package com.panda_erkan.zvtclientdemo.ui.payment
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.panda.zvt_library.model.ConnectionState
 import com.panda.zvt_library.model.TransactionResult
 import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.repository.ZvtRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -21,36 +21,36 @@ class PaymentViewModel(
 
     private val ctx get() = getApplication<Application>()
 
-    private val _transactionResult = MutableLiveData<TransactionResult?>()
-    val transactionResult: LiveData<TransactionResult?> = _transactionResult
+    private val _transactionResult = MutableStateFlow<TransactionResult?>(null)
+    val transactionResult: StateFlow<TransactionResult?> = _transactionResult.asStateFlow()
 
-    private val _intermediateStatus = MutableLiveData<String>("")
-    val intermediateStatus: LiveData<String> = _intermediateStatus
+    private val _intermediateStatus = MutableStateFlow("")
+    val intermediateStatus: StateFlow<String> = _intermediateStatus.asStateFlow()
 
-    private val _isProcessing = MutableLiveData(false)
-    val isProcessing: LiveData<Boolean> = _isProcessing
+    private val _isProcessing = MutableStateFlow(false)
+    val isProcessing: StateFlow<Boolean> = _isProcessing.asStateFlow()
 
-    private val _errorMessage = MutableLiveData<String?>()
-    val errorMessage: LiveData<String?> = _errorMessage
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    private val _receiptText = MutableLiveData("")
-    val receiptText: LiveData<String> = _receiptText
+    private val _receiptText = MutableStateFlow("")
+    val receiptText: StateFlow<String> = _receiptText.asStateFlow()
 
-    val connectionState: LiveData<ConnectionState> = repository.connectionState.asLiveData()
+    val connectionState: StateFlow<ConnectionState> = repository.connectionState
 
     private val receiptBuilder = StringBuilder()
 
     init {
         repository.intermediateStatus
             .onEach { status ->
-                _intermediateStatus.postValue(status.message)
+                _intermediateStatus.value = status.message
             }
             .launchIn(viewModelScope)
 
         repository.printLines
             .onEach { line ->
                 receiptBuilder.appendLine(line)
-                _receiptText.postValue(receiptBuilder.toString())
+                _receiptText.value = receiptBuilder.toString()
             }
             .launchIn(viewModelScope)
     }

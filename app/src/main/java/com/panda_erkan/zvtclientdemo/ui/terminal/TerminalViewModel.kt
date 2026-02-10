@@ -2,9 +2,6 @@ package com.panda_erkan.zvtclientdemo.ui.terminal
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.panda.zvt_library.model.ConnectionState
 import com.panda.zvt_library.model.DiagnosisResult
@@ -13,6 +10,9 @@ import com.panda.zvt_library.model.TerminalStatus
 import com.panda.zvt_library.model.TransactionResult
 import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.repository.ZvtRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class TerminalViewModel(
@@ -22,25 +22,25 @@ class TerminalViewModel(
 
     private val ctx get() = getApplication<Application>()
 
-    private val _diagnosisResult = MutableLiveData<DiagnosisResult?>()
-    val diagnosisResult: LiveData<DiagnosisResult?> = _diagnosisResult
+    private val _diagnosisResult = MutableStateFlow<DiagnosisResult?>(null)
+    val diagnosisResult: StateFlow<DiagnosisResult?> = _diagnosisResult.asStateFlow()
 
-    private val _endOfDayResult = MutableLiveData<EndOfDayResult?>()
-    val endOfDayResult: LiveData<EndOfDayResult?> = _endOfDayResult
+    private val _endOfDayResult = MutableStateFlow<EndOfDayResult?>(null)
+    val endOfDayResult: StateFlow<EndOfDayResult?> = _endOfDayResult.asStateFlow()
 
-    private val _terminalStatus = MutableLiveData<TerminalStatus?>()
-    val terminalStatus: LiveData<TerminalStatus?> = _terminalStatus
+    private val _terminalStatus = MutableStateFlow<TerminalStatus?>(null)
+    val terminalStatus: StateFlow<TerminalStatus?> = _terminalStatus.asStateFlow()
 
-    private val _repeatReceiptResult = MutableLiveData<TransactionResult?>()
-    val repeatReceiptResult: LiveData<TransactionResult?> = _repeatReceiptResult
+    private val _repeatReceiptResult = MutableStateFlow<TransactionResult?>(null)
+    val repeatReceiptResult: StateFlow<TransactionResult?> = _repeatReceiptResult.asStateFlow()
 
-    private val _isLoading = MutableLiveData(false)
-    val isLoading: LiveData<Boolean> = _isLoading
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _statusMessage = MutableLiveData("")
-    val statusMessage: LiveData<String> = _statusMessage
+    private val _statusMessage = MutableStateFlow("")
+    val statusMessage: StateFlow<String> = _statusMessage.asStateFlow()
 
-    val connectionState: LiveData<ConnectionState> = repository.connectionState.asLiveData()
+    val connectionState: StateFlow<ConnectionState> = repository.connectionState
 
     fun diagnosis() {
         viewModelScope.launch {
@@ -70,7 +70,6 @@ class TerminalViewModel(
             result.fold(
                 onSuccess = { eod ->
                     if (eod.success) {
-                        // Auto-fetch last receipt for detailed transaction info
                         _statusMessage.value = ctx.getString(R.string.running_repeat_receipt)
                         val receiptResult = repository.repeatReceipt()
                         receiptResult.fold(
@@ -80,7 +79,6 @@ class TerminalViewModel(
                                 )
                             },
                             onFailure = {
-                                // Repeat receipt failed, still show EndOfDay result
                                 _endOfDayResult.value = eod
                             }
                         )

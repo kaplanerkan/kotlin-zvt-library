@@ -2,8 +2,6 @@ package com.panda_erkan.zvtclientdemo.ui.main
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.panda.zvt.simulator.SimulatorServer
 import com.panda.zvt_library.model.ConnectionState
@@ -11,6 +9,9 @@ import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.repository.LogEntry
 import com.panda_erkan.zvtclientdemo.repository.ZvtRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -23,33 +24,33 @@ class MainViewModel(
 
     private val ctx get() = getApplication<Application>()
 
-    private val _connectionState = MutableLiveData(ConnectionState.DISCONNECTED)
-    val connectionState: LiveData<ConnectionState> = _connectionState
+    private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
+    val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
-    private val _statusMessage = MutableLiveData("")
-    val statusMessage: LiveData<String> = _statusMessage
+    private val _statusMessage = MutableStateFlow("")
+    val statusMessage: StateFlow<String> = _statusMessage.asStateFlow()
 
-    private val _isLoading = MutableLiveData(false)
-    val isLoading: LiveData<Boolean> = _isLoading
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _logEntries = MutableLiveData<List<LogEntry>>(emptyList())
-    val logEntries: LiveData<List<LogEntry>> = _logEntries
+    private val _logEntries = MutableStateFlow<List<LogEntry>>(emptyList())
+    val logEntries: StateFlow<List<LogEntry>> = _logEntries.asStateFlow()
 
     private val logBuffer = mutableListOf<LogEntry>()
 
     // Embedded simulator
     private var simulatorServer: SimulatorServer? = null
 
-    private val _simulatorRunning = MutableLiveData(false)
-    val simulatorRunning: LiveData<Boolean> = _simulatorRunning
+    private val _simulatorRunning = MutableStateFlow(false)
+    val simulatorRunning: StateFlow<Boolean> = _simulatorRunning.asStateFlow()
 
-    private val _simulatorStarting = MutableLiveData(false)
-    val simulatorStarting: LiveData<Boolean> = _simulatorStarting
+    private val _simulatorStarting = MutableStateFlow(false)
+    val simulatorStarting: StateFlow<Boolean> = _simulatorStarting.asStateFlow()
 
     init {
         repository.connectionState
             .onEach { state ->
-                _connectionState.postValue(state)
+                _connectionState.value = state
             }
             .launchIn(viewModelScope)
 
@@ -57,7 +58,7 @@ class MainViewModel(
             .onEach { entry ->
                 logBuffer.add(entry)
                 if (logBuffer.size > 500) logBuffer.removeAt(0)
-                _logEntries.postValue(logBuffer.toList())
+                _logEntries.value = logBuffer.toList()
             }
             .launchIn(viewModelScope)
     }
