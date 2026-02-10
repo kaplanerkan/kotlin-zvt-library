@@ -143,6 +143,50 @@ Diese beiden Vorgaenge werden oft verwechselt. Hier ist der wesentliche Untersch
 
 Kurz gesagt: Storno = "diese Transaktion hat nie stattgefunden", Gutschrift = "eine neue Rueckerstattung durchfuehren".
 
+## Vorautorisierung-Ablauf (Pre-Authorization)
+
+Die Vorautorisierung dient dazu, einen Betrag auf der Kundenkarte zu **reservieren (blockieren)**, ohne ihn tatsaechlich abzubuchen. Die eigentliche Abbuchung erfolgt spaeter mit Book Total, oder die Reservierung kann teilweise oder vollstaendig freigegeben werden.
+
+**Anwendungsfaelle:**
+- **Hotel:** Beim Check-in 500 EUR blockieren, beim Check-out den tatsaechlichen Betrag abbuchen
+- **Autovermietung:** 1000 EUR als Kaution reservieren, nach Rueckgabe den realen Betrag abbuchen
+- **Restaurant:** Rechnungsbetrag blockieren, spaeter mit Trinkgeld den Endbetrag abbuchen
+
+**Ablauf:**
+
+```
+1. Pre-Auth (06 22)       -> Betrag auf Karte blockieren -> Belegnummer wird zurueckgegeben
+   Kunde nutzt die Dienstleistung...
+2. Book Total (06 24)     -> Tatsaechlichen Betrag abbuchen (Belegnummer erforderlich)
+   ODER
+   Partial Reversal (06 25) -> Teil des blockierten Betrags freigeben
+```
+
+**Schritt 1: Vorautorisierung (06 22)**
+- Sendet Betrag und Waehrung an das Terminal
+- Kunde muss die Karte vorlegen (Einstecken/Auflegen)
+- Der Betrag wird auf dem Kundenkonto **blockiert**, aber **nicht abgebucht**
+- Es wird eine **Belegnummer** zurueckgegeben — diese wird fuer den naechsten Schritt benoetigt
+
+**Schritt 2a: Buchung (Book Total, 06 24)**
+- Schliesst die Vorautorisierung ab, indem der tatsaechliche Betrag abgebucht wird
+- Die **Belegnummer** aus dem Pre-Auth-Schritt ist erforderlich
+- Der abgebuchte Betrag kann **kleiner oder gleich** dem blockierten Betrag sein
+- Beispiel: Pre-Auth 100 EUR, Book Total 85 EUR (verbleibende 15 EUR werden freigegeben)
+
+**Schritt 2b: Teilstorno (Partial Reversal, 06 25)**
+- Gibt einen Teil des blockierten Betrags frei, ohne abzubuchen
+- **Belegnummer** und der freizugebende Betrag sind erforderlich
+- Beispiel: Pre-Auth 100 EUR, Teilstorno 30 EUR (70 EUR bleiben blockiert)
+
+**Zusammenfassung:**
+
+| Befehl | Hex | Zweck | Erfordert |
+|--------|-----|-------|-----------|
+| Vorautorisierung | `06 22` | Betrag auf Karte blockieren | Betrag + Karte |
+| Buchung (Book Total) | `06 24` | Blockierten Betrag abbuchen | Belegnummer + Betrag |
+| Teilstorno | `06 25` | Teil des blockierten Betrags freigeben | Belegnummer + Betrag |
+
 ## ZVT-Befehls-Hex-Codes
 
 ### ECR -> Terminal Befehle

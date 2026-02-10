@@ -143,6 +143,50 @@ Bu iki islem siklikla karistirilir. Iste temel fark:
 
 Kisacasi: Storno = "bu islem hic olmadi", Gutschrift = "yeni bir para iadesi yap".
 
+## On Yetkilendirme Akisi (Pre-Authorization / Vorautorisierung)
+
+On Yetkilendirme, musterinin kartindan **tutar ayirmak (bloke etmek)** icin kullanilir, gercek tahsilat yapilmaz. Gercek tahsilat daha sonra Book Total ile yapilir veya bloke kismen ya da tamamen serbest birakilir.
+
+**Kullanim senaryolari:**
+- **Otel:** Check-in'de 500 EUR bloke et, check-out'ta gercek tutari tahsil et
+- **Arac kiralama:** Depozito olarak 1000 EUR ayir, iade sonrasi gercek tutari al
+- **Restoran:** Hesap tutarini bloke et, bahsisle birlikte son tutari tahsil et
+
+**Akis:**
+
+```
+1. Pre-Auth (06 22)       -> Kartta tutari bloke et -> receipt number doner
+   Musteri hizmeti alir...
+2. Book Total (06 24)     -> Gercek tutari tahsil et (receipt number gerekli)
+   VEYA
+   Partial Reversal (06 25) -> Blokenin bir kismini serbest birak
+```
+
+**Adim 1: On Yetkilendirme (06 22)**
+- Tutar ve para birimini terminale gonderir
+- Musteri kartini okutmalidir (temas/temassiz)
+- Tutar musterinin hesabinda **bloke edilir** ama **cekilmez**
+- Bir **receipt number** doner — bu sonraki adim icin gereklidir
+
+**Adim 2a: Book Total (06 24)**
+- On yetkilendirmeyi tamamlayarak gercek tutari tahsil eder
+- Pre-Auth adimindaki **receipt number** gereklidir
+- Tahsil edilen tutar, bloke edilen tutardan **az veya esit** olabilir
+- Ornek: Pre-Auth 100 EUR, Book Total 85 EUR (kalan 15 EUR serbest kalir)
+
+**Adim 2b: Kismi Iptal / Partial Reversal (06 25)**
+- Bloke edilen tutarin bir kismini tahsil etmeden serbest birakir
+- **Receipt number** ve serbest birakilacak tutar gereklidir
+- Ornek: Pre-Auth 100 EUR, Partial Reversal 30 EUR (70 EUR bloke kalir)
+
+**Ozet:**
+
+| Komut | Hex | Amac | Gerekli |
+|-------|-----|------|---------|
+| On Yetkilendirme | `06 22` | Kartta tutar bloke et | Tutar + Kart |
+| Book Total | `06 24` | Bloke tutari tahsil et | Receipt number + Tutar |
+| Kismi Iptal | `06 25` | Blokenin bir kismini serbest birak | Receipt number + Tutar |
+
 ## ZVT Komut Hex Kodlari
 
 ### ECR -> Terminal Komutlari

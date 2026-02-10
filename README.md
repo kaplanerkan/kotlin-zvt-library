@@ -143,6 +143,50 @@ These two operations are often confused. Here is the key difference:
 
 In short: Reversal = "this transaction never happened", Refund = "make a new refund payment".
 
+## Pre-Authorization Flow (Vorautorisierung)
+
+Pre-Authorization is used to **reserve (block) an amount** on a customer's card without actually charging it. The actual charge happens later with Book Total, or the reservation can be partially or fully released.
+
+**Use cases:**
+- **Hotel:** Block 500 EUR at check-in, charge the actual amount at check-out
+- **Car rental:** Reserve 1000 EUR as deposit, charge the real cost after return
+- **Restaurant:** Block the bill amount, charge with tip included later
+
+**Flow:**
+
+```
+1. Pre-Auth (06 22)       -> Block amount on card -> receipt number returned
+   Customer uses the service...
+2. Book Total (06 24)     -> Charge actual amount (receipt number required)
+   OR
+   Partial Reversal (06 25) -> Release part of the blocked amount
+```
+
+**Step 1: Pre-Authorization (06 22)**
+- Sends the amount and currency to the terminal
+- Customer presents the card (insert/tap)
+- The amount is **blocked** on the customer's account but **not charged**
+- Returns a **receipt number** — this is required for the next step
+
+**Step 2a: Book Total (06 24)**
+- Completes the pre-authorization by charging the actual amount
+- Requires the **receipt number** from the Pre-Auth step
+- The charged amount can be **less than or equal to** the blocked amount
+- Example: Pre-Auth 100 EUR, Book Total 85 EUR (remaining 15 EUR is released)
+
+**Step 2b: Partial Reversal (06 25)**
+- Releases part of the blocked amount without charging
+- Requires the **receipt number** and the amount to release
+- Example: Pre-Auth 100 EUR, Partial Reversal 30 EUR (70 EUR remains blocked)
+
+**Summary:**
+
+| Command | Hex | Purpose | Requires |
+|---------|-----|---------|----------|
+| Pre-Authorization | `06 22` | Block amount on card | Amount + Card |
+| Book Total | `06 24` | Charge blocked amount | Receipt number + Amount |
+| Partial Reversal | `06 25` | Release part of blocked amount | Receipt number + Amount |
+
 ## ZVT Command Hex Codes
 
 ### ECR -> Terminal Commands
