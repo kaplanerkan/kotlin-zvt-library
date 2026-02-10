@@ -37,12 +37,68 @@
         <item name="colorOutline">@color/outline</item>
         <item name="colorOutlineVariant">@color/outlineVariant</item>
 
-        <!-- Typography — Montserrat Medium globally -->
+        <!-- Typography — Montserrat Medium, default 12sp -->
         <item name="android:fontFamily">@font/montserrat_medium</item>
         <item name="fontFamily">@font/montserrat_medium</item>
+        <item name="android:textSize">12sp</item>
+
+        <!-- Default button styles -->
+        <item name="materialButtonStyle">@style/ZvtButton</item>
+        <item name="materialButtonOutlinedStyle">@style/ZvtButton.Outlined</item>
 
         <!-- Status bar -->
         <item name="android:statusBarColor">@color/primaryDark</item>
+    </style>
+
+    <!-- Filled Button — turquoise primary with ripple -->
+    <style name="ZvtButton" parent="Widget.Material3.Button">
+        <item name="android:textSize">12sp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="backgroundTint">@color/primary</item>
+        <item name="android:textColor">@color/onPrimary</item>
+        <item name="iconTint">@color/onPrimary</item>
+        <item name="rippleColor">@color/primaryContainer</item>
+    </style>
+
+    <!-- Outlined Button — light turquoise fill + primary stroke with ripple -->
+    <style name="ZvtButton.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textSize">12sp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="backgroundTint">@color/secondaryContainer</item>
+        <item name="strokeColor">@color/primary</item>
+        <item name="android:textColor">@color/primary</item>
+        <item name="iconTint">@color/primary</item>
+        <item name="rippleColor">@color/primaryContainer</item>
+    </style>
+
+    <!-- Tonal Button — primaryContainer fill with ripple -->
+    <style name="ZvtButton.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:textSize">12sp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="backgroundTint">@color/primaryContainer</item>
+        <item name="android:textColor">@color/onPrimaryContainer</item>
+        <item name="iconTint">@color/onPrimaryContainer</item>
+        <item name="rippleColor">@color/primary</item>
+    </style>
+
+    <!-- Text Button — subtle turquoise fill with ripple -->
+    <style name="ZvtButton.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textSize">12sp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="backgroundTint">@color/surfaceVariant</item>
+        <item name="android:textColor">@color/primary</item>
+        <item name="iconTint">@color/primary</item>
+        <item name="rippleColor">@color/primaryContainer</item>
+    </style>
+
+    <!-- Error Text Button — subtle error fill with ripple -->
+    <style name="ZvtButton.Error" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textSize">12sp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="backgroundTint">@color/errorContainer</item>
+        <item name="android:textColor">@color/error</item>
+        <item name="iconTint">@color/error</item>
+        <item name="rippleColor">@color/error</item>
     </style>
 
     <!-- Bottom Navigation Active Indicator -->

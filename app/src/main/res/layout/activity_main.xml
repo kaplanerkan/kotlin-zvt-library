@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@drawable/bg_gradient_turquoise"
     android:orientation="vertical">
 
     <!-- Toolbar -->
@@ -51,7 +51,6 @@
                     android:layout_weight="1"
                     android:text="@string/disconnected"
                     android:textColor="@color/onSurface"
-                    android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <com.google.android.material.progressindicator.CircularProgressIndicator
@@ -90,8 +89,7 @@
                         android:layout_height="wrap_content"
                         android:digits="0123456789."
                         android:inputType="number|numberDecimal"
-                        android:text="192.168.1.100"
-                        android:textSize="13sp" />
+                        android:text="192.168.1.100" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -112,8 +110,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="number"
-                        android:text="20007"
-                        android:textSize="13sp" />
+                        android:text="20007" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
@@ -127,25 +124,21 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDisconnect"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    style="@style/ZvtButton.Outlined"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/btn_disconnect"
-                    android:textSize="12sp"
-                    app:cornerRadius="12dp"
                     app:icon="@drawable/ic_disconnect"
                     app:iconGravity="textStart"
                     app:strokeColor="@color/error" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnConnect"
-                    style="@style/Widget.Material3.Button.TonalButton"
+                    style="@style/ZvtButton.Tonal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="@string/btn_connect"
-                    android:textSize="12sp"
-                    app:cornerRadius="12dp"
                     app:icon="@drawable/ic_connect"
                     app:iconGravity="textStart" />
             </LinearLayout>
@@ -155,8 +148,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="@color/onSurfaceVariant"
-                android:textSize="12sp" />
+                android:textColor="@color/onSurfaceVariant" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

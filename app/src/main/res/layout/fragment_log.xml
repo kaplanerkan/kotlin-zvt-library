@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@drawable/bg_gradient_turquoise"
     android:orientation="vertical">
 
     <LinearLayout
@@ -20,16 +20,14 @@
             android:layout_weight="1"
             android:text="@string/protocol_logs"
             android:textColor="@color/primary"
-            android:textSize="14sp"
             android:textStyle="bold" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClearLogs"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/ZvtButton.Text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/btn_clear"
-            android:textSize="12sp" />
+            android:text="@string/btn_clear" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
