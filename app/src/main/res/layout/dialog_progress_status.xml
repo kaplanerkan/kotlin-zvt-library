@@ -25,10 +25,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/primary"
-                android:gravity="center"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="20dp"
-                android:paddingVertical="14dp">
+                android:paddingStart="20dp"
+                android:paddingEnd="4dp"
+                android:paddingVertical="6dp">
 
                 <TextView
                     android:id="@+id/tvDialogOperationIcon"
@@ -48,6 +49,16 @@
                     android:textColor="@color/onPrimary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
+
+                <ImageButton
+                    android:id="@+id/btnCloseDialog"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/btn_close"
+                    android:src="@drawable/ic_close"
+                    android:scaleType="center"
+                    app:tint="@color/onPrimary" />
             </LinearLayout>
 
             <!-- Progress section -->

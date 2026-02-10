@@ -251,6 +251,7 @@ class ZvtClient(
         paymentType: Byte = ZvtConstants.PAY_TYPE_DEFAULT
     ): TransactionResult = withContext(Dispatchers.IO) {
         ensureConnected()
+        ensureTerminalReady()
         receiptLines.clear()
 
         val packet = ZvtCommandBuilder.buildAuthorization(
@@ -288,6 +289,7 @@ class ZvtClient(
     suspend fun reversal(receiptNumber: Int? = null): TransactionResult =
         withContext(Dispatchers.IO) {
             ensureConnected()
+            ensureTerminalReady()
             receiptLines.clear()
 
             val packet = ZvtCommandBuilder.buildReversal(receiptNumber)
@@ -306,6 +308,7 @@ class ZvtClient(
     suspend fun refund(amountInCents: Long): TransactionResult =
         withContext(Dispatchers.IO) {
             ensureConnected()
+            ensureTerminalReady()
             receiptLines.clear()
 
             val packet = ZvtCommandBuilder.buildRefund(
@@ -396,6 +399,7 @@ class ZvtClient(
     suspend fun preAuthorize(amountInCents: Long): TransactionResult =
         withContext(Dispatchers.IO) {
             ensureConnected()
+            ensureTerminalReady()
             receiptLines.clear()
 
             val packet = ZvtCommandBuilder.buildPreAuthorization(
@@ -418,6 +422,7 @@ class ZvtClient(
     suspend fun bookTotal(amountInCents: Long, receiptNumber: Int): TransactionResult =
         withContext(Dispatchers.IO) {
             ensureConnected()
+            ensureTerminalReady()
             receiptLines.clear()
 
             val packet = ZvtCommandBuilder.buildBookTotal(
@@ -441,6 +446,7 @@ class ZvtClient(
     suspend fun partialReversal(amountInCents: Long, receiptNumber: Int): TransactionResult =
         withContext(Dispatchers.IO) {
             ensureConnected()
+            ensureTerminalReady()
             receiptLines.clear()
 
             val packet = ZvtCommandBuilder.buildPartialReversal(
@@ -525,6 +531,9 @@ class ZvtClient(
      * @throws ZvtError on protocol or connection errors.
      */
     private suspend fun executeCommand(command: ZvtPacket): TransactionResult {
+        // 0. Drain any stale packets left in the TCP buffer from a previous command
+        drainPendingData()
+
         // 1. Send command
         sendPacket(command)
 
@@ -581,6 +590,14 @@ class ZvtClient(
                     log("Status Info: success=${finalResult.success}, resultCode=0x${String.format("%02X", finalResult.resultCode)}, message='${finalResult.resultMessage}'")
 
                     if (config.autoAck) sendAck()
+
+                    // If the result code indicates an error, the terminal may not
+                    // send Completion (06 0F) afterwards (observed on CCV A920).
+                    // Break the loop immediately to avoid hanging until read timeout.
+                    if (!finalResult.success) {
+                        log("Error result in Status Info -> ending response loop")
+                        transactionComplete = true
+                    }
                 }
 
                 // Completion (06 0F) - Transaction finished
@@ -775,6 +792,48 @@ class ZvtClient(
     // =====================================================
     // Helper Functions
     // =====================================================
+
+    /**
+     * Sends a Status Enquiry (05 01) to verify the terminal is idle before
+     * executing a payment command. This prevents sending commands to a busy
+     * terminal and naturally drains any stale packets from the buffer.
+     *
+     * @throws ZvtError.TerminalError if the terminal is not ready.
+     */
+    private suspend fun ensureTerminalReady() {
+        log("Pre-check: Status Enquiry to verify terminal is idle")
+        val packet = ZvtCommandBuilder.buildStatusEnquiry()
+        val result = executeCommand(packet)
+        if (!result.success) {
+            throw ZvtError.TerminalError(
+                resultCode = result.resultCode,
+                message = "Terminal not ready: ${result.resultMessage}"
+            )
+        }
+        log("Pre-check: Terminal is idle, proceeding with command")
+    }
+
+    /**
+     * Drains any stale bytes from the TCP input buffer.
+     *
+     * After an error Status Info breaks the response loop early, the terminal
+     * may still send additional packets (e.g. a second Status Info or Completion).
+     * These stale bytes remain in the buffer and would be misinterpreted as
+     * the ACK response for the next command. This method discards them.
+     */
+    private fun drainPendingData() {
+        try {
+            val input = inputStream ?: return
+            val available = input.available()
+            if (available > 0) {
+                val discarded = ByteArray(available)
+                input.read(discarded)
+                log("Drained $available stale bytes from buffer: ${discarded.toHexString()}")
+            }
+        } catch (e: Exception) {
+            Timber.tag(TAG).w("Error draining buffer: %s", e.message)
+        }
+    }
 
     /**
      * Ensures the client is connected to the terminal.

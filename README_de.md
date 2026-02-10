@@ -11,6 +11,7 @@ ZVT (Zahlungsverkehrstechnik) ist das deutsche Standardprotokoll fuer die Kommun
 - **Spezifikation**: ZVT-Protokollspezifikation v13.13 (PA00P015_13.13_final)
 - **Transport**: TCP/IP, Standardport **20007**
 - **Kodierung**: Binaere APDU (Anwendungsprotokolldateneinheit)
+- **Ressourcen**: Protokollspezifikationen, Dokumentation und Downloads finden Sie unter [terminalhersteller.de](https://www.terminalhersteller.de/downloads.aspx)
 
 ## Funktionen
 

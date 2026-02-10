@@ -26,6 +26,7 @@
     <string name="btn_refund">Refund</string>
     <string name="btn_reversal">Reverse Last</string>
     <string name="btn_abort">Abort</string>
+    <string name="btn_close">Close</string>
     <string name="btn_pre_auth">Pre-Auth</string>
     <string name="btn_book_total">Book Total</string>
     <string name="btn_partial_reversal">Partial Rev.</string>

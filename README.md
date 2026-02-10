@@ -11,6 +11,7 @@ ZVT (Zahlungsverkehrstechnik) is the German standard protocol for communication 
 - **Spec**: ZVT Protocol Specification v13.13 (PA00P015_13.13_final)
 - **Transport**: TCP/IP, default port **20007**
 - **Encoding**: Binary APDU (Application Protocol Data Unit)
+- **Resources**: Protocol specifications, documentation and downloads are available at [terminalhersteller.de](https://www.terminalhersteller.de/downloads.aspx)
 
 ## Features
 

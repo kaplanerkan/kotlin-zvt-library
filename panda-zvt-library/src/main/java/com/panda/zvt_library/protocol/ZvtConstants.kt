@@ -335,10 +335,17 @@ object ZvtConstants {
     const val IS_PLEASE_WAIT: Byte = 0x0E
     const val IS_AUTOMATIC_END_OF_DAY: Byte = 0x0F
     const val IS_INVALID_CARD: Byte = 0x10
+    const val IS_CONFIRM_AMOUNT_PINPAD: Byte = 0x11
+    const val IS_CONFIRM_AMOUNT_ECR: Byte = 0x12
+    const val IS_NO_PAPER: Byte = 0x13
     const val IS_CREDIT_NOT_SUFFICIENT: Byte = 0x14
     const val IS_INCORRECT_PIN: Byte = 0x15
+    const val IS_CARD_WRONG_DIRECTION: Byte = 0x16
     const val IS_PLEASE_WAIT_2: Byte = 0x17
     const val IS_PIN_TRY_LIMIT_EXCEEDED: Byte = 0x18
+    const val IS_CHIP_ERROR: Byte = 0x19
+    const val IS_MERCHANT_JOURNAL_FULL: Byte = 0x1A
+    const val IS_OPERATION_NOT_POSSIBLE: Byte = 0x1B
     const val IS_APPROVED_TAKE_GOODS: Byte = 0x1C
     const val IS_DECLINED: Byte = 0x1D
     const val IS_CONTACTLESS_FINISHED: Byte = 0x5E
@@ -480,10 +487,17 @@ object ZvtConstants {
         IS_PLEASE_WAIT -> "Please wait"
         IS_AUTOMATIC_END_OF_DAY -> "Automatic end-of-day"
         IS_INVALID_CARD -> "Invalid card"
+        IS_CONFIRM_AMOUNT_PINPAD -> "Please confirm amount on PIN-pad"
+        IS_CONFIRM_AMOUNT_ECR -> "Please confirm amount on ECR"
+        IS_NO_PAPER -> "Not enough paper in printer"
         IS_CREDIT_NOT_SUFFICIENT -> "Credit not sufficient"
         IS_INCORRECT_PIN -> "Incorrect PIN"
+        IS_CARD_WRONG_DIRECTION -> "Card inserted in wrong direction"
         IS_PLEASE_WAIT_2 -> "Please wait"
         IS_PIN_TRY_LIMIT_EXCEEDED -> "PIN try limit exceeded"
+        IS_CHIP_ERROR -> "Chip error"
+        IS_MERCHANT_JOURNAL_FULL -> "Merchant journal full"
+        IS_OPERATION_NOT_POSSIBLE -> "Operation not possible"
         IS_APPROVED_TAKE_GOODS -> "Approved, please take goods"
         IS_DECLINED -> "Declined"
         IS_CONTACTLESS_FINISHED -> "Contactless card access finished"

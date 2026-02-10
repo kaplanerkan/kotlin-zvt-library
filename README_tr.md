@@ -11,6 +11,7 @@ ZVT (Zahlungsverkehrstechnik), satis noktasi (POS) sistemleri ile odeme terminal
 - **Spesifikasyon**: ZVT Protokol Spesifikasyonu v13.13 (PA00P015_13.13_final)
 - **Iletisim**: TCP/IP, varsayilan port **20007**
 - **Kodlama**: Ikili APDU (Uygulama Protokol Veri Birimi)
+- **Kaynaklar**: Protokol spesifikasyonlari, dokumantasyon ve indirmeler icin [terminalhersteller.de](https://www.terminalhersteller.de/downloads.aspx) adresini ziyaret edebilirsiniz
 
 ## Ozellikler
 

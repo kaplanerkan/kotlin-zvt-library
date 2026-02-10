@@ -75,6 +75,11 @@ class ProgressStatusDialog : DialogFragment() {
             }
         }
 
+        // Close (X) button in top-right corner — always dismisses the dialog
+        binding.btnCloseDialog.setOnClickListener {
+            dismissAllowingStateLoss()
+        }
+
         // Start elapsed timer
         startTimeMs = System.currentTimeMillis()
         handler.post(timerRunnable)

@@ -26,6 +26,7 @@
     <string name="btn_refund">İade</string>
     <string name="btn_reversal">Son İşlemi İptal</string>
     <string name="btn_abort">İptal</string>
+    <string name="btn_close">Kapat</string>
     <string name="btn_pre_auth">Ön Yetki</string>
     <string name="btn_book_total">Ön Yetki Kapat</string>
     <string name="btn_partial_reversal">Kısmi İptal</string>
