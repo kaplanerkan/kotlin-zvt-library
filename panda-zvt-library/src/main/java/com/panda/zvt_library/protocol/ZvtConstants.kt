@@ -1,148 +1,153 @@
 package com.panda.zvt_library.protocol
 
 /**
- * ZVT Protokolü sabit değerleri
- * Referans: ZVT Protocol Specification v13.13
+ * ZVT protocol constants.
  *
- * Bu sınıf tüm komut kodlarını, BMP tag'lerini, sonuç kodlarını
- * ve protokol ayarlarını içerir.
+ * Contains all command codes, BMP field tags, result codes, intermediate status codes,
+ * registration bitmask flags, payment types, currency codes, and default connection
+ * settings defined by the ZVT Protocol Specification v13.13.
+ *
+ * Reference: ZVT Protocol Specification v13.13 (PA00P015_13.13_final)
+ *
+ * @author Erkan Kaplan
+ * @since 2026-02-10
  */
 object ZvtConstants {
 
     // =====================================================
-    // ECR → Terminal Komutları
+    // ECR -> Terminal Commands
     // =====================================================
 
-    /** Terminal kayıt komutu (06 00) */
+    /** Registration command (06 00) */
     val CMD_REGISTRATION = byteArrayOf(0x06, 0x00)
 
-    /** Ödeme/Yetkilendirme komutu (06 01) */
+    /** Authorization / Payment command (06 01) */
     val CMD_AUTHORIZATION = byteArrayOf(0x06, 0x01)
 
-    /** Log-off komutu (06 02) */
+    /** Log-off command (06 02) */
     val CMD_LOG_OFF = byteArrayOf(0x06, 0x02)
 
-    /** Gün sonu komutu (06 50) */
+    /** End of Day command (06 50) */
     val CMD_END_OF_DAY = byteArrayOf(0x06, 0x50.toByte())
 
-    /** İptal/Reversal komutu (06 30) */
+    /** Reversal command (06 30) */
     val CMD_REVERSAL = byteArrayOf(0x06, 0x30)
 
-    /** İade/Refund komutu (06 31) */
+    /** Refund command (06 31) */
     val CMD_REFUND = byteArrayOf(0x06, 0x31)
 
-    /** Tanılama/Diagnosis komutu (06 70) */
+    /** Diagnosis command (06 70) */
     val CMD_DIAGNOSIS = byteArrayOf(0x06, 0x70)
 
-    /** İptal et komutu (06 1E) */
+    /** Abort command (06 1E) */
     val CMD_ABORT = byteArrayOf(0x06, 0x1E)
 
-    /** Satır yazdır komutu (06 D1) */
+    /** Print Line command (06 D1) */
     val CMD_PRINT_LINE = byteArrayOf(0x06, 0xD1.toByte())
 
-    /** Durum sorgulama komutu (05 01) */
+    /** Status Enquiry command (05 01) */
     val CMD_STATUS_ENQUIRY = byteArrayOf(0x05, 0x01)
 
-    /** Ön yetkilendirme komutu (06 22) */
+    /** Pre-Authorization command (06 22) */
     val CMD_PRE_AUTHORIZATION = byteArrayOf(0x06, 0x22)
 
-    /** Kısmi reversal komutu (06 24) */
+    /** Partial Reversal command (06 24) */
     val CMD_PARTIAL_REVERSAL = byteArrayOf(0x06, 0x24)
 
     // =====================================================
-    // Terminal → ECR Yanıtları
+    // Terminal -> ECR Responses
     // =====================================================
 
-    /** Tamamlandı (06 0F) */
+    /** Completion (06 0F) */
     val RESP_COMPLETION = byteArrayOf(0x06, 0x0F)
 
-    /** Durum bilgisi (04 0F) */
+    /** Status Information (04 0F) */
     val RESP_STATUS_INFO = byteArrayOf(0x04, 0x0F)
 
-    /** Ara durum bilgisi (04 FF) */
+    /** Intermediate Status (04 FF) */
     val RESP_INTERMEDIATE_STATUS = byteArrayOf(0x04, 0xFF.toByte())
 
-    /** Terminal tarafından iptal (06 1E) */
+    /** Abort by terminal (06 1E) */
     val RESP_ABORT = byteArrayOf(0x06, 0x1E)
 
-    /** Yazdırma satırı (06 D1) */
+    /** Print Line (06 D1) */
     val RESP_PRINT_LINE = byteArrayOf(0x06, 0xD1.toByte())
 
-    /** Yazdırma metni (06 D3) */
+    /** Print Text Block (06 D3) */
     val RESP_PRINT_TEXT = byteArrayOf(0x06, 0xD3.toByte())
 
     // =====================================================
-    // Acknowledgement Paketleri
+    // Acknowledgement Packets
     // =====================================================
 
-    /** Pozitif onay (80 00 00) */
+    /** Positive acknowledgement (80 00 00) */
     val ACK = byteArrayOf(0x80.toByte(), 0x00, 0x00)
 
-    /** Negatif onay (84 XX XX) */
+    /** Negative acknowledgement (84 00 00) */
     val NACK = byteArrayOf(0x84.toByte(), 0x00, 0x00)
 
     // =====================================================
-    // BMP (Bitmap) Tag'leri - Veri alanları
+    // BMP (Bitmap) Field Tags
     // =====================================================
 
-    /** Timeout değeri (saniye) */
+    /** Timeout value in seconds */
     const val BMP_TIMEOUT: Byte = 0x01
 
-    /** Protokol version */
+    /** Protocol version */
     const val BMP_PROTOCOL_VERSION: Byte = 0x02
 
-    /** Tutar (BCD 6 byte) */
+    /** Service byte / Config byte (Registration) */
+    const val BMP_SERVICE_BYTE: Byte = 0x03
+
+    /** Amount (BCD 6 bytes) */
     const val BMP_AMOUNT: Byte = 0x04
 
-    /** Pompa numarası */
+    /** Pump number */
     const val BMP_PUMP_NR: Byte = 0x05
 
-    /** Trace numarası (BCD 3 byte) */
+    /** TLV container via BMP 06 */
+    const val BMP_TLV_CONTAINER: Byte = 0x06
+
+    /** Trace number (BCD 3 bytes) */
     const val BMP_TRACE_NUMBER: Byte = 0x0B
 
-    /** Saat - HHMMSS (BCD 3 byte) */
+    /** Time - HHMMSS (BCD 3 bytes) */
     const val BMP_TIME: Byte = 0x0C
 
-    /** Tarih - MMDD (BCD 2 byte) */
+    /** Date - MMDD (BCD 2 bytes) */
     const val BMP_DATE: Byte = 0x0D
 
-    /** Kart son kullanma tarihi YYMM (BCD 2 byte) */
+    /** Card expiry date - YYMM (BCD 2 bytes) */
     const val BMP_EXPIRY_DATE: Byte = 0x0E
 
-    /** Kart sıra numarası (BCD 2 byte) */
+    /** Card sequence number (BCD 2 bytes) */
     const val BMP_CARD_SEQUENCE_NR: Byte = 0x17
 
-    /** Ödeme tipi */
+    /** Payment type */
     const val BMP_PAYMENT_TYPE: Byte = 0x19
 
     /** PAN / EF_ID (LLVAR BCD) */
     const val BMP_CARD_NUMBER: Byte = 0x22
 
-    /** Sonuç kodu (1 byte) */
+    /** Result code (1 byte) */
     const val BMP_RESULT_CODE: Byte = 0x27
 
-    /** Terminal ID - TID (BCD 4 byte) */
+    /** Terminal ID - TID (BCD 4 bytes) */
     const val BMP_TERMINAL_ID: Byte = 0x29
 
-    /** VU numarası (15 byte ASCII, fixed) */
+    /** VU number (15 bytes ASCII, fixed) */
     const val BMP_VU_NUMBER: Byte = 0x2A
 
-    /** Orijinal trace numarası (BCD 3 byte, reversal) */
+    /** Original trace number (BCD 3 bytes, used in reversals) */
     const val BMP_ORIGINAL_TRACE: Byte = 0x37
 
-    /** AID - Application Identifier (8 byte fixed) */
+    /** AID - Application Identifier (8 bytes fixed) */
     const val BMP_AID: Byte = 0x3B
 
-    /** Ek veri / TLV container (LLLVAR) */
+    /** Additional data / TLV container (LLLVAR) */
     const val BMP_ADDITIONAL_DATA: Byte = 0x3C
 
-    /** Config byte (Registration) */
-    const val BMP_SERVICE_BYTE: Byte = 0x03
-
-    /** TLV container via BMP 06 */
-    const val BMP_TLV_CONTAINER: Byte = 0x06
-
-    /** Para birimi kodu (BCD 2 byte, ISO 4217) */
+    /** Currency code (BCD 2 bytes, ISO 4217) */
     const val BMP_CURRENCY_CODE: Byte = 0x49
 
     /** Blocked goods groups (LLVAR) */
@@ -151,29 +156,29 @@ object ZvtConstants {
     /** Single amounts End-of-Day (LLLVAR) */
     const val BMP_SINGLE_AMOUNTS: Byte = 0x60
 
-    /** Fiş numarası (BCD 2 byte) */
+    /** Receipt number (BCD 2 bytes) */
     const val BMP_RECEIPT_NR: Byte = 0x87.toByte()
 
-    /** Ciro/turnover numarası (BCD 3 byte) */
+    /** Turnover number (BCD 3 bytes) */
     const val BMP_TURNOVER_NR: Byte = 0x88.toByte()
 
-    /** Kart tipi (1 byte) */
+    /** Card type (1 byte) */
     const val BMP_CARD_TYPE: Byte = 0x8A.toByte()
 
-    /** Kart adı (LLVAR ASCII null-terminated) */
+    /** Card name (LLVAR ASCII null-terminated) */
     const val BMP_CARD_NAME: Byte = 0x8B.toByte()
 
-    /** Kart tipi ID network (1 byte) */
+    /** Card type ID / Network identifier (1 byte) */
     const val BMP_CARD_TYPE_ID: Byte = 0x8C.toByte()
 
     /** Result code AS (1 byte) */
     const val BMP_RESULT_CODE_AS: Byte = 0xA0.toByte()
 
-    /** AID parameter (5 byte fixed) */
+    /** AID parameter (5 bytes fixed) */
     const val BMP_AID_PARAMETER: Byte = 0xBA.toByte()
 
     // =====================================================
-    // TLV Tag Tanımları
+    // TLV Tag Definitions
     // =====================================================
 
     const val TLV_CARD_NAME: Int = 0x1F10
@@ -182,25 +187,25 @@ object ZvtConstants {
     const val TLV_APPLICATION_LABEL: Int = 0x50
 
     // =====================================================
-    // Registration Config Byte Bitmask'ları (Bit flags)
-    // Spec v13.13: Bitmask, OR ile birleştirilebilir
+    // Registration Config Byte Bitmasks (Bit flags)
+    // Spec v13.13: Bitmask values, can be OR-combined.
     // =====================================================
 
-    /** Bit 1: ECR ödeme fişlerini yazdırır */
+    /** Bit 1: ECR prints payment receipts */
     const val REG_ECR_PRINTS_PAYMENT_RECEIPT: Int = 0x02
-    /** Bit 2: ECR admin fişlerini yazdırır */
+    /** Bit 2: ECR prints admin receipts */
     const val REG_ECR_PRINTS_ADMIN_RECEIPT: Int = 0x04
-    /** Bit 3: ECR intermediate status ister */
+    /** Bit 3: ECR requests intermediate status messages */
     const val REG_INTERMEDIATE_STATUS: Byte = 0x08
-    /** Bit 4: ECR ödeme fonksiyonunu kontrol eder */
+    /** Bit 4: ECR controls the payment function */
     const val REG_ECR_CONTROLS_PAYMENT: Int = 0x10
-    /** Bit 5: ECR admin fonksiyonunu kontrol eder */
+    /** Bit 5: ECR controls the admin function */
     const val REG_ECR_CONTROLS_ADMIN: Int = 0x20
-    /** Bit 7: Print Line/Text Block ile yazdır (self-compile yerine) */
+    /** Bit 7: Print via Print Line/Text Block (instead of self-compile) */
     const val REG_PRINT_VIA_PRINT_LINE: Int = 0x80
 
     // =====================================================
-    // Ödeme Tipleri (BMP 0x19)
+    // Payment Types (BMP 0x19)
     // =====================================================
 
     const val PAY_TYPE_DEFAULT: Byte = 0x00
@@ -208,7 +213,7 @@ object ZvtConstants {
     const val PAY_TYPE_ELV: Byte = 0x50.toByte()
 
     // =====================================================
-    // Para Birimi Kodları (ISO 4217 - BCD)
+    // Currency Codes (ISO 4217 - BCD)
     // =====================================================
 
     const val CURRENCY_EUR: Int = 978
@@ -218,7 +223,7 @@ object ZvtConstants {
     const val CURRENCY_GBP: Int = 826
 
     // =====================================================
-    // Sonuç Kodları (BMP 0x27) - ZVT Spec v13.13 pp.200-201
+    // Result Codes (BMP 0x27) - ZVT Spec v13.13 pp.200-201
     // =====================================================
 
     const val RC_SUCCESS: Byte = 0x00
@@ -334,7 +339,7 @@ object ZvtConstants {
     const val IS_NO_MATCHING_ZVT_CODE: Byte = 0xFF.toByte()
 
     // =====================================================
-    // Bağlantı Varsayılan Ayarları
+    // Connection Default Settings
     // =====================================================
 
     const val DEFAULT_PORT: Int = 20007
@@ -345,7 +350,12 @@ object ZvtConstants {
     const val MAX_PACKET_SIZE: Int = 65535
 
     /**
-     * Sonuç kodunu okunabilir mesaja çevirir (ZVT Spec v13.13 pp.200-201)
+     * Converts a result code (BMP 0x27) to a human-readable message.
+     *
+     * Based on ZVT Spec v13.13 pp.200-201.
+     *
+     * @param code The result code byte.
+     * @return Human-readable error/success description.
      */
     fun getResultMessage(code: Byte): String = when (code) {
         RC_SUCCESS -> "Successful"
@@ -439,7 +449,12 @@ object ZvtConstants {
     }
 
     /**
-     * Intermediate status kodunu okunabilir mesaja çevirir (ZVT Spec v13.13)
+     * Converts an intermediate status code to a human-readable message.
+     *
+     * Based on ZVT Spec v13.13.
+     *
+     * @param code The intermediate status code byte.
+     * @return Human-readable status description.
      */
     fun getIntermediateStatusMessage(code: Byte): String = when (code) {
         IS_WAIT_FOR_AMOUNT_CONFIRMATION -> "Waiting for amount confirmation"
@@ -468,5 +483,41 @@ object ZvtConstants {
         IS_CONTACTLESS_FINISHED -> "Contactless card access finished"
         IS_NO_MATCHING_ZVT_CODE -> "No matching ZVT status code (check TLV tags 24, 07)"
         else -> "Status: 0x${String.format("%02X", code.toInt() and 0xFF)}"
+    }
+
+    /**
+     * Returns a human-readable name for a ZVT command code.
+     *
+     * Used for logging purposes to identify packet types in the protocol trace.
+     *
+     * @param command The 2-byte command code.
+     * @return Command name string, e.g. "Registration (06 00)".
+     */
+    fun getCommandName(command: ByteArray): String {
+        if (command.size < 2) return "Unknown"
+        val hex = String.format("%02X %02X", command[0], command[1])
+        return when {
+            command.contentEquals(CMD_REGISTRATION) -> "Registration ($hex)"
+            command.contentEquals(CMD_AUTHORIZATION) -> "Authorization ($hex)"
+            command.contentEquals(CMD_LOG_OFF) -> "Log Off ($hex)"
+            command.contentEquals(CMD_END_OF_DAY) -> "End of Day ($hex)"
+            command.contentEquals(CMD_REVERSAL) -> "Reversal ($hex)"
+            command.contentEquals(CMD_REFUND) -> "Refund ($hex)"
+            command.contentEquals(CMD_DIAGNOSIS) -> "Diagnosis ($hex)"
+            command.contentEquals(CMD_ABORT) -> "Abort ($hex)"
+            command.contentEquals(CMD_PRINT_LINE) -> "Print Line ($hex)"
+            command.contentEquals(CMD_STATUS_ENQUIRY) -> "Status Enquiry ($hex)"
+            command.contentEquals(CMD_PRE_AUTHORIZATION) -> "Pre-Authorization ($hex)"
+            command.contentEquals(CMD_PARTIAL_REVERSAL) -> "Partial Reversal ($hex)"
+            command.contentEquals(RESP_COMPLETION) -> "Completion ($hex)"
+            command.contentEquals(RESP_STATUS_INFO) -> "Status Info ($hex)"
+            command.contentEquals(RESP_INTERMEDIATE_STATUS) -> "Intermediate Status ($hex)"
+            command.contentEquals(RESP_ABORT) -> "Abort ($hex)"
+            command.contentEquals(RESP_PRINT_LINE) -> "Print Line ($hex)"
+            command.contentEquals(RESP_PRINT_TEXT) -> "Print Text Block ($hex)"
+            command[0] == 0x80.toByte() -> "ACK ($hex)"
+            command[0] == 0x84.toByte() -> "NACK ($hex)"
+            else -> "Unknown ($hex)"
+        }
     }
 }

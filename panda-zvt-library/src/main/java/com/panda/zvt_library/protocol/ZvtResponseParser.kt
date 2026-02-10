@@ -6,67 +6,121 @@ import com.panda.zvt_library.util.TlvParser
 import com.panda.zvt_library.util.toHexString
 import com.panda.zvt_library.util.toSafeAscii
 import com.panda.zvt_library.util.toUnsignedInt
+import timber.log.Timber
 
 /**
- * ZVT Yanıt Ayrıştırıcı
+ * ZVT response parser.
  *
- * Terminal'den gelen yanıt paketlerini model nesnelerine dönüştürür.
- * Status Info (04 0F) ve Completion (06 0F) yanıtlarındaki BMP alanlarını okur.
+ * Parses response packets received from the payment terminal (PT -> ECR direction)
+ * into structured model objects. Handles Status Information (04 0F), Intermediate
+ * Status (04 FF), Completion (06 0F), Abort (06 1E), and Print Line (06 D1) packets.
+ *
+ * Supports parsing of all standard BMP fields including fixed-length, LLVAR, and LLLVAR
+ * encoded data, as well as nested TLV containers.
+ *
+ * Reference: ZVT Protocol Specification v13.13
+ *
+ * @author Erkan Kaplan
+ * @since 2026-02-10
  */
 object ZvtResponseParser {
 
+    private const val TAG = "ZVT"
+
     /**
-     * Status Info (04 0F) paketinden TransactionResult oluşturur
+     * Parses a Status Information packet (04 0F) into a [TransactionResult].
+     *
+     * The Status Info packet contains BMP fields with transaction details
+     * such as amount, card data, trace number, receipt number, etc.
+     *
+     * @param packet The received [ZvtPacket] with command 04 0F.
+     * @return Parsed [TransactionResult] with all extracted fields.
      */
     fun parseStatusInfo(packet: ZvtPacket): TransactionResult {
+        Timber.tag(TAG).d("[ResponseParser] Parsing Status Info (04 0F), data length=%d bytes", packet.dataLength)
         return parseBmpData(packet.data)
     }
 
     /**
-     * Intermediate Status (04 FF) paketini okur
+     * Parses an Intermediate Status packet (04 FF) into an [IntermediateStatus].
+     *
+     * The first byte of data is the status code which maps to a human-readable message
+     * (e.g. "Insert card", "Enter PIN", "Please wait").
+     *
+     * @param packet The received [ZvtPacket] with command 04 FF.
+     * @return Parsed [IntermediateStatus] with code and message.
      */
     fun parseIntermediateStatus(packet: ZvtPacket): IntermediateStatus {
         val statusCode = if (packet.data.isNotEmpty()) packet.data[0] else 0x00
+        val message = ZvtConstants.getIntermediateStatusMessage(statusCode)
+        Timber.tag(TAG).d("[ResponseParser] Intermediate Status: code=0x%02X, message='%s'",
+            statusCode, message)
         return IntermediateStatus(
             statusCode = statusCode,
-            message = ZvtConstants.getIntermediateStatusMessage(statusCode)
+            message = message
         )
     }
 
     /**
-     * Completion (06 0F) paketini okur (genellikle data boş olur)
+     * Parses a Completion packet (06 0F) into a [TransactionResult].
+     *
+     * Completion packets usually have no data payload (indicating success),
+     * but may contain BMP fields in some cases.
+     *
+     * @param packet The received [ZvtPacket] with command 06 0F.
+     * @return Parsed [TransactionResult].
      */
     fun parseCompletion(packet: ZvtPacket): TransactionResult {
+        Timber.tag(TAG).d("[ResponseParser] Parsing Completion (06 0F), data length=%d bytes", packet.dataLength)
         return if (packet.data.isEmpty()) {
-            TransactionResult(success = true, resultMessage = "İşlem tamamlandı")
+            Timber.tag(TAG).d("[ResponseParser] Completion with no data -> success")
+            TransactionResult(success = true, resultMessage = "Transaction completed")
         } else {
             parseBmpData(packet.data)
         }
     }
 
     /**
-     * Abort (06 1E) paketini okur
+     * Parses an Abort packet (06 1E) into a [TransactionResult].
+     *
+     * The first byte of data contains the result/error code.
+     *
+     * @param packet The received [ZvtPacket] with command 06 1E.
+     * @return Parsed [TransactionResult] with success=false and the error message.
      */
     fun parseAbort(packet: ZvtPacket): TransactionResult {
         val resultCode = if (packet.data.isNotEmpty()) packet.data[0] else ZvtConstants.RC_SYSTEM_ERROR
+        val message = ZvtConstants.getResultMessage(resultCode)
+        Timber.tag(TAG).d("[ResponseParser] Abort: resultCode=0x%02X, message='%s'",
+            resultCode, message)
         return TransactionResult(
             success = false,
             resultCode = resultCode,
-            resultMessage = ZvtConstants.getResultMessage(resultCode)
+            resultMessage = message
         )
     }
 
     /**
-     * Print Line (06 D1) paketinden metin satırı okur
+     * Parses a Print Line packet (06 D1) to extract the receipt text line.
+     *
+     * The first byte is a print attribute, and the remaining bytes are ASCII text.
+     *
+     * @param packet The received [ZvtPacket] with command 06 D1.
+     * @return The text line to print, or empty string if no text is present.
      */
     fun parsePrintLine(packet: ZvtPacket): String {
         if (packet.data.isEmpty()) return ""
-        // İlk byte attribute, geri kalanı text
-        return if (packet.data.size > 1) {
+        // First byte is attribute, rest is text
+        val line = if (packet.data.size > 1) {
             packet.data.copyOfRange(1, packet.data.size).toSafeAscii().trim()
         } else {
             ""
         }
+        if (line.isNotEmpty()) {
+            Timber.tag(TAG).d("[ResponseParser] Print Line: attr=0x%02X, text='%s'",
+                packet.data[0], line)
+        }
+        return line
     }
 
     // =====================================================
@@ -74,12 +128,15 @@ object ZvtResponseParser {
     // =====================================================
 
     /**
-     * BMP alanlarını içeren veri bloğunu ayrıştırır.
+     * Parses BMP (Bitmap) fields from a data block into a [TransactionResult].
      *
-     * BMP formatı (ZVT Spec v13.13):
-     * - Fixed length: [TAG(1)] [DATA(n)] — uzunluk tag'e göre sabit
-     * - LLVAR: [TAG(1)] [LEN(2 byte FxFy)] [DATA(n)] — FxFy = nibble coded length
-     * - LLLVAR: [TAG(1)] [LEN(3 byte FxFyFz)] [DATA(n)] — FxFyFz = nibble coded length
+     * BMP field format (ZVT Spec v13.13):
+     * - **Fixed length**: `[TAG(1)] [DATA(n)]` - length determined by tag
+     * - **LLVAR**: `[TAG(1)] [LEN(2 byte FxFy)] [DATA(n)]` - FxFy = nibble-coded length
+     * - **LLLVAR**: `[TAG(1)] [LEN(3 byte FxFyFz)] [DATA(n)]` - FxFyFz = nibble-coded length
+     *
+     * @param data Raw byte array containing BMP fields.
+     * @return Populated [TransactionResult] with all parsed fields.
      */
     private fun parseBmpData(data: ByteArray): TransactionResult {
         var success = true
@@ -104,6 +161,9 @@ object ZvtResponseParser {
 
         var offset = 0
 
+        Timber.tag(TAG).d("[ResponseParser] Parsing BMP data: %d bytes, hex=%s",
+            data.size, data.toHexString())
+
         while (offset < data.size) {
             val tag = data[offset]
             offset++
@@ -113,14 +173,17 @@ object ZvtResponseParser {
                     // Service byte - 1 byte
                     ZvtConstants.BMP_SERVICE_BYTE -> {
                         if (offset < data.size) {
-                            offset++ // read and skip
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x03 Service byte: 0x%02X", data[offset])
+                            offset++
                         }
                     }
 
-                    // Tutar - 6 byte BCD
+                    // Amount - 6 byte BCD
                     ZvtConstants.BMP_AMOUNT -> {
                         if (offset + 6 <= data.size) {
                             amount = BcdHelper.bcdToAmount(data.copyOfRange(offset, offset + 6))
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x04 Amount: %d cents (%.2f EUR), raw=%s",
+                                amount, amount / 100.0, data.copyOfRange(offset, offset + 6).toHexString())
                             offset += 6
                         }
                     }
@@ -132,9 +195,12 @@ object ZvtResponseParser {
                             offset += bytesRead
                             if (offset + len <= data.size) {
                                 val tlvData = data.copyOfRange(offset, offset + len)
+                                Timber.tag(TAG).d("[ResponseParser] BMP 0x06 TLV container: %d bytes, hex=%s",
+                                    len, tlvData.toHexString())
                                 parseTlvEntries(tlvData).let { entries ->
                                     entries.firstOrNull { it.tag == ZvtConstants.TLV_CARD_NAME }?.let {
                                         cardName = it.valueAscii
+                                        Timber.tag(TAG).d("[ResponseParser]   TLV card name: '%s'", cardName)
                                     }
                                 }
                                 offset += len
@@ -142,50 +208,57 @@ object ZvtResponseParser {
                         }
                     }
 
-                    // Trace numarası - 3 byte BCD
+                    // Trace number - 3 byte BCD
                     ZvtConstants.BMP_TRACE_NUMBER -> {
                         if (offset + 3 <= data.size) {
                             traceNumber = BcdHelper.bcdToTraceNumber(data.copyOfRange(offset, offset + 3))
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x0B Trace number: %d, raw=%s",
+                                traceNumber, data.copyOfRange(offset, offset + 3).toHexString())
                             offset += 3
                         }
                     }
 
-                    // Saat - 3 byte BCD (HHMMSS)
+                    // Time - 3 byte BCD (HHMMSS)
                     ZvtConstants.BMP_TIME -> {
                         if (offset + 3 <= data.size) {
                             time = BcdHelper.bcdToString(data.copyOfRange(offset, offset + 3))
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x0C Time: %s", time)
                             offset += 3
                         }
                     }
 
-                    // Tarih - 2 byte BCD (MMDD)
+                    // Date - 2 byte BCD (MMDD)
                     ZvtConstants.BMP_DATE -> {
                         if (offset + 2 <= data.size) {
                             date = BcdHelper.bcdToString(data.copyOfRange(offset, offset + 2))
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x0D Date: %s", date)
                             offset += 2
                         }
                     }
 
-                    // Son kullanma tarihi - 2 byte BCD (YYMM)
+                    // Expiry date - 2 byte BCD (YYMM)
                     ZvtConstants.BMP_EXPIRY_DATE -> {
                         if (offset + 2 <= data.size) {
                             expiryDate = BcdHelper.bcdToString(data.copyOfRange(offset, offset + 2))
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x0E Expiry date: %s", expiryDate)
                             offset += 2
                         }
                     }
 
-                    // Kart sıra numarası - 2 byte BCD
+                    // Card sequence number - 2 byte BCD
                     ZvtConstants.BMP_CARD_SEQUENCE_NR -> {
                         if (offset + 2 <= data.size) {
                             sequenceNumber = BcdHelper.bcdToString(data.copyOfRange(offset, offset + 2)).toIntOrNull() ?: 0
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x17 Card sequence number: %d", sequenceNumber)
                             offset += 2
                         }
                     }
 
-                    // Ödeme tipi - 1 byte
+                    // Payment type - 1 byte
                     ZvtConstants.BMP_PAYMENT_TYPE -> {
                         if (offset < data.size) {
                             paymentType = data[offset]
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x19 Payment type: 0x%02X", paymentType)
                             offset++
                         }
                     }
@@ -194,19 +267,23 @@ object ZvtResponseParser {
                     ZvtConstants.BMP_CARD_NUMBER -> {
                         if (offset + 2 <= data.size) {
                             val len = decodeLlvar(data, offset)
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x22 PAN/EF_ID: LLVAR len=%d", len)
                             offset += 2
                             if (offset + len <= data.size) {
                                 maskedPan = BcdHelper.bcdToString(data.copyOfRange(offset, offset + len))
+                                Timber.tag(TAG).d("[ResponseParser]   PAN: %s", maskedPan)
                                 offset += len
                             }
                         }
                     }
 
-                    // Sonuç kodu - 1 byte
+                    // Result code - 1 byte
                     ZvtConstants.BMP_RESULT_CODE -> {
                         if (offset < data.size) {
                             resultCode = data[offset]
                             success = resultCode == ZvtConstants.RC_SUCCESS
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x27 Result code: 0x%02X (%s) -> success=%b",
+                                resultCode, ZvtConstants.getResultMessage(resultCode), success)
                             offset++
                         }
                     }
@@ -215,22 +292,25 @@ object ZvtResponseParser {
                     ZvtConstants.BMP_TERMINAL_ID -> {
                         if (offset + 4 <= data.size) {
                             terminalId = BcdHelper.bcdToString(data.copyOfRange(offset, offset + 4))
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x29 Terminal ID: %s", terminalId)
                             offset += 4
                         }
                     }
 
-                    // VU numarası - 15 byte ASCII (fixed)
+                    // VU number - 15 byte ASCII (fixed)
                     ZvtConstants.BMP_VU_NUMBER -> {
                         if (offset + 15 <= data.size) {
                             vuNumber = data.copyOfRange(offset, offset + 15).toSafeAscii().trim()
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x2A VU number: '%s'", vuNumber)
                             offset += 15
                         }
                     }
 
-                    // Original trace numarası - 3 byte BCD (reversal only)
+                    // Original trace number - 3 byte BCD (reversal only)
                     ZvtConstants.BMP_ORIGINAL_TRACE -> {
                         if (offset + 3 <= data.size) {
                             originalTrace = BcdHelper.bcdToTraceNumber(data.copyOfRange(offset, offset + 3))
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x37 Original trace: %d", originalTrace)
                             offset += 3
                         }
                     }
@@ -239,6 +319,7 @@ object ZvtResponseParser {
                     ZvtConstants.BMP_AID -> {
                         if (offset + 8 <= data.size) {
                             aid = data.copyOfRange(offset, offset + 8).toHexString("")
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x3B AID: %s", aid)
                             offset += 8
                         }
                     }
@@ -247,12 +328,15 @@ object ZvtResponseParser {
                     ZvtConstants.BMP_ADDITIONAL_DATA -> {
                         if (offset + 3 <= data.size) {
                             val len = decodeLllvar(data, offset)
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x3C Additional data: LLLVAR len=%d", len)
                             offset += 3
                             if (offset + len <= data.size) {
                                 val tlvData = data.copyOfRange(offset, offset + len)
+                                Timber.tag(TAG).d("[ResponseParser]   TLV data: %s", tlvData.toHexString())
                                 parseTlvEntries(tlvData).let { entries ->
                                     entries.firstOrNull { it.tag == ZvtConstants.TLV_CARD_NAME }?.let {
                                         cardName = it.valueAscii
+                                        Timber.tag(TAG).d("[ResponseParser]   TLV card name: '%s'", cardName)
                                     }
                                 }
                                 offset += len
@@ -260,9 +344,11 @@ object ZvtResponseParser {
                         }
                     }
 
-                    // Para birimi kodu - 2 byte BCD
+                    // Currency code - 2 byte BCD
                     ZvtConstants.BMP_CURRENCY_CODE -> {
                         if (offset + 2 <= data.size) {
+                            val cc = BcdHelper.bcdToString(data.copyOfRange(offset, offset + 2))
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x49 Currency code: %s", cc)
                             offset += 2
                         }
                     }
@@ -271,6 +357,7 @@ object ZvtResponseParser {
                     ZvtConstants.BMP_BLOCKED_GOODS_GROUPS -> {
                         if (offset + 2 <= data.size) {
                             val len = decodeLlvar(data, offset)
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x4C Blocked goods groups: LLVAR len=%d", len)
                             offset += 2
                             if (offset + len <= data.size) {
                                 offset += len // skip
@@ -282,6 +369,7 @@ object ZvtResponseParser {
                     ZvtConstants.BMP_SINGLE_AMOUNTS -> {
                         if (offset + 3 <= data.size) {
                             val len = decodeLllvar(data, offset)
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x60 Single amounts: LLLVAR len=%d", len)
                             offset += 3
                             if (offset + len <= data.size) {
                                 offset += len // skip for now
@@ -289,47 +377,54 @@ object ZvtResponseParser {
                         }
                     }
 
-                    // Fiş numarası - 2 byte BCD
+                    // Receipt number - 2 byte BCD
                     ZvtConstants.BMP_RECEIPT_NR -> {
                         if (offset + 2 <= data.size) {
                             receiptNumber = BcdHelper.bcdToString(data.copyOfRange(offset, offset + 2)).toIntOrNull() ?: 0
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x87 Receipt number: %d", receiptNumber)
                             offset += 2
                         }
                     }
 
-                    // Ciro/turnover numarası - 3 byte BCD
+                    // Turnover number - 3 byte BCD
                     ZvtConstants.BMP_TURNOVER_NR -> {
                         if (offset + 3 <= data.size) {
                             turnoverNumber = BcdHelper.bcdToTraceNumber(data.copyOfRange(offset, offset + 3))
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x88 Turnover number: %d", turnoverNumber)
                             offset += 3
                         }
                     }
 
-                    // Kart tipi - 1 byte
+                    // Card type - 1 byte
                     ZvtConstants.BMP_CARD_TYPE -> {
                         if (offset < data.size) {
                             cardType = resolveCardType(data[offset])
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x8A Card type: 0x%02X -> '%s'",
+                                data[offset], cardType)
                             offset++
                         }
                     }
 
-                    // Kart adı - LLVAR ASCII null-terminated
+                    // Card name - LLVAR ASCII null-terminated
                     ZvtConstants.BMP_CARD_NAME -> {
                         if (offset + 2 <= data.size) {
                             val len = decodeLlvar(data, offset)
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x8B Card name: LLVAR len=%d", len)
                             offset += 2
                             if (offset + len <= data.size) {
                                 cardName = data.copyOfRange(offset, offset + len)
                                     .toSafeAscii().trimEnd('\u0000').trim()
+                                Timber.tag(TAG).d("[ResponseParser]   Card name: '%s'", cardName)
                                 offset += len
                             }
                         }
                     }
 
-                    // Kart tipi ID network - 1 byte
+                    // Card type ID / Network identifier - 1 byte
                     ZvtConstants.BMP_CARD_TYPE_ID -> {
                         if (offset < data.size) {
-                            offset++ // read and skip
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0x8C Card type network ID: 0x%02X", data[offset])
+                            offset++
                         }
                     }
 
@@ -337,6 +432,7 @@ object ZvtResponseParser {
                     ZvtConstants.BMP_RESULT_CODE_AS -> {
                         if (offset < data.size) {
                             resultCodeAs = data[offset]
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0xA0 Result code AS: 0x%02X", resultCodeAs)
                             offset++
                         }
                     }
@@ -344,18 +440,23 @@ object ZvtResponseParser {
                     // AID parameter - 5 byte fixed
                     ZvtConstants.BMP_AID_PARAMETER -> {
                         if (offset + 5 <= data.size) {
-                            offset += 5 // read and skip
+                            Timber.tag(TAG).d("[ResponseParser] BMP 0xBA AID parameter: %s",
+                                data.copyOfRange(offset, offset + 5).toHexString())
+                            offset += 5
                         }
                     }
 
-                    // Bilinmeyen tag → veriyi log'la ve dur
-                    // (Bilinmeyen BMP tag'in uzunluğu belirlenemez, devam etmek tehlikeli)
+                    // Unknown tag -> log and stop
+                    // (Cannot determine unknown BMP tag's length, continuing is unsafe)
                     else -> {
+                        Timber.tag(TAG).w("[ResponseParser] Unknown BMP tag 0x%02X at offset %d, stopping parse",
+                            tag, offset - 1)
                         break
                     }
                 }
             } catch (e: Exception) {
-                // Parse hatası, dur
+                Timber.tag(TAG).e("[ResponseParser] Parse error at BMP tag 0x%02X, offset %d: %s",
+                    tag, offset, e.message)
                 break
             }
         }
@@ -371,7 +472,7 @@ object ZvtResponseParser {
             )
         } else null
 
-        return TransactionResult(
+        val result = TransactionResult(
             success = success,
             resultCode = resultCode,
             resultMessage = ZvtConstants.getResultMessage(resultCode),
@@ -387,6 +488,11 @@ object ZvtResponseParser {
             turnoverNumber = turnoverNumber,
             rawData = data
         )
+
+        Timber.tag(TAG).d("[ResponseParser] Parse result: success=%b, resultCode=0x%02X, amount=%d, trace=%d, receipt=%d",
+            result.success, result.resultCode, result.amountInCents, result.traceNumber, result.receiptNumber)
+
+        return result
     }
 
     // =====================================================
@@ -394,9 +500,14 @@ object ZvtResponseParser {
     // =====================================================
 
     /**
-     * LLVAR uzunluk çözücü: 2 byte FxFy formatı
-     * Her byte 0xFn formatında, n = nibble digit
-     * Ör: F0 F3 → "03" → 3 byte
+     * Decodes an LLVAR length field (2-byte FxFy format).
+     *
+     * Each byte is in `0xFn` format where `n` is a nibble digit.
+     * Example: `F0 F3` -> "03" -> 3 bytes.
+     *
+     * @param data The data array.
+     * @param offset Position of the first length byte.
+     * @return Decoded length value.
      */
     private fun decodeLlvar(data: ByteArray, offset: Int): Int {
         val d1 = data[offset].toInt() and 0x0F
@@ -405,8 +516,13 @@ object ZvtResponseParser {
     }
 
     /**
-     * LLLVAR uzunluk çözücü: 3 byte FxFyFz formatı
-     * Ör: F0 F1 F5 → "015" → 15 byte
+     * Decodes an LLLVAR length field (3-byte FxFyFz format).
+     *
+     * Example: `F0 F1 F5` -> "015" -> 15 bytes.
+     *
+     * @param data The data array.
+     * @param offset Position of the first length byte.
+     * @return Decoded length value.
      */
     private fun decodeLllvar(data: ByteArray, offset: Int): Int {
         val d1 = data[offset].toInt() and 0x0F
@@ -416,8 +532,11 @@ object ZvtResponseParser {
     }
 
     /**
-     * BER-TLV length encoding decoder (BMP 06 TLV container)
-     * Returns (length, bytesConsumed)
+     * Decodes a BER-TLV length field (used in BMP 06 TLV container).
+     *
+     * @param data The data array.
+     * @param offset Position of the length field.
+     * @return Pair(decoded length, bytes consumed by the length field).
      */
     private fun readBerTlvLength(data: ByteArray, offset: Int): Pair<Int, Int> {
         if (offset >= data.size) return Pair(0, 0)
@@ -440,12 +559,20 @@ object ZvtResponseParser {
     }
 
     /**
-     * TLV entries'i parse eder
+     * Parses TLV entries using the [TlvParser].
+     *
+     * @param data Raw TLV byte data.
+     * @return List of parsed TLV entries.
      */
     private fun parseTlvEntries(data: ByteArray) = TlvParser.parse(data)
 
     /**
-     * Kart tipi byte'ını okunabilir isme çevirir
+     * Resolves a card type byte to a human-readable card name.
+     *
+     * Based on ZVT Spec v13.13 card type definitions.
+     *
+     * @param typeByte The card type byte from BMP 0x8A.
+     * @return Human-readable card type name.
      */
     private fun resolveCardType(typeByte: Byte): String = when (typeByte.toUnsignedInt()) {
         0x01 -> "EC / Girocard"
@@ -458,7 +585,7 @@ object ZvtResponseParser {
         0x0C -> "Diners Club"
         0x0E -> "Discover"
         0x0F -> "UnionPay"
-        0x46 -> "girocard kontaktlos"
-        else -> "Bilinmeyen (${String.format("0x%02X", typeByte)})"
+        0x46 -> "girocard contactless"
+        else -> "Unknown (${String.format("0x%02X", typeByte)})"
     }
 }

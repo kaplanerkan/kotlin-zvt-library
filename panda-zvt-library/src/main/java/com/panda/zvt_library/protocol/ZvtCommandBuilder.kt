@@ -2,14 +2,35 @@ package com.panda.zvt_library.protocol
 
 import com.panda.zvt_library.util.BcdHelper
 import com.panda.zvt_library.util.TlvParser
+import com.panda.zvt_library.util.toHexString
+import timber.log.Timber
 
 /**
- * ZVT Komut Oluşturucu
+ * ZVT command builder for ECR -> Terminal direction.
  *
- * ECR → Terminal yönünde gönderilecek tüm komut paketlerini oluşturur.
- * Her metod bir ZvtPacket döner.
+ * Constructs APDU command packets for all supported ZVT operations.
+ * Each method returns a [ZvtPacket] ready to be sent to the payment terminal.
+ *
+ * Supported commands:
+ * - Registration (06 00)
+ * - Authorization (06 01)
+ * - Log Off (06 02)
+ * - Pre-Authorization (06 22)
+ * - Reversal (06 30)
+ * - Refund (06 31)
+ * - End of Day (06 50)
+ * - Diagnosis (06 70)
+ * - Abort (06 1E)
+ * - Status Enquiry (05 01)
+ *
+ * Reference: ZVT Protocol Specification v13.13
+ *
+ * @author Erkan Kaplan
+ * @since 2026-02-10
  */
 object ZvtCommandBuilder {
+
+    private const val TAG = "ZVT"
 
     // =====================================================
     // Registration (06 00)
@@ -19,12 +40,18 @@ object ZvtCommandBuilder {
     private const val TLV_TAG_PERMITTED_COMMANDS = 0x26
 
     /**
-     * Terminal kayıt komutu oluşturur.
-     * Terminal ile ilk bağlantıda gönderilir.
+     * Builds a Registration command (06 00).
      *
-     * @param password Terminal şifresi (genellikle "000000" - 3 byte BCD)
-     * @param configByte Yapılandırma byte'ı (bitmask, hangi taraf fiş yazdıracak vs.)
-     * @param currencyCode ISO 4217 para birimi kodu (varsayılan EUR: 978)
+     * This command must be sent as the first communication with the terminal.
+     * It registers the ECR with the terminal and configures the session.
+     *
+     * The command includes a TLV container (BMP 06) with the list of permitted
+     * PT->ECR commands (tag 26), as strongly recommended by the ZVT spec.
+     *
+     * @param password Terminal password (usually "000000", encoded as 3-byte BCD).
+     * @param configByte Configuration bitmask (controls receipt printing, intermediate status, etc.).
+     * @param currencyCode ISO 4217 currency code (default EUR: 978).
+     * @return [ZvtPacket] containing the Registration command.
      */
     fun buildRegistration(
         password: String = "000000",
@@ -63,15 +90,24 @@ object ZvtCommandBuilder {
         }
         data.addAll(tlvData.toList())
 
-        return ZvtPacket(
+        val packet = ZvtPacket(
             command = ZvtConstants.CMD_REGISTRATION,
             data = data.toByteArray()
         )
+
+        Timber.tag(TAG).d("[CommandBuilder] Built Registration: password=%s, configByte=0x%02X, currency=%d, data=%s",
+            password, configByte, currencyCode, data.toByteArray().toHexString())
+
+        return packet
     }
 
     /**
-     * Desteklenen ZVT komutlarının listesini oluşturur (tag 26 içeriği).
-     * Her komut 2 byte: [CLASS][INSTR]
+     * Builds the list of permitted PT->ECR commands for tag 26.
+     *
+     * Each command is encoded as 2 bytes: [CLASS][INSTR].
+     * This list tells the terminal which response types the ECR supports.
+     *
+     * @return Byte array containing the permitted command codes.
      */
     private fun buildPermittedCommandsList(): ByteArray {
         val commands = mutableListOf<Byte>()
@@ -91,22 +127,24 @@ object ZvtCommandBuilder {
     }
 
     // =====================================================
-    // Authorization / Ödeme (06 01)
+    // Authorization / Payment (06 01)
     // =====================================================
 
     /**
-     * Ödeme komutu oluşturur.
+     * Builds an Authorization command (06 01) for a payment transaction.
      *
-     * @param amountInCents Tutar (cent cinsinden) - ör: 1250 = 12.50 EUR
-     * @param paymentType Ödeme tipi (varsayılan: otomatik algılama)
-     * @param currencyCode Para birimi
+     * @param amountInCents Amount in cents, e.g. 1250 = 12.50 EUR.
+     * @param paymentType Payment type byte (default: automatic detection).
+     * @param currencyCode ISO 4217 currency code.
+     * @return [ZvtPacket] containing the Authorization command.
+     * @throws IllegalArgumentException if the amount is not positive.
      */
     fun buildAuthorization(
         amountInCents: Long,
         paymentType: Byte = ZvtConstants.PAY_TYPE_DEFAULT,
         currencyCode: Int = ZvtConstants.CURRENCY_EUR
     ): ZvtPacket {
-        require(amountInCents > 0) { "Tutar 0'dan büyük olmalı" }
+        require(amountInCents > 0) { "Amount must be greater than 0" }
 
         val data = mutableListOf<Byte>()
 
@@ -124,14 +162,24 @@ object ZvtCommandBuilder {
         data.add(ZvtConstants.BMP_CURRENCY_CODE)
         data.addAll(BcdHelper.currencyToBcd(currencyCode).toList())
 
-        return ZvtPacket(
+        val packet = ZvtPacket(
             command = ZvtConstants.CMD_AUTHORIZATION,
             data = data.toByteArray()
         )
+
+        Timber.tag(TAG).d("[CommandBuilder] Built Authorization: amount=%d cents (%.2f EUR), paymentType=0x%02X, currency=%d",
+            amountInCents, amountInCents / 100.0, paymentType, currencyCode)
+
+        return packet
     }
 
     /**
-     * Euro tutarı ile ödeme komutu (kolay kullanım)
+     * Builds an Authorization command using a Euro amount (convenience overload).
+     *
+     * @param amountEuro Amount in Euro, e.g. 12.50.
+     * @param paymentType Payment type byte.
+     * @param currencyCode ISO 4217 currency code.
+     * @return [ZvtPacket] containing the Authorization command.
      */
     fun buildAuthorization(
         amountEuro: Double,
@@ -143,14 +191,14 @@ object ZvtCommandBuilder {
     }
 
     // =====================================================
-    // Reversal / İptal (06 30)
+    // Reversal (06 30)
     // =====================================================
 
     /**
-     * İptal komutu oluşturur.
-     * Bir önceki işlemi iptal eder.
+     * Builds a Reversal command (06 30) to cancel a previous transaction.
      *
-     * @param receiptNumber İptal edilecek fiş numarası (BCD 2 byte)
+     * @param receiptNumber Optional receipt number of the transaction to reverse (BCD 2 bytes).
+     * @return [ZvtPacket] containing the Reversal command.
      */
     fun buildReversal(receiptNumber: Int? = null): ZvtPacket {
         val data = mutableListOf<Byte>()
@@ -158,33 +206,40 @@ object ZvtCommandBuilder {
         // Password (3 byte BCD - "000000")
         data.addAll(BcdHelper.stringToBcd("000000").toList())
 
-        // Receipt number (opsiyonel)
+        // Receipt number (optional)
         if (receiptNumber != null) {
             data.add(ZvtConstants.BMP_RECEIPT_NR)
             data.addAll(BcdHelper.stringToBcd(receiptNumber.toString().padStart(4, '0')).toList())
         }
 
-        return ZvtPacket(
+        val packet = ZvtPacket(
             command = ZvtConstants.CMD_REVERSAL,
             data = data.toByteArray()
         )
+
+        Timber.tag(TAG).d("[CommandBuilder] Built Reversal: receiptNumber=%s",
+            receiptNumber?.toString() ?: "none")
+
+        return packet
     }
 
     // =====================================================
-    // Refund / İade (06 31)
+    // Refund (06 31)
     // =====================================================
 
     /**
-     * İade komutu oluşturur.
+     * Builds a Refund command (06 31).
      *
-     * @param amountInCents İade tutarı (cent)
-     * @param currencyCode Para birimi
+     * @param amountInCents Refund amount in cents.
+     * @param currencyCode ISO 4217 currency code.
+     * @return [ZvtPacket] containing the Refund command.
+     * @throws IllegalArgumentException if the amount is not positive.
      */
     fun buildRefund(
         amountInCents: Long,
         currencyCode: Int = ZvtConstants.CURRENCY_EUR
     ): ZvtPacket {
-        require(amountInCents > 0) { "İade tutarı 0'dan büyük olmalı" }
+        require(amountInCents > 0) { "Refund amount must be greater than 0" }
 
         val data = mutableListOf<Byte>()
 
@@ -199,19 +254,25 @@ object ZvtCommandBuilder {
         data.add(ZvtConstants.BMP_CURRENCY_CODE)
         data.addAll(BcdHelper.currencyToBcd(currencyCode).toList())
 
-        return ZvtPacket(
+        val packet = ZvtPacket(
             command = ZvtConstants.CMD_REFUND,
             data = data.toByteArray()
         )
+
+        Timber.tag(TAG).d("[CommandBuilder] Built Refund: amount=%d cents (%.2f EUR), currency=%d",
+            amountInCents, amountInCents / 100.0, currencyCode)
+
+        return packet
     }
 
     // =====================================================
-    // End of Day / Gün Sonu (06 50)
+    // End of Day (06 50)
     // =====================================================
 
     /**
-     * Gün sonu komutu oluşturur.
-     * Günlük işlemleri kapatır.
+     * Builds an End of Day command (06 50) to close the daily batch.
+     *
+     * @return [ZvtPacket] containing the End of Day command.
      */
     fun buildEndOfDay(): ZvtPacket {
         val data = mutableListOf<Byte>()
@@ -219,21 +280,27 @@ object ZvtCommandBuilder {
         // Password (3 byte BCD)
         data.addAll(BcdHelper.stringToBcd("000000").toList())
 
-        return ZvtPacket(
+        val packet = ZvtPacket(
             command = ZvtConstants.CMD_END_OF_DAY,
             data = data.toByteArray()
         )
+
+        Timber.tag(TAG).d("[CommandBuilder] Built End of Day")
+
+        return packet
     }
 
     // =====================================================
-    // Diagnosis / Tanılama (06 70)
+    // Diagnosis (06 70)
     // =====================================================
 
     /**
-     * Tanılama komutu oluşturur.
-     * Terminal durumunu sorgular.
+     * Builds a Diagnosis command (06 70) to query the terminal status.
+     *
+     * @return [ZvtPacket] containing the Diagnosis command.
      */
     fun buildDiagnosis(): ZvtPacket {
+        Timber.tag(TAG).d("[CommandBuilder] Built Diagnosis")
         return ZvtPacket(
             command = ZvtConstants.CMD_DIAGNOSIS,
             data = byteArrayOf()
@@ -241,13 +308,16 @@ object ZvtCommandBuilder {
     }
 
     // =====================================================
-    // Status Enquiry / Durum Sorgulama (05 01)
+    // Status Enquiry (05 01)
     // =====================================================
 
     /**
-     * Terminal durum sorgulama komutu
+     * Builds a Status Enquiry command (05 01) to check the terminal state.
+     *
+     * @return [ZvtPacket] containing the Status Enquiry command.
      */
     fun buildStatusEnquiry(): ZvtPacket {
+        Timber.tag(TAG).d("[CommandBuilder] Built Status Enquiry")
         return ZvtPacket(
             command = ZvtConstants.CMD_STATUS_ENQUIRY,
             data = byteArrayOf()
@@ -255,13 +325,16 @@ object ZvtCommandBuilder {
     }
 
     // =====================================================
-    // Abort / Abbruch (06 1E)
+    // Abort (06 1E)
     // =====================================================
 
     /**
-     * Devam eden işlemi iptal etme komutu
+     * Builds an Abort command (06 1E) to cancel an ongoing operation.
+     *
+     * @return [ZvtPacket] containing the Abort command.
      */
     fun buildAbort(): ZvtPacket {
+        Timber.tag(TAG).d("[CommandBuilder] Built Abort")
         return ZvtPacket(
             command = ZvtConstants.CMD_ABORT,
             data = byteArrayOf()
@@ -273,9 +346,12 @@ object ZvtCommandBuilder {
     // =====================================================
 
     /**
-     * Terminal bağlantısını sonlandırma komutu
+     * Builds a Log Off command (06 02) to disconnect from the terminal.
+     *
+     * @return [ZvtPacket] containing the Log Off command.
      */
     fun buildLogOff(): ZvtPacket {
+        Timber.tag(TAG).d("[CommandBuilder] Built Log Off")
         return ZvtPacket(
             command = ZvtConstants.CMD_LOG_OFF,
             data = byteArrayOf()
@@ -287,16 +363,21 @@ object ZvtCommandBuilder {
     // =====================================================
 
     /**
-     * Ön yetkilendirme komutu (otel, araç kiralama vs.)
+     * Builds a Pre-Authorization command (06 22) for reserving an amount.
      *
-     * @param amountInCents Bloke tutarı (cent)
-     * @param currencyCode Para birimi
+     * Used in hotel, car rental, and similar scenarios where the final
+     * amount is not yet known.
+     *
+     * @param amountInCents Amount to reserve in cents.
+     * @param currencyCode ISO 4217 currency code.
+     * @return [ZvtPacket] containing the Pre-Authorization command.
+     * @throws IllegalArgumentException if the amount is not positive.
      */
     fun buildPreAuthorization(
         amountInCents: Long,
         currencyCode: Int = ZvtConstants.CURRENCY_EUR
     ): ZvtPacket {
-        require(amountInCents > 0) { "Tutar 0'dan büyük olmalı" }
+        require(amountInCents > 0) { "Amount must be greater than 0" }
 
         val data = mutableListOf<Byte>()
 
@@ -308,18 +389,25 @@ object ZvtCommandBuilder {
         data.add(ZvtConstants.BMP_CURRENCY_CODE)
         data.addAll(BcdHelper.currencyToBcd(currencyCode).toList())
 
-        return ZvtPacket(
+        val packet = ZvtPacket(
             command = ZvtConstants.CMD_PRE_AUTHORIZATION,
             data = data.toByteArray()
         )
+
+        Timber.tag(TAG).d("[CommandBuilder] Built Pre-Authorization: amount=%d cents (%.2f EUR), currency=%d",
+            amountInCents, amountInCents / 100.0, currencyCode)
+
+        return packet
     }
 
     // =====================================================
-    // Print Line (06 D1) - Terminal'den gelen print'e yanıt
+    // Print Line ACK (06 D1 response)
     // =====================================================
 
     /**
-     * Print satırı alındı onayı
+     * Builds an ACK response for a received Print Line message.
+     *
+     * @return ACK [ZvtPacket].
      */
     fun buildPrintLineAck(): ZvtPacket {
         return ZvtPacket.ack()

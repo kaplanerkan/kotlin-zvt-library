@@ -4,62 +4,72 @@ import com.panda.zvt_library.util.toHexString
 import com.panda.zvt_library.util.toUnsignedInt
 
 /**
- * ZVT APDU Paketi
+ * ZVT APDU (Application Protocol Data Unit) packet.
  *
- * Her ZVT paketi şu yapıdadır:
- * ┌──────────┬──────────┬──────────┐
- * │ Command  │ Length   │ Data     │
- * │ (2 byte) │ (1-3 b) │ (N byte) │
- * └──────────┴──────────┴──────────┘
+ * Every ZVT packet has the following wire format:
+ * ```
+ * +----------+----------+----------+
+ * | Command  | Length   | Data     |
+ * | (2 byte) | (1-3 b) | (N byte) |
+ * +----------+----------+----------+
+ * ```
  *
- * Length kodlaması:
- * - 0x00-0xFE: direkt uzunluk (1 byte)
- * - 0xFF + 2 byte: uzun format (LL HH, little-endian)
+ * Length encoding:
+ * - `0x00-0xFE`: direct length in 1 byte
+ * - `0xFF` + 2 bytes: extended format (LL HH, little-endian)
+ *
+ * Reference: ZVT Protocol Specification v13.13
+ *
+ * @property command Command code (2 bytes), e.g. `[0x06, 0x01]` for Authorization.
+ * @property data Data payload (0-N bytes).
+ *
+ * @author Erkan Kaplan
+ * @since 2026-02-10
  */
 data class ZvtPacket(
-    /** Komut kodu (2 byte) - ör: [0x06, 0x01] */
     val command: ByteArray,
-    /** Veri alanı (0-N byte) */
     val data: ByteArray = byteArrayOf()
 ) {
-    /** Komut kodunu hex string olarak döner: "06 01" */
+    /** Returns the command code as a hex string, e.g. `"06 01"`. */
     val commandHex: String get() = command.toHexString()
 
-    /** Veri uzunluğu */
+    /** Returns the length of the data payload. */
     val dataLength: Int get() = data.size
 
-    /** Paketin ACK olup olmadığını kontrol eder */
+    /** Checks whether this packet is an ACK (positive acknowledgement, first byte = 0x80). */
     val isAck: Boolean
         get() = command.size >= 1 && command[0] == 0x80.toByte()
 
-    /** Paketin NACK olup olmadığını kontrol eder */
+    /** Checks whether this packet is a NACK (negative acknowledgement, first byte = 0x84). */
     val isNack: Boolean
         get() = command.size >= 1 && command[0] == 0x84.toByte()
 
-    /** Paketin Completion (06 0F) olup olmadığını kontrol eder */
+    /** Checks whether this packet is a Completion response (06 0F). */
     val isCompletion: Boolean
         get() = command.contentEquals(ZvtConstants.RESP_COMPLETION)
 
-    /** Paketin Status Info (04 0F) olup olmadığını kontrol eder */
+    /** Checks whether this packet is a Status Information response (04 0F). */
     val isStatusInfo: Boolean
         get() = command.contentEquals(ZvtConstants.RESP_STATUS_INFO)
 
-    /** Paketin Intermediate Status (04 FF) olup olmadığını kontrol eder */
+    /** Checks whether this packet is an Intermediate Status response (04 FF). */
     val isIntermediateStatus: Boolean
         get() = command.contentEquals(ZvtConstants.RESP_INTERMEDIATE_STATUS)
 
-    /** Paketin Abort (06 1E) olup olmadığını kontrol eder */
+    /** Checks whether this packet is an Abort response (06 1E). */
     val isAbort: Boolean
         get() = command.contentEquals(ZvtConstants.RESP_ABORT)
 
-    /** Paketin Print Line (06 D1) olup olmadığını kontrol eder */
+    /** Checks whether this packet is a Print Line response (06 D1). */
     val isPrintLine: Boolean
         get() = command.contentEquals(ZvtConstants.RESP_PRINT_LINE)
 
     /**
-     * Paketi wire format'a (gönderilecek byte dizisi) serialize eder
+     * Serializes this packet to the wire format (byte array for transmission).
      *
-     * Format: CMD1 CMD2 LEN DATA
+     * Format: `CMD1 CMD2 LEN [DATA...]`
+     *
+     * @return Byte array ready to be sent over TCP.
      */
     fun toBytes(): ByteArray {
         val lengthBytes = encodeLength(data.size)
@@ -67,9 +77,13 @@ data class ZvtPacket(
     }
 
     /**
-     * Uzunluk bilgisini kodlar
-     * - 0-254: 1 byte
-     * - 255+: 0xFF + 2 byte (little-endian)
+     * Encodes the data length into the ZVT length format.
+     *
+     * - 0-254: single byte
+     * - 255+: `0xFF` followed by 2 bytes (little-endian)
+     *
+     * @param length The data length to encode.
+     * @return Encoded length bytes.
      */
     private fun encodeLength(length: Int): ByteArray {
         return if (length < 0xFF) {
@@ -96,22 +110,25 @@ data class ZvtPacket(
 
     companion object {
         /**
-         * Wire format byte dizisinden ZvtPacket oluşturur
-         * @return Pair(packet, okunan byte sayısı) veya null
+         * Deserializes a [ZvtPacket] from a wire format byte array.
+         *
+         * @param buffer The byte buffer containing the packet data.
+         * @param offset Starting position within the buffer.
+         * @return A Pair of (parsed packet, bytes consumed), or `null` if insufficient data.
          */
         fun fromBytes(buffer: ByteArray, offset: Int = 0): Pair<ZvtPacket, Int>? {
-            if (buffer.size - offset < 3) return null // En az CMD(2) + LEN(1)
+            if (buffer.size - offset < 3) return null // Minimum: CMD(2) + LEN(1)
 
             val command = buffer.copyOfRange(offset, offset + 2)
             var pos = offset + 2
 
-            // Length oku
+            // Read length
             val firstLenByte = buffer[pos].toUnsignedInt()
             pos++
 
             val dataLength: Int
             if (firstLenByte == 0xFF) {
-                // Uzun format: sonraki 2 byte (little-endian)
+                // Extended format: next 2 bytes (little-endian)
                 if (buffer.size - pos < 2) return null
                 dataLength = buffer[pos].toUnsignedInt() or (buffer[pos + 1].toUnsignedInt() shl 8)
                 pos += 2
@@ -119,7 +136,7 @@ data class ZvtPacket(
                 dataLength = firstLenByte
             }
 
-            // Data oku
+            // Read data
             if (buffer.size - pos < dataLength) return null
             val data = if (dataLength > 0) {
                 buffer.copyOfRange(pos, pos + dataLength)
@@ -131,10 +148,10 @@ data class ZvtPacket(
             return Pair(ZvtPacket(command, data), pos - offset)
         }
 
-        /** ACK paketi oluşturur */
+        /** Creates an ACK (positive acknowledgement) packet: `80 00 00`. */
         fun ack(): ZvtPacket = ZvtPacket(ZvtConstants.ACK)
 
-        /** NACK paketi oluşturur */
+        /** Creates a NACK (negative acknowledgement) packet: `84 00 00`. */
         fun nack(): ZvtPacket = ZvtPacket(ZvtConstants.NACK)
     }
 }

@@ -48,6 +48,7 @@ kotlin {
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.timber)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

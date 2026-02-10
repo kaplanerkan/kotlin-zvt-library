@@ -1,48 +1,58 @@
 package com.panda.zvt_library.util
 
 /**
- * BCD (Binary Coded Decimal) yardımcı sınıfı
+ * BCD (Binary Coded Decimal) encoding and decoding utility.
  *
- * ZVT protokolünde tutarlar, tarihler ve bazı numaralar BCD formatında kodlanır.
- * Örnek: 12.50 EUR → cent: 1250 → BCD bytes: 00 00 00 00 12 50
+ * In the ZVT protocol, amounts, dates, trace numbers, and currency codes
+ * are encoded in BCD format. Each byte carries two decimal digits:
+ * - Upper nibble (4 bits): first digit
+ * - Lower nibble (4 bits): second digit
  *
- * Her byte iki ondalık basamak taşır:
- * - Üst nibble (4 bit): İlk basamak
- * - Alt nibble (4 bit): İkinci basamak
+ * Example: 12.50 EUR -> cents: 1250 -> BCD bytes: `00 00 00 00 12 50`
+ *
+ * Reference: ZVT Protocol Specification v13.13
+ *
+ * @author Erkan Kaplan
+ * @since 2026-02-10
  */
 object BcdHelper {
 
     // =====================================================
-    // Tutar Dönüşümleri
+    // Amount Conversions
     // =====================================================
 
     /**
-     * Cent cinsinden tutarı 6 byte BCD'ye çevirir
-     * @param amountInCents Tutar (cent), ör: 1250 = 12.50 EUR
-     * @return 6 byte BCD dizisi
+     * Converts an amount in cents to a 6-byte BCD representation.
      *
-     * Örnek: 1250 → [0x00, 0x00, 0x00, 0x00, 0x12, 0x50]
+     * @param amountInCents Amount in cents, e.g. 1250 = 12.50 EUR.
+     * @return 6-byte BCD array.
+     * @throws IllegalArgumentException if the amount is negative or exceeds the maximum.
+     *
+     * Example: `1250` -> `[0x00, 0x00, 0x00, 0x00, 0x12, 0x50]`
      */
     fun amountToBcd(amountInCents: Long): ByteArray {
-        require(amountInCents >= 0) { "Tutar negatif olamaz: $amountInCents" }
-        require(amountInCents <= 999999999999L) { "Tutar çok büyük: $amountInCents" }
+        require(amountInCents >= 0) { "Amount must not be negative: $amountInCents" }
+        require(amountInCents <= 999999999999L) { "Amount too large: $amountInCents" }
         return stringToBcd(amountInCents.toString().padStart(12, '0'))
     }
 
     /**
-     * 6 byte BCD'yi cent cinsinden tutara çevirir
-     * @param bcd 6 byte BCD dizisi
-     * @return Tutar (cent)
+     * Converts a 6-byte BCD amount to cents.
      *
-     * Örnek: [0x00, 0x00, 0x00, 0x00, 0x12, 0x50] → 1250
+     * @param bcd 6-byte BCD array.
+     * @return Amount in cents.
+     *
+     * Example: `[0x00, 0x00, 0x00, 0x00, 0x12, 0x50]` -> `1250`
      */
     fun bcdToAmount(bcd: ByteArray): Long {
         return bcdToString(bcd).toLongOrNull() ?: 0L
     }
 
     /**
-     * Euro cinsinden tutarı BCD'ye çevirir (Double → BCD)
-     * @param amount Tutar (Euro), ör: 12.50
+     * Converts a Euro amount (Double) to a 6-byte BCD representation.
+     *
+     * @param amount Amount in Euro, e.g. 12.50.
+     * @return 6-byte BCD array.
      */
     fun euroToBcd(amount: Double): ByteArray {
         val cents = (amount * 100).toLong()
@@ -50,38 +60,45 @@ object BcdHelper {
     }
 
     /**
-     * BCD'yi Euro tutarına çevirir (BCD → Double)
+     * Converts a 6-byte BCD amount to Euro (Double).
+     *
+     * @param bcd 6-byte BCD array.
+     * @return Amount in Euro.
      */
     fun bcdToEuro(bcd: ByteArray): Double {
         return bcdToAmount(bcd) / 100.0
     }
 
     // =====================================================
-    // Tarih/Saat Dönüşümleri
+    // Date/Time Conversions
     // =====================================================
 
     /**
-     * Saat bilgisini BCD'ye çevirir
-     * @param hour Saat (0-23)
-     * @param minute Dakika (0-59)
-     * @param second Saniye (0-59)
-     * @return 3 byte BCD: HH MM SS
+     * Converts time components to a 3-byte BCD representation (HHMMSS).
+     *
+     * @param hour Hour (0-23).
+     * @param minute Minute (0-59).
+     * @param second Second (0-59).
+     * @return 3-byte BCD array: HH MM SS.
+     * @throws IllegalArgumentException if any component is out of range.
      */
     fun timeToBcd(hour: Int, minute: Int, second: Int): ByteArray {
-        require(hour in 0..23) { "Geçersiz saat: $hour" }
-        require(minute in 0..59) { "Geçersiz dakika: $minute" }
-        require(second in 0..59) { "Geçersiz saniye: $second" }
+        require(hour in 0..23) { "Invalid hour: $hour" }
+        require(minute in 0..59) { "Invalid minute: $minute" }
+        require(second in 0..59) { "Invalid second: $second" }
         val str = String.format("%02d%02d%02d", hour, minute, second)
         return stringToBcd(str)
     }
 
     /**
-     * BCD'den saat bilgisini okur
-     * @param bcd 3 byte BCD
-     * @return Triple(hour, minute, second)
+     * Extracts time components from a 3-byte BCD representation.
+     *
+     * @param bcd 3-byte BCD array (HHMMSS).
+     * @return Triple(hour, minute, second).
+     * @throws IllegalArgumentException if the array is too short.
      */
     fun bcdToTime(bcd: ByteArray): Triple<Int, Int, Int> {
-        require(bcd.size >= 3) { "Saat BCD en az 3 byte olmalı" }
+        require(bcd.size >= 3) { "Time BCD must be at least 3 bytes" }
         val str = bcdToString(bcd.copyOfRange(0, 3))
         return Triple(
             str.substring(0, 2).toInt(),
@@ -91,25 +108,29 @@ object BcdHelper {
     }
 
     /**
-     * Tarih bilgisini BCD'ye çevirir
-     * @param month Ay (1-12)
-     * @param day Gün (1-31)
-     * @return 2 byte BCD: MM DD
+     * Converts date components to a 2-byte BCD representation (MMDD).
+     *
+     * @param month Month (1-12).
+     * @param day Day (1-31).
+     * @return 2-byte BCD array: MM DD.
+     * @throws IllegalArgumentException if any component is out of range.
      */
     fun dateToBcd(month: Int, day: Int): ByteArray {
-        require(month in 1..12) { "Geçersiz ay: $month" }
-        require(day in 1..31) { "Geçersiz gün: $day" }
+        require(month in 1..12) { "Invalid month: $month" }
+        require(day in 1..31) { "Invalid day: $day" }
         val str = String.format("%02d%02d", month, day)
         return stringToBcd(str)
     }
 
     /**
-     * BCD'den tarih bilgisini okur
-     * @param bcd 2 byte BCD
-     * @return Pair(month, day)
+     * Extracts date components from a 2-byte BCD representation.
+     *
+     * @param bcd 2-byte BCD array (MMDD).
+     * @return Pair(month, day).
+     * @throws IllegalArgumentException if the array is too short.
      */
     fun bcdToDate(bcd: ByteArray): Pair<Int, Int> {
-        require(bcd.size >= 2) { "Tarih BCD en az 2 byte olmalı" }
+        require(bcd.size >= 2) { "Date BCD must be at least 2 bytes" }
         val str = bcdToString(bcd.copyOfRange(0, 2))
         return Pair(
             str.substring(0, 2).toInt(),
@@ -122,53 +143,71 @@ object BcdHelper {
     // =====================================================
 
     /**
-     * Trace numarasını 3 byte BCD'ye çevirir
-     * @param traceNumber 0..999999 arası numara
+     * Converts a trace number to a 3-byte BCD representation.
+     *
+     * @param traceNumber Value in range 0..999999.
+     * @return 3-byte BCD array.
+     * @throws IllegalArgumentException if the number is out of range.
      */
     fun traceNumberToBcd(traceNumber: Int): ByteArray {
-        require(traceNumber in 0..999999) { "Geçersiz trace numarası: $traceNumber" }
+        require(traceNumber in 0..999999) { "Invalid trace number: $traceNumber" }
         return stringToBcd(traceNumber.toString().padStart(6, '0'))
     }
 
     /**
-     * 3 byte BCD'den trace numarasını okur
+     * Extracts a trace number from a 3-byte BCD representation.
+     *
+     * @param bcd BCD byte array (at least 3 bytes).
+     * @return Trace number as integer.
      */
     fun bcdToTraceNumber(bcd: ByteArray): Int {
         return bcdToString(bcd.copyOfRange(0, minOf(3, bcd.size))).toIntOrNull() ?: 0
     }
 
     // =====================================================
-    // Para Birimi Kodu
+    // Currency Code
     // =====================================================
 
     /**
-     * ISO 4217 para birimi kodunu 2 byte BCD'ye çevirir
-     * Örnek: 978 (EUR) → [0x09, 0x78]
+     * Converts an ISO 4217 currency code to a 2-byte BCD representation.
+     *
+     * Example: `978` (EUR) -> `[0x09, 0x78]`
+     *
+     * @param currencyCode ISO 4217 numeric currency code.
+     * @return 2-byte BCD array.
      */
     fun currencyToBcd(currencyCode: Int): ByteArray {
         return stringToBcd(currencyCode.toString().padStart(4, '0'))
     }
 
     /**
-     * 2 byte BCD'den para birimi kodunu okur
+     * Extracts an ISO 4217 currency code from a 2-byte BCD representation.
+     *
+     * @param bcd 2-byte BCD array.
+     * @return ISO 4217 numeric currency code.
      */
     fun bcdToCurrency(bcd: ByteArray): Int {
         return bcdToString(bcd.copyOfRange(0, minOf(2, bcd.size))).toIntOrNull() ?: 0
     }
 
     // =====================================================
-    // Genel BCD Dönüşüm Fonksiyonları
+    // General BCD Conversion Functions
     // =====================================================
 
     /**
-     * Sayısal string'i BCD byte dizisine çevirir
-     * String uzunluğu çift olmalıdır.
+     * Converts a numeric string to a BCD byte array.
      *
-     * Örnek: "001250" → [0x00, 0x12, 0x50]
+     * The string is left-padded with '0' if its length is odd.
+     *
+     * Example: `"001250"` -> `[0x00, 0x12, 0x50]`
+     *
+     * @param numStr A string containing only digit characters.
+     * @return BCD-encoded byte array.
+     * @throws IllegalArgumentException if the string contains non-digit characters.
      */
     fun stringToBcd(numStr: String): ByteArray {
         val padded = if (numStr.length % 2 != 0) "0$numStr" else numStr
-        require(padded.all { it.isDigit() }) { "BCD string sadece rakam içermeli: $numStr" }
+        require(padded.all { it.isDigit() }) { "BCD string must contain only digits: $numStr" }
 
         return ByteArray(padded.length / 2) { i ->
             val high = padded[i * 2].digitToInt()
@@ -178,24 +217,32 @@ object BcdHelper {
     }
 
     /**
-     * BCD byte dizisini sayısal string'e çevirir
-     * Her byte'ın üst ve alt nibble'ı birer basamak olur.
+     * Converts a BCD byte array to a numeric string.
      *
-     * Örnek: [0x00, 0x12, 0x50] → "001250"
+     * Each byte's upper and lower nibbles become two decimal digits.
+     *
+     * Example: `[0x00, 0x12, 0x50]` -> `"001250"`
+     *
+     * @param bcd BCD-encoded byte array.
+     * @return Numeric string representation.
      */
     fun bcdToString(bcd: ByteArray): String {
         val sb = StringBuilder(bcd.size * 2)
         for (b in bcd) {
             val unsigned = b.toInt() and 0xFF
-            sb.append(unsigned shr 4)     // Üst nibble
-            sb.append(unsigned and 0x0F)  // Alt nibble
+            sb.append(unsigned shr 4)     // Upper nibble
+            sb.append(unsigned and 0x0F)  // Lower nibble
         }
         return sb.toString()
     }
 
     /**
-     * Tutarı okunabilir formatta döner
-     * Örnek: 1250 → "12,50"
+     * Formats a cent amount into a human-readable Euro string.
+     *
+     * Example: `1250` -> `"12,50"`
+     *
+     * @param amountInCents Amount in cents.
+     * @return Formatted string with comma as decimal separator.
      */
     fun formatAmount(amountInCents: Long): String {
         val euros = amountInCents / 100

@@ -1,68 +1,83 @@
 package com.panda.zvt_library.model
 
 /**
- * ZVT bağlantı ayarları
+ * Data models for the ZVT protocol library.
+ *
+ * Contains all data classes, sealed error classes, and enumerations used
+ * by the ZVT client for configuration, transaction results, terminal status,
+ * and error handling.
+ *
+ * Reference: ZVT Protocol Specification v13.13
+ *
+ * @author Erkan Kaplan
+ * @since 2026-02-10
+ */
+
+/**
+ * ZVT connection configuration.
+ *
+ * @property host Terminal IP address.
+ * @property port Terminal TCP port (default: 20007).
+ * @property connectTimeoutMs TCP connection timeout in milliseconds.
+ * @property readTimeoutMs Socket read timeout in milliseconds.
+ * @property password Terminal password (6-digit BCD, default: "000000").
+ * @property currencyCode ISO 4217 currency code (default: 978 = EUR).
+ * @property autoAck Whether to automatically send ACK responses.
+ * @property debugMode Whether to forward debug logs to the callback.
  */
 data class ZvtConfig(
-    /** Terminal IP adresi */
     val host: String,
-    /** Terminal port numarası (varsayılan: 20007) */
     val port: Int = 20007,
-    /** Bağlantı timeout (ms) */
     val connectTimeoutMs: Int = 10_000,
-    /** Okuma timeout (ms) */
     val readTimeoutMs: Int = 90_000,
-    /** Terminal şifresi (6 haneli BCD) */
     val password: String = "000000",
-    /** Para birimi kodu (ISO 4217) */
     val currencyCode: Int = 978,
-    /** Otomatik ACK gönder */
     val autoAck: Boolean = true,
-    /** Debug log aktif */
     val debugMode: Boolean = false
 )
 
 /**
- * İşlem sonucu
+ * Result of a payment transaction or command execution.
+ *
+ * @property success Whether the transaction was successful.
+ * @property resultCode Result code from BMP 0x27 (0x00 = success).
+ * @property resultMessage Human-readable result description.
+ * @property amountInCents Transaction amount in cents.
+ * @property cardData Card information (PAN, type, AID, etc.), if available.
+ * @property receiptNumber Receipt number from the terminal.
+ * @property traceNumber Trace number for this transaction.
+ * @property terminalId Terminal identifier (TID).
+ * @property vuNumber VU (merchant contract) number.
+ * @property date Transaction date (MMDD format).
+ * @property time Transaction time (HHMMSS format).
+ * @property originalTrace Original trace number (used in reversals, BMP 0x37).
+ * @property turnoverNumber Turnover/batch number (BMP 0x88).
+ * @property receiptLines Receipt text lines received from the terminal.
+ * @property rawData Raw response data for debugging purposes.
  */
 data class TransactionResult(
-    /** İşlem başarılı mı */
     val success: Boolean,
-    /** Sonuç kodu (BMP 0x27) */
     val resultCode: Byte = 0x00,
-    /** Sonuç mesajı */
     val resultMessage: String = "",
-    /** Tutar (cent) */
     val amountInCents: Long = 0,
-    /** Kart bilgileri */
     val cardData: CardData? = null,
-    /** Fiş numarası */
     val receiptNumber: Int = 0,
-    /** Trace numarası */
     val traceNumber: Int = 0,
-    /** Terminal ID */
     val terminalId: String = "",
-    /** VU numarası */
     val vuNumber: String = "",
-    /** İşlem tarihi (MMDD) */
     val date: String = "",
-    /** İşlem saati (HHMMSS) */
     val time: String = "",
-    /** Orijinal trace numarası (reversal için, BMP 0x37) */
     val originalTrace: Int = 0,
-    /** Ciro/turnover numarası (BMP 0x88) */
     val turnoverNumber: Int = 0,
-    /** Fiş satırları (terminal'den gelen print verileri) */
     val receiptLines: List<String> = emptyList(),
-    /** Ham yanıt verisi (debug amaçlı) */
     val rawData: ByteArray? = null
 ) {
-    /** Tutarı Euro formatında döner: "12,50" */
+    /** Formats the amount as Euro: e.g. `"12,50 EUR"`. */
     val amountFormatted: String
         get() {
             val euros = amountInCents / 100
             val cents = amountInCents % 100
-            return String.format("%d,%02d €", euros, cents)
+            return String.format("%d,%02d \u20AC", euros, cents)
         }
 
     override fun equals(other: Any?): Boolean {
@@ -76,97 +91,129 @@ data class TransactionResult(
 }
 
 /**
- * Kart bilgileri
+ * Card data extracted from BMP fields during a transaction.
+ *
+ * @property maskedPan Masked card number, e.g. `"****1234"`.
+ * @property cardType Card type name, e.g. `"VISA"`, `"Mastercard"`.
+ * @property cardName Card application label / card name.
+ * @property expiryDate Expiry date in YYMM format.
+ * @property sequenceNumber Card sequence number.
+ * @property aid Application Identifier (AID) as hex string.
  */
 data class CardData(
-    /** Kart numarası (maskeli) - ör: "****1234" */
     val maskedPan: String = "",
-    /** Kart tipi - ör: "VISA", "MASTERCARD" */
     val cardType: String = "",
-    /** Kart adı / Application label */
     val cardName: String = "",
-    /** Son kullanma tarihi (YYMM) */
     val expiryDate: String = "",
-    /** Kart sıra numarası */
     val sequenceNumber: Int = 0,
-    /** AID (Application Identifier) */
     val aid: String = ""
 )
 
 /**
- * Terminal durumu
+ * Terminal status information returned by Diagnosis or Status Enquiry commands.
+ *
+ * @property isConnected Whether the terminal is currently connected.
+ * @property terminalId Terminal identifier (TID).
+ * @property softwareVersion Terminal software version.
+ * @property terminalModel Terminal hardware model.
+ * @property statusMessage Status description text.
+ * @property lastTransactionTime Timestamp of the last transaction.
  */
 data class TerminalStatus(
-    /** Terminal bağlı mı */
     val isConnected: Boolean,
-    /** Terminal ID */
     val terminalId: String = "",
-    /** Yazılım versiyonu */
     val softwareVersion: String = "",
-    /** Terminal modeli */
     val terminalModel: String = "",
-    /** Durum mesajı */
     val statusMessage: String = "",
-    /** Son işlem zamanı */
     val lastTransactionTime: String = ""
 )
 
 /**
- * Tanılama sonucu
+ * Result of a Diagnosis command (06 70).
+ *
+ * @property success Whether the diagnosis was successful.
+ * @property status Terminal status information.
+ * @property errorMessage Error message, if any.
  */
 data class DiagnosisResult(
-    /** Başarılı mı */
     val success: Boolean,
-    /** Terminal durumu */
     val status: TerminalStatus = TerminalStatus(false),
-    /** Hata mesajı (varsa) */
     val errorMessage: String = ""
 )
 
 /**
- * Gün sonu sonucu
+ * Result of an End of Day command (06 50).
+ *
+ * @property success Whether the batch close was successful.
+ * @property transactionCount Total number of transactions in the batch.
+ * @property totalAmountInCents Total amount processed in the batch (cents).
+ * @property message Result description text.
+ * @property receiptLines Receipt text lines from the terminal.
  */
 data class EndOfDayResult(
-    /** Başarılı mı */
     val success: Boolean,
-    /** Toplam işlem sayısı */
     val transactionCount: Int = 0,
-    /** Toplam tutar (cent) */
     val totalAmountInCents: Long = 0,
-    /** Sonuç mesajı */
     val message: String = "",
-    /** Fiş satırları */
     val receiptLines: List<String> = emptyList()
 )
 
 /**
- * ZVT hata sınıfı
+ * Sealed class hierarchy for ZVT-specific errors.
+ *
+ * Each error type carries a descriptive message and optional additional context.
  */
 sealed class ZvtError : Exception() {
-    /** Bağlantı hatası */
+
+    /**
+     * TCP connection error (failed to connect, connection lost, etc.).
+     *
+     * @property message Error description.
+     * @property cause Underlying exception, if any.
+     */
     data class ConnectionError(
         override val message: String,
         override val cause: Throwable? = null
     ) : ZvtError()
 
-    /** Timeout hatası */
+    /**
+     * Timeout error (ACK not received, response not received within time limit).
+     *
+     * @property message Error description.
+     */
     data class TimeoutError(
-        override val message: String = "İşlem zaman aşımına uğradı"
+        override val message: String = "Operation timed out"
     ) : ZvtError()
 
-    /** Protokol hatası */
+    /**
+     * Protocol-level error (unexpected response, NACK received, etc.).
+     *
+     * @property message Error description.
+     * @property rawData Raw packet data for debugging.
+     */
     data class ProtocolError(
         override val message: String,
         val rawData: ByteArray? = null
     ) : ZvtError()
 
-    /** Terminal hatası */
+    /**
+     * Terminal reported an error via result code.
+     *
+     * @property resultCode The result code byte from the terminal.
+     * @property message Error description.
+     */
     data class TerminalError(
         val resultCode: Byte,
         override val message: String
     ) : ZvtError()
 
-    /** İşlem reddedildi */
+    /**
+     * Transaction was declined by the terminal or the authorization system.
+     *
+     * @property resultCode The decline reason code.
+     * @property message Decline description.
+     * @property cardData Card data associated with the declined transaction.
+     */
     data class TransactionDeclined(
         val resultCode: Byte,
         override val message: String,
@@ -175,7 +222,12 @@ sealed class ZvtError : Exception() {
 }
 
 /**
- * ZVT bağlantı durumu
+ * ZVT client connection state machine.
+ *
+ * State transitions:
+ * `DISCONNECTED` -> `CONNECTING` -> `CONNECTED` -> `REGISTERING` -> `REGISTERED`
+ *
+ * `ERROR` can be reached from any state.
  */
 enum class ConnectionState {
     DISCONNECTED,
@@ -187,7 +239,7 @@ enum class ConnectionState {
 }
 
 /**
- * İşlem tipi
+ * Enumeration of supported ZVT transaction types.
  */
 enum class TransactionType {
     AUTHORIZATION,
@@ -200,13 +252,17 @@ enum class TransactionType {
 }
 
 /**
- * Ara durum bilgisi (04 FF)
+ * Intermediate status information received from the terminal during a transaction (04 FF).
+ *
+ * These messages inform the ECR about the current state of the payment process,
+ * e.g. "Insert card", "Enter PIN", "Please wait".
+ *
+ * @property statusCode The intermediate status code byte.
+ * @property message Human-readable status message.
+ * @property timestamp Creation timestamp in milliseconds.
  */
 data class IntermediateStatus(
-    /** Durum kodu */
     val statusCode: Byte,
-    /** Okunabilir mesaj */
     val message: String,
-    /** Zaman damgası */
     val timestamp: Long = System.currentTimeMillis()
 )

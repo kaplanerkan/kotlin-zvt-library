@@ -1,35 +1,47 @@
 package com.panda.zvt_library.util
 
+import timber.log.Timber
+
 /**
- * TLV (Tag-Length-Value) Parser
+ * TLV (Tag-Length-Value) parser and builder for the ZVT protocol.
  *
- * ZVT protokolünde bazı veri alanları (BMP 0x3C gibi) TLV formatında kodlanır.
- * Bu parser, TLV yapılarını okur ve yazar.
+ * Some ZVT data fields (e.g. BMP 0x06, BMP 0x3C) use TLV encoding based on
+ * ASN.1 BER-TLV rules. This parser reads and writes TLV structures.
  *
- * TLV Formatı:
- * - Tag: 1-3 byte (eğer ilk byte'ın alt 5 biti 11111 ise multi-byte tag)
- * - Length: 1-3 byte (eğer ilk byte 0x81 ise 2 byte, 0x82 ise 3 byte uzunluk)
- * - Value: Length kadar byte
+ * TLV Format:
+ * - **Tag**: 1-3 bytes (if the lower 5 bits of the first byte are `0x1F`, it is a multi-byte tag)
+ * - **Length**: 1-3 bytes (`0x00-0x7F` = direct, `0x81` = 1 extra byte, `0x82` = 2 extra bytes)
+ * - **Value**: [Length] bytes of payload data
+ *
+ * Reference: ZVT Protocol Specification v13.13
+ *
+ * @author Erkan Kaplan
+ * @since 2026-02-10
  */
 object TlvParser {
 
+    private const val TAG = "ZVT"
+
     /**
-     * Tek bir TLV kaydı
+     * Represents a single TLV record.
+     *
+     * @property tag The TLV tag identifier (1-3 bytes combined into an Int).
+     * @property value The raw byte payload.
      */
     data class TlvEntry(
         val tag: Int,
         val value: ByteArray
     ) {
-        /** Tag'i hex string olarak döner */
+        /** Returns the tag as a hex string, e.g. `"1F10"`. */
         val tagHex: String get() = String.format("%04X", tag)
 
-        /** Value'yu hex string olarak döner */
+        /** Returns the value as a hex string. */
         val valueHex: String get() = value.toHexString()
 
-        /** Value'yu ASCII string olarak döner */
+        /** Returns the value decoded as ASCII text. */
         val valueAscii: String get() = value.toSafeAscii()
 
-        /** Value uzunluğu */
+        /** The byte length of the value. */
         val length: Int get() = value.size
 
         override fun equals(other: Any?): Boolean {
@@ -44,43 +56,50 @@ object TlvParser {
     }
 
     // =====================================================
-    // Parse İşlemleri
+    // Parse Operations
     // =====================================================
 
     /**
-     * ByteArray'den tüm TLV kayıtlarını okur
-     * @param data TLV verisini içeren byte dizisi
-     * @return TLV kayıt listesi
+     * Parses all TLV entries from a byte array.
+     *
+     * Padding bytes (`0x00` and `0xFF`) are silently skipped.
+     * Parsing stops on error or end of data.
+     *
+     * @param data Byte array containing TLV-encoded data.
+     * @return List of parsed [TlvEntry] records.
      */
     fun parse(data: ByteArray): List<TlvEntry> {
         val entries = mutableListOf<TlvEntry>()
         var offset = 0
 
         while (offset < data.size) {
-            // Padding byte'ları atla (0x00 veya 0xFF)
+            // Skip padding bytes (0x00 or 0xFF)
             if (data[offset] == 0x00.toByte() || data[offset] == 0xFF.toByte()) {
                 offset++
                 continue
             }
 
             try {
-                // Tag oku
+                // Read tag
                 val tagResult = readTag(data, offset)
                 offset = tagResult.second
 
-                // Length oku
+                // Read length
                 val lengthResult = readLength(data, offset)
                 val length = lengthResult.first
                 offset = lengthResult.second
 
-                // Value oku
+                // Read value
                 if (offset + length > data.size) break
                 val value = data.copyOfRange(offset, offset + length)
                 offset += length
 
-                entries.add(TlvEntry(tagResult.first, value))
+                val entry = TlvEntry(tagResult.first, value)
+                Timber.tag(TAG).d("[TlvParser] Parsed TLV entry: tag=0x%s, len=%d, value=%s",
+                    entry.tagHex, entry.length, entry.valueHex)
+                entries.add(entry)
             } catch (e: Exception) {
-                // Parse hatası, kalan veriyi atla
+                Timber.tag(TAG).w("[TlvParser] Parse error at offset %d: %s", offset, e.message)
                 break
             }
         }
@@ -89,17 +108,22 @@ object TlvParser {
     }
 
     /**
-     * Belirli bir tag'i arar
-     * @param data TLV verisi
-     * @param searchTag Aranan tag
-     * @return Bulunan TlvEntry veya null
+     * Searches for a specific tag in a TLV data block.
+     *
+     * @param data TLV-encoded byte array.
+     * @param searchTag The tag to search for.
+     * @return The matching [TlvEntry], or `null` if not found.
      */
     fun findTag(data: ByteArray, searchTag: Int): TlvEntry? {
         return parse(data).firstOrNull { it.tag == searchTag }
     }
 
     /**
-     * Birden fazla tag'i arar
+     * Searches for multiple tags in a TLV data block.
+     *
+     * @param data TLV-encoded byte array.
+     * @param searchTags The tags to search for.
+     * @return A map of found tag -> [TlvEntry] pairs.
      */
     fun findTags(data: ByteArray, vararg searchTags: Int): Map<Int, TlvEntry> {
         val tagSet = searchTags.toSet()
@@ -109,11 +133,15 @@ object TlvParser {
     }
 
     // =====================================================
-    // Build İşlemleri
+    // Build Operations
     // =====================================================
 
     /**
-     * Tek bir TLV kaydı oluşturur
+     * Builds a single TLV record as a byte array.
+     *
+     * @param tag The TLV tag identifier.
+     * @param value The payload bytes.
+     * @return Serialized TLV bytes: [TAG][LENGTH][VALUE].
      */
     fun buildTlv(tag: Int, value: ByteArray): ByteArray {
         val tagBytes = encodeTag(tag)
@@ -122,7 +150,10 @@ object TlvParser {
     }
 
     /**
-     * Birden fazla TLV kaydından byte dizisi oluşturur
+     * Builds a concatenated byte array from multiple TLV entries.
+     *
+     * @param entries List of [TlvEntry] records to serialize.
+     * @return Combined TLV byte array.
      */
     fun buildTlvList(entries: List<TlvEntry>): ByteArray {
         return entries.fold(byteArrayOf()) { acc, entry ->
@@ -131,38 +162,46 @@ object TlvParser {
     }
 
     /**
-     * Kolay TLV oluşturma - ASCII değerli
+     * Convenience method to build a TLV record with an ASCII string value.
+     *
+     * @param tag The TLV tag identifier.
+     * @param text The ASCII text to encode as the value.
+     * @return Serialized TLV bytes.
      */
     fun buildTlvAscii(tag: Int, text: String): ByteArray {
         return buildTlv(tag, text.toByteArray(Charsets.US_ASCII))
     }
 
     // =====================================================
-    // İç Yardımcı Fonksiyonlar
+    // Internal Helper Functions
     // =====================================================
 
     /**
-     * Tag okur ve (tag, yeniOffset) döner
-     * - Eğer ilk byte'ın alt 5 biti 0x1F (11111) ise → multi-byte tag
+     * Reads a TLV tag from the data at the given offset.
+     *
+     * If the lower 5 bits of the first byte are `0x1F`, this is a multi-byte tag
+     * and subsequent bytes are read until a byte with bit 8 = 0 is encountered.
+     *
+     * @return Pair(tag value, new offset after reading).
      */
     private fun readTag(data: ByteArray, startOffset: Int): Pair<Int, Int> {
         var offset = startOffset
         val firstByte = data[offset].toUnsignedInt()
         offset++
 
-        // Single byte tag kontrolü
+        // Single-byte tag check
         if ((firstByte and 0x1F) != 0x1F) {
             return Pair(firstByte, offset)
         }
 
-        // Multi-byte tag
+        // Multi-byte tag: continue reading until bit 8 of a byte is 0
         var tag = firstByte
         while (offset < data.size) {
             val nextByte = data[offset].toUnsignedInt()
             offset++
             tag = (tag shl 8) or nextByte
 
-            // Son byte: bit 8 = 0
+            // Last byte: bit 8 = 0
             if ((nextByte and 0x80) == 0) break
         }
 
@@ -170,10 +209,14 @@ object TlvParser {
     }
 
     /**
-     * Length okur ve (uzunluk, yeniOffset) döner
-     * - 0x00-0x7F: direkt uzunluk (1 byte)
-     * - 0x81: sonraki 1 byte uzunluk
-     * - 0x82: sonraki 2 byte uzunluk
+     * Reads a BER-TLV length field from the data at the given offset.
+     *
+     * Encoding:
+     * - `0x00-0x7F`: direct length (1 byte)
+     * - `0x81`: length in the next 1 byte
+     * - `0x82`: length in the next 2 bytes (big-endian)
+     *
+     * @return Pair(decoded length, new offset after reading).
      */
     private fun readLength(data: ByteArray, startOffset: Int): Pair<Int, Int> {
         var offset = startOffset
@@ -193,14 +236,17 @@ object TlvParser {
                 Pair(len, offset + 2)
             }
             else -> {
-                // Bilinmeyen format, 0 olarak yorumla
+                // Unknown length format, interpret as 0
                 Pair(0, offset)
             }
         }
     }
 
     /**
-     * Tag değerini byte dizisine kodlar
+     * Encodes a tag value into a byte array.
+     *
+     * @param tag The tag as an integer (up to 3 bytes wide).
+     * @return Byte array representation of the tag.
      */
     private fun encodeTag(tag: Int): ByteArray {
         return when {
@@ -215,7 +261,10 @@ object TlvParser {
     }
 
     /**
-     * Uzunluk değerini byte dizisine kodlar
+     * Encodes a length value into a BER-TLV length byte array.
+     *
+     * @param length The length to encode.
+     * @return Byte array representation of the length.
      */
     private fun encodeLength(length: Int): ByteArray {
         return when {

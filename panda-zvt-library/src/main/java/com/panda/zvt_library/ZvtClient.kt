@@ -8,6 +8,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -16,38 +17,47 @@ import java.net.Socket
 import java.net.SocketTimeoutException
 
 /**
- * ZVT TCP/IP Client
+ * ZVT TCP/IP Client.
  *
- * Ödeme terminali ile TCP/IP üzerinden ZVT protokolü iletişimi sağlar.
- * Thread-safe ve coroutine tabanlı asenkron mimari kullanır.
+ * Provides full ZVT protocol communication with a payment terminal over TCP/IP.
+ * Uses Kotlin coroutines for asynchronous, thread-safe operation.
  *
- * Temel Kullanım:
+ * All ECR <-> PT communication is comprehensively logged via Timber, including
+ * every byte sent (TX) and received (RX), ACK/NACK packets, intermediate statuses,
+ * print lines, status info, and completion/abort responses.
+ *
+ * Basic usage:
  * ```kotlin
  * val config = ZvtConfig(host = "192.168.1.100", port = 20007)
  * val client = ZvtClient(config)
  *
- * // Bağlan ve kayıt ol
+ * // Connect and register
  * client.connect()
  * client.register()
  *
- * // Ödeme yap
+ * // Make a payment
  * val result = client.authorize(1250) // 12.50 EUR
  *
- * // Bağlantıyı kapat
+ * // Disconnect
  * client.disconnect()
  * ```
  *
- * İşlem Akışı:
- * 1. ECR komut gönderir → Terminal ACK döner
- * 2. Terminal ara durum bilgileri gönderir (04 FF) → ECR ACK döner
- * 3. Terminal sonuç bilgisi gönderir (04 0F) → ECR ACK döner
- * 4. Terminal tamamlandı bilgisi gönderir (06 0F) → İşlem biter
+ * Transaction flow:
+ * 1. ECR sends command -> Terminal returns ACK
+ * 2. Terminal sends intermediate status messages (04 FF) -> ECR returns ACK
+ * 3. Terminal sends status information (04 0F) -> ECR returns ACK
+ * 4. Terminal sends completion (06 0F) -> Transaction ends
+ *
+ * @param config Connection and protocol configuration.
+ *
+ * @author Erkan Kaplan
+ * @since 2026-02-10
  */
 class ZvtClient(
     private val config: ZvtConfig
 ) {
     companion object {
-        private const val TAG = "ZvtClient"
+        private const val TAG = "ZVT"
     }
 
     // =====================================================
@@ -59,9 +69,13 @@ class ZvtClient(
     private var outputStream: OutputStream? = null
 
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
+
+    /** Observable connection state. */
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
     private val _intermediateStatus = MutableStateFlow<IntermediateStatus?>(null)
+
+    /** Observable intermediate status (null when no transaction is in progress). */
     val intermediateStatus: StateFlow<IntermediateStatus?> = _intermediateStatus.asStateFlow()
 
     private var callback: ZvtCallback? = null
@@ -72,34 +86,38 @@ class ZvtClient(
     private val sendLock = Any()
 
     // =====================================================
-    // Konfigürasyon
+    // Configuration
     // =====================================================
 
     /**
-     * Olay dinleyici ayarlar
+     * Sets the event listener for receiving callbacks.
+     *
+     * @param callback The [ZvtCallback] implementation, or `null` to remove.
      */
     fun setCallback(callback: ZvtCallback?) {
         this.callback = callback
     }
 
     // =====================================================
-    // Bağlantı Yönetimi
+    // Connection Management
     // =====================================================
 
     /**
-     * Terminal'e TCP bağlantısı açar
-     * @throws ZvtError.ConnectionError Bağlantı hatası
+     * Opens a TCP connection to the payment terminal.
+     *
+     * @throws ZvtError.ConnectionError if the connection fails.
+     * @throws ZvtError.TimeoutError if the connection times out.
      */
     suspend fun connect() = withContext(Dispatchers.IO) {
         if (_connectionState.value == ConnectionState.CONNECTED ||
             _connectionState.value == ConnectionState.REGISTERED) {
-            log("Zaten bağlı")
+            log("Already connected, skipping connect()")
             return@withContext
         }
 
         try {
             updateState(ConnectionState.CONNECTING)
-            log("Bağlanıyor: ${config.host}:${config.port}")
+            log("Connecting to ${config.host}:${config.port} (connectTimeout=${config.connectTimeoutMs}ms, readTimeout=${config.readTimeoutMs}ms)")
 
             socket = Socket().apply {
                 soTimeout = config.readTimeoutMs
@@ -113,57 +131,63 @@ class ZvtClient(
             outputStream = socket?.getOutputStream()
 
             updateState(ConnectionState.CONNECTED)
-            log("Bağlantı başarılı")
+            log("Connection established to ${config.host}:${config.port}")
 
         } catch (e: SocketTimeoutException) {
             updateState(ConnectionState.ERROR)
-            throw ZvtError.TimeoutError("Bağlantı zaman aşımı: ${config.host}:${config.port}")
+            log("Connection timeout: ${config.host}:${config.port}")
+            throw ZvtError.TimeoutError("Connection timeout: ${config.host}:${config.port}")
         } catch (e: IOException) {
             updateState(ConnectionState.ERROR)
+            log("Connection error: ${e.message}")
             throw ZvtError.ConnectionError(
-                "Bağlantı hatası: ${e.message}",
+                "Connection error: ${e.message}",
                 cause = e
             )
         }
     }
 
     /**
-     * Bağlantıyı kapatır
+     * Closes the TCP connection and releases all resources.
      */
     fun disconnect() {
         try {
-            log("Bağlantı kapatılıyor")
+            log("Disconnecting from ${config.host}:${config.port}")
             inputStream?.close()
             outputStream?.close()
             socket?.close()
         } catch (e: Exception) {
-            log("Kapatma hatası: ${e.message}")
+            log("Disconnect error: ${e.message}")
         } finally {
             socket = null
             inputStream = null
             outputStream = null
             updateState(ConnectionState.DISCONNECTED)
+            log("Disconnected")
         }
     }
 
     /**
-     * Bağlantı durumunu kontrol eder
+     * Checks whether the TCP connection is active.
+     *
+     * @return `true` if the socket is connected and not closed.
      */
     val isConnected: Boolean
         get() = socket?.isConnected == true && socket?.isClosed == false
 
     // =====================================================
-    // ZVT Komutları
+    // ZVT Commands
     // =====================================================
 
     /**
-     * Terminal kayıt işlemi (Registration - 06 00)
+     * Sends a Registration command (06 00) to the terminal.
      *
-     * Terminal ile ilk iletişimde çağrılmalıdır. Terminal'in ECR'yi tanımasını sağlar.
+     * This must be called as the first command after connecting. It registers
+     * the ECR with the terminal and establishes the session configuration.
      *
-     * @param configByte Yapılandırma byte'ı
-     * @return true: kayıt başarılı
-     * @throws ZvtError İşlem hatası
+     * @param configByte Configuration bitmask byte.
+     * @return `true` if registration was successful.
+     * @throws ZvtError on protocol or connection errors.
      */
     suspend fun register(
         configByte: Byte = ZvtConstants.REG_INTERMEDIATE_STATUS
@@ -177,27 +201,27 @@ class ZvtClient(
             currencyCode = config.currencyCode
         )
 
-        log("Registration gönderiliyor")
+        log("=== REGISTRATION (06 00) ===")
         val result = executeCommand(packet)
 
         if (result.success) {
             updateState(ConnectionState.REGISTERED)
-            log("Registration başarılı")
+            log("Registration successful")
         } else {
             updateState(ConnectionState.CONNECTED)
-            log("Registration başarısız: ${result.resultMessage}")
+            log("Registration failed: ${result.resultMessage}")
         }
 
         result.success
     }
 
     /**
-     * Ödeme işlemi (Authorization - 06 01)
+     * Sends an Authorization command (06 01) to perform a payment transaction.
      *
-     * @param amountInCents Tutar (cent) - ör: 1250 = 12.50 EUR
-     * @param paymentType Ödeme tipi (varsayılan: otomatik)
-     * @return İşlem sonucu
-     * @throws ZvtError İşlem hatası
+     * @param amountInCents Amount in cents, e.g. 1250 = 12.50 EUR.
+     * @param paymentType Payment type byte (default: automatic detection).
+     * @return [TransactionResult] with the transaction outcome and details.
+     * @throws ZvtError on protocol or connection errors.
      */
     suspend fun authorize(
         amountInCents: Long,
@@ -212,13 +236,17 @@ class ZvtClient(
             currencyCode = config.currencyCode
         )
 
-        log("Authorization gönderiliyor: ${amountInCents} cent")
+        log("=== AUTHORIZATION (06 01) === amount=${amountInCents} cents (${amountInCents / 100.0} EUR)")
         val result = executeCommand(packet)
         result.copy(receiptLines = receiptLines.toList())
     }
 
     /**
-     * Euro tutarı ile ödeme (kolay kullanım)
+     * Convenience method to authorize with a Euro amount.
+     *
+     * @param amountEuro Amount in Euro, e.g. 12.50.
+     * @param paymentType Payment type byte.
+     * @return [TransactionResult] with the transaction outcome.
      */
     suspend fun authorizeEuro(
         amountEuro: Double,
@@ -228,10 +256,11 @@ class ZvtClient(
     }
 
     /**
-     * İptal işlemi (Reversal - 06 30)
+     * Sends a Reversal command (06 30) to cancel a previous transaction.
      *
-     * @param receiptNumber İptal edilecek fiş numarası (opsiyonel)
-     * @return İşlem sonucu
+     * @param receiptNumber Optional receipt number of the transaction to cancel.
+     * @return [TransactionResult] with the reversal outcome.
+     * @throws ZvtError on protocol or connection errors.
      */
     suspend fun reversal(receiptNumber: Int? = null): TransactionResult =
         withContext(Dispatchers.IO) {
@@ -239,16 +268,17 @@ class ZvtClient(
             receiptLines.clear()
 
             val packet = ZvtCommandBuilder.buildReversal(receiptNumber)
-            log("Reversal gönderiliyor" + (receiptNumber?.let { " (Fiş: $it)" } ?: ""))
+            log("=== REVERSAL (06 30) ===" + (receiptNumber?.let { " receipt=$it" } ?: ""))
             val result = executeCommand(packet)
             result.copy(receiptLines = receiptLines.toList())
         }
 
     /**
-     * İade işlemi (Refund - 06 31)
+     * Sends a Refund command (06 31).
      *
-     * @param amountInCents İade tutarı (cent)
-     * @return İşlem sonucu
+     * @param amountInCents Refund amount in cents.
+     * @return [TransactionResult] with the refund outcome.
+     * @throws ZvtError on protocol or connection errors.
      */
     suspend fun refund(amountInCents: Long): TransactionResult =
         withContext(Dispatchers.IO) {
@@ -259,22 +289,23 @@ class ZvtClient(
                 amountInCents = amountInCents,
                 currencyCode = config.currencyCode
             )
-            log("Refund gönderiliyor: $amountInCents cent")
+            log("=== REFUND (06 31) === amount=$amountInCents cents")
             val result = executeCommand(packet)
             result.copy(receiptLines = receiptLines.toList())
         }
 
     /**
-     * Gün sonu işlemi (End of Day - 06 50)
+     * Sends an End of Day command (06 50) to close the daily batch.
      *
-     * @return Gün sonu sonucu
+     * @return [EndOfDayResult] with the batch close outcome.
+     * @throws ZvtError on protocol or connection errors.
      */
     suspend fun endOfDay(): EndOfDayResult = withContext(Dispatchers.IO) {
         ensureConnected()
         receiptLines.clear()
 
         val packet = ZvtCommandBuilder.buildEndOfDay()
-        log("End of Day gönderiliyor")
+        log("=== END OF DAY (06 50) ===")
         val result = executeCommand(packet)
 
         EndOfDayResult(
@@ -285,15 +316,16 @@ class ZvtClient(
     }
 
     /**
-     * Tanılama (Diagnosis - 06 70)
+     * Sends a Diagnosis command (06 70) to query the terminal status.
      *
-     * @return Tanılama sonucu
+     * @return [DiagnosisResult] with the terminal diagnosis.
+     * @throws ZvtError on protocol or connection errors.
      */
     suspend fun diagnosis(): DiagnosisResult = withContext(Dispatchers.IO) {
         ensureConnected()
 
         val packet = ZvtCommandBuilder.buildDiagnosis()
-        log("Diagnosis gönderiliyor")
+        log("=== DIAGNOSIS (06 70) ===")
         val result = executeCommand(packet)
 
         DiagnosisResult(
@@ -308,13 +340,16 @@ class ZvtClient(
     }
 
     /**
-     * Durum sorgulama (Status Enquiry - 05 01)
+     * Sends a Status Enquiry command (05 01) to check the terminal state.
+     *
+     * @return [TerminalStatus] with the current terminal state.
+     * @throws ZvtError on protocol or connection errors.
      */
     suspend fun statusEnquiry(): TerminalStatus = withContext(Dispatchers.IO) {
         ensureConnected()
 
         val packet = ZvtCommandBuilder.buildStatusEnquiry()
-        log("Status Enquiry gönderiliyor")
+        log("=== STATUS ENQUIRY (05 01) ===")
         val result = executeCommand(packet)
 
         TerminalStatus(
@@ -325,134 +360,152 @@ class ZvtClient(
     }
 
     /**
-     * Devam eden işlemi iptal et (Abort - 06 1E)
+     * Sends an Abort command (06 1E) to cancel an ongoing operation.
+     *
+     * @return `true` if the abort was sent successfully.
      */
     suspend fun abort(): Boolean = withContext(Dispatchers.IO) {
         if (!isConnected) return@withContext false
 
         val packet = ZvtCommandBuilder.buildAbort()
-        log("Abort gönderiliyor")
+        log("=== ABORT (06 1E) ===")
         sendPacket(packet)
         true
     }
 
     /**
-     * Terminal bağlantısını sonlandır (Log Off - 06 02)
+     * Sends a Log Off command (06 02) to disconnect from the terminal gracefully.
+     *
+     * @return `true` if the terminal acknowledged the log off.
      */
     suspend fun logOff(): Boolean = withContext(Dispatchers.IO) {
         if (!isConnected) return@withContext false
 
         val packet = ZvtCommandBuilder.buildLogOff()
-        log("Log Off gönderiliyor")
+        log("=== LOG OFF (06 02) ===")
         sendPacket(packet)
 
-        // ACK bekle
+        // Wait for ACK
         val response = readPacket()
-        response?.isAck == true
+        val success = response?.isAck == true
+        log("Log Off ${if (success) "acknowledged" else "not acknowledged"}")
+        success
     }
 
     // =====================================================
-    // Komut Yürütme Motoru
+    // Command Execution Engine
     // =====================================================
 
     /**
-     * Komut gönderir ve tam yanıt döngüsünü yönetir.
+     * Sends a command and manages the full response loop.
      *
-     * Akış:
-     * 1. Komutu gönder
-     * 2. ACK bekle
-     * 3. Döngü: Terminal yanıtlarını oku
-     *    - 04 FF (Intermediate Status) → ACK gönder, devam et
-     *    - 06 D1 (Print Line) → ACK gönder, devam et
-     *    - 04 0F (Status Info) → ACK gönder, sonucu kaydet, devam et
-     *    - 06 0F (Completion) → İşlem bitti
-     *    - 06 1E (Abort) → İşlem iptal edildi
+     * Protocol flow:
+     * 1. Send command packet
+     * 2. Wait for ACK from terminal
+     * 3. Loop: Read terminal responses
+     *    - `04 FF` (Intermediate Status) -> Send ACK, continue
+     *    - `06 D1` (Print Line) -> Send ACK, continue
+     *    - `04 0F` (Status Info) -> Send ACK, record result, continue
+     *    - `06 0F` (Completion) -> Transaction finished
+     *    - `06 1E` (Abort) -> Transaction aborted
+     *
+     * @param command The [ZvtPacket] command to execute.
+     * @return [TransactionResult] with the final outcome.
+     * @throws ZvtError on protocol or connection errors.
      */
     private suspend fun executeCommand(command: ZvtPacket): TransactionResult {
-        // 1. Komutu gönder
+        // 1. Send command
         sendPacket(command)
 
-        // 2. İlk ACK'ı bekle
+        // 2. Wait for initial ACK
         val ackResponse = readPacket()
-            ?: throw ZvtError.TimeoutError("ACK beklendi, yanıt gelmedi")
+            ?: throw ZvtError.TimeoutError("ACK expected but no response received")
 
         if (ackResponse.isNack) {
-            throw ZvtError.ProtocolError("Terminal NACK döndü")
+            log("Terminal returned NACK - command rejected")
+            throw ZvtError.ProtocolError("Terminal returned NACK")
         }
 
         if (!ackResponse.isAck) {
-            // Bazı terminaller direkt yanıt gönderir (ACK yerine)
+            // Some terminals send a direct response instead of ACK
+            log("Direct response received instead of ACK: ${ZvtConstants.getCommandName(ackResponse.command)}")
             return handleResponse(ackResponse)
         }
 
-        // 3. Yanıt döngüsü
-        var finalResult = TransactionResult(success = false, resultMessage = "Yanıt alınamadı")
+        log("ACK received, entering response loop")
+
+        // 3. Response loop
+        var finalResult = TransactionResult(success = false, resultMessage = "No response received")
         var transactionComplete = false
 
         while (!transactionComplete) {
             val response = readPacket() ?: break
 
             when {
-                // Ara durum (04 FF) - "Kart bekleniyor", "PIN girişi" vs.
+                // Intermediate Status (04 FF) - "Insert card", "Enter PIN", etc.
                 response.isIntermediateStatus -> {
                     val status = ZvtResponseParser.parseIntermediateStatus(response)
                     _intermediateStatus.value = status
                     callback?.onIntermediateStatus(status)
-                    log("Intermediate: ${status.message}")
+                    log("Intermediate Status: [0x${String.format("%02X", status.statusCode)}] ${status.message}")
 
                     if (config.autoAck) sendAck()
                 }
 
-                // Yazdırma satırı (06 D1)
+                // Print Line (06 D1) - Receipt text line
                 response.isPrintLine -> {
                     val line = ZvtResponseParser.parsePrintLine(response)
                     if (line.isNotEmpty()) {
                         receiptLines.add(line)
                         callback?.onPrintLine(line)
-                        log("Print: $line")
+                        log("Print Line: '$line'")
                     }
 
                     if (config.autoAck) sendAck()
                 }
 
-                // Durum bilgisi (04 0F) - İşlem sonucu
+                // Status Information (04 0F) - Transaction result with BMP fields
                 response.isStatusInfo -> {
                     finalResult = ZvtResponseParser.parseStatusInfo(response)
-                    log("Status Info: ${finalResult.resultMessage}")
+                    log("Status Info: success=${finalResult.success}, resultCode=0x${String.format("%02X", finalResult.resultCode)}, message='${finalResult.resultMessage}'")
 
                     if (config.autoAck) sendAck()
                 }
 
-                // Tamamlandı (06 0F)
+                // Completion (06 0F) - Transaction finished
                 response.isCompletion -> {
-                    if (!finalResult.success && finalResult.resultMessage == "Yanıt alınamadı") {
+                    if (!finalResult.success && finalResult.resultMessage == "No response received") {
                         finalResult = ZvtResponseParser.parseCompletion(response)
                     }
-                    log("Completion alındı")
+                    log("Completion received -> transaction finished")
                     transactionComplete = true
                 }
 
-                // İptal (06 1E)
+                // Abort (06 1E) - Transaction aborted by terminal
                 response.isAbort -> {
                     finalResult = ZvtResponseParser.parseAbort(response)
-                    log("Abort alındı: ${finalResult.resultMessage}")
+                    log("Abort received: ${finalResult.resultMessage}")
                     transactionComplete = true
                 }
 
-                // Beklenmeyen yanıt
+                // Unexpected response
                 else -> {
-                    log("Beklenmeyen yanıt: ${response.commandHex}")
+                    log("Unexpected response: ${ZvtConstants.getCommandName(response.command)}, data=${response.data.toHexString()}")
                     if (config.autoAck) sendAck()
                 }
             }
         }
 
         _intermediateStatus.value = null
+        log("=== Command completed: success=${finalResult.success}, message='${finalResult.resultMessage}' ===")
         return finalResult
     }
 
     /**
-     * ACK yerine doğrudan gelen yanıtı işler
+     * Handles a direct response received instead of an ACK.
+     *
+     * @param packet The response packet.
+     * @return Parsed [TransactionResult].
      */
     private fun handleResponse(packet: ZvtPacket): TransactionResult {
         return when {
@@ -461,67 +514,87 @@ class ZvtClient(
             packet.isAbort -> ZvtResponseParser.parseAbort(packet)
             else -> TransactionResult(
                 success = false,
-                resultMessage = "Beklenmeyen yanıt: ${packet.commandHex}"
+                resultMessage = "Unexpected response: ${packet.commandHex}"
             )
         }
     }
 
     // =====================================================
-    // TCP I/O İşlemleri
+    // TCP I/O Operations
     // =====================================================
 
     /**
-     * ZVT paketi gönderir
+     * Sends a ZVT packet over the TCP connection.
+     *
+     * The entire packet (command + length + data) is written and flushed.
+     * Every sent byte is logged via Timber.
+     *
+     * @param packet The [ZvtPacket] to send.
+     * @throws ZvtError.ConnectionError if the output stream is null (connection lost).
      */
     private fun sendPacket(packet: ZvtPacket) {
         synchronized(sendLock) {
             val bytes = packet.toBytes()
-            log("TX → ${bytes.toLogString()}")
+            val cmdName = ZvtConstants.getCommandName(packet.command)
+
+            Timber.tag(TAG).d("ECR -> PT | TX %s | %d bytes | %s",
+                cmdName, bytes.size, bytes.toHexString())
+
+            // Also forward to callback
+            callback?.onDebugLog(TAG, "ECR -> PT | TX $cmdName | ${bytes.size} bytes | ${bytes.toHexString()}")
 
             outputStream?.write(bytes)
             outputStream?.flush()
-                ?: throw ZvtError.ConnectionError("OutputStream null - bağlantı kopmuş olabilir")
+                ?: throw ZvtError.ConnectionError("OutputStream is null - connection may be lost")
         }
     }
 
     /**
-     * ACK paketi gönderir
+     * Sends an ACK (positive acknowledgement) packet to the terminal.
      */
     private fun sendAck() {
         sendPacket(ZvtPacket.ack())
     }
 
     /**
-     * Bir ZVT paketi okur
-     * @return Okunan paket veya null (timeout)
+     * Reads a complete ZVT packet from the TCP input stream.
+     *
+     * Reads the 3-byte header (CMD + LEN), then the data payload.
+     * Every received byte is logged via Timber.
+     *
+     * @return The received [ZvtPacket], or `null` on timeout.
+     * @throws ZvtError.ConnectionError if the connection is closed or an I/O error occurs.
      */
     private fun readPacket(): ZvtPacket? {
         try {
             val input = inputStream
-                ?: throw ZvtError.ConnectionError("InputStream null")
+                ?: throw ZvtError.ConnectionError("InputStream is null")
 
-            // Header'ı oku (en az 3 byte: CMD(2) + LEN(1))
+            // Read header (minimum 3 bytes: CMD(2) + LEN(1))
             val headerBytes = ByteArray(3)
             var totalRead = 0
             while (totalRead < 3) {
                 val read = input.read(headerBytes, totalRead, 3 - totalRead)
-                if (read == -1) throw ZvtError.ConnectionError("Bağlantı kapandı")
+                if (read == -1) throw ZvtError.ConnectionError("Connection closed (EOF)")
                 totalRead += read
             }
 
-            // ACK/NACK kontrolü (sadece 3 byte)
+            // ACK/NACK check (exactly 3 bytes)
             if (headerBytes[0] == 0x80.toByte() || headerBytes[0] == 0x84.toByte()) {
-                log("RX ← ${headerBytes.toHexString()}")
+                val cmdName = if (headerBytes[0] == 0x80.toByte()) "ACK" else "NACK"
+                Timber.tag(TAG).d("PT -> ECR | RX %s | 3 bytes | %s",
+                    cmdName, headerBytes.toHexString())
+                callback?.onDebugLog(TAG, "PT -> ECR | RX $cmdName | 3 bytes | ${headerBytes.toHexString()}")
                 return ZvtPacket(headerBytes.copyOfRange(0, 3))
             }
 
-            // Uzunluk hesapla
+            // Calculate data length
             val lenByte = headerBytes[2].toInt() and 0xFF
             val dataLength: Int
             val extraLenBytes: ByteArray
 
             if (lenByte == 0xFF) {
-                // Uzun format: 2 byte daha oku
+                // Extended length format: read 2 more bytes
                 extraLenBytes = ByteArray(2)
                 readFully(input, extraLenBytes)
                 dataLength = (extraLenBytes[0].toInt() and 0xFF) or
@@ -531,7 +604,7 @@ class ZvtClient(
                 extraLenBytes = byteArrayOf()
             }
 
-            // Data oku
+            // Read data payload
             val data = if (dataLength > 0) {
                 ByteArray(dataLength).also { readFully(input, it) }
             } else {
@@ -543,53 +616,86 @@ class ZvtClient(
                 data = data
             )
 
-            log("RX ← ${packet.toBytes().toLogString()}")
+            val fullBytes = packet.toBytes()
+            val cmdName = ZvtConstants.getCommandName(packet.command)
+            Timber.tag(TAG).d("PT -> ECR | RX %s | %d bytes | %s",
+                cmdName, fullBytes.size, fullBytes.toHexString())
+            callback?.onDebugLog(TAG, "PT -> ECR | RX $cmdName | ${fullBytes.size} bytes | ${fullBytes.toHexString()}")
+
             return packet
 
         } catch (e: SocketTimeoutException) {
-            log("Okuma timeout")
+            log("Read timeout (${config.readTimeoutMs}ms)")
             return null
         } catch (e: IOException) {
-            log("Okuma hatası: ${e.message}")
-            throw ZvtError.ConnectionError("Okuma hatası: ${e.message}", cause = e)
+            log("Read error: ${e.message}")
+            throw ZvtError.ConnectionError("Read error: ${e.message}", cause = e)
         }
     }
 
     /**
-     * InputStream'den belirtilen sayıda byte'ı tamamen okur
+     * Reads exactly [buffer.size] bytes from the input stream.
+     *
+     * Blocks until all bytes are read or an error/EOF occurs.
+     *
+     * @param input The input stream to read from.
+     * @param buffer The buffer to fill.
+     * @throws ZvtError.ConnectionError if EOF is reached before the buffer is full.
      */
     private fun readFully(input: InputStream, buffer: ByteArray) {
         var offset = 0
         while (offset < buffer.size) {
             val read = input.read(buffer, offset, buffer.size - offset)
-            if (read == -1) throw ZvtError.ConnectionError("Bağlantı kapandı (EOF)")
+            if (read == -1) throw ZvtError.ConnectionError("Connection closed (EOF)")
             offset += read
         }
     }
 
     // =====================================================
-    // Yardımcı Fonksiyonlar
+    // Helper Functions
     // =====================================================
 
+    /**
+     * Ensures the client is connected to the terminal.
+     *
+     * @throws ZvtError.ConnectionError if not connected.
+     */
     private fun ensureConnected() {
         if (!isConnected) {
-            throw ZvtError.ConnectionError("Terminal'e bağlı değil")
+            throw ZvtError.ConnectionError("Not connected to terminal")
         }
     }
 
+    /**
+     * Updates the connection state and notifies the callback.
+     *
+     * @param state The new [ConnectionState].
+     */
     private fun updateState(state: ConnectionState) {
         _connectionState.value = state
         callback?.onConnectionStateChanged(state)
+        Timber.tag(TAG).d("Connection state changed: %s", state.name)
     }
 
+    /**
+     * Logs a message via Timber and optionally forwards to the callback.
+     *
+     * Logging is always active regardless of [ZvtConfig.debugMode].
+     * The callback is only invoked when [ZvtConfig.debugMode] is `true`.
+     *
+     * @param message The log message.
+     */
     private fun log(message: String) {
+        Timber.tag(TAG).d(message)
         if (config.debugMode) {
             callback?.onDebugLog(TAG, message)
         }
     }
 
     /**
-     * Kaynakları temizler
+     * Cleans up all resources (connection, coroutine scope).
+     *
+     * Call this when the client is no longer needed.
      */
     fun destroy() {
         disconnect()

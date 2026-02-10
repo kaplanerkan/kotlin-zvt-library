@@ -3,12 +3,16 @@ package com.panda.zvt_library
 import com.panda.zvt_library.model.*
 
 /**
- * ZVT olay dinleyici arayüzü
+ * ZVT event listener interface.
  *
- * Terminal'den gelen olayları (durum değişiklikleri, ara durumlar, yazdırma satırları vs.)
- * dinlemek için kullanılır.
+ * Implement this interface to receive callbacks from the [ZvtClient] for
+ * connection state changes, intermediate statuses, receipt print lines,
+ * debug logs, and errors.
  *
- * Kullanım:
+ * All methods have default no-op implementations, so you only need to
+ * override the ones you are interested in.
+ *
+ * Usage:
  * ```kotlin
  * zvtClient.setCallback(object : ZvtCallback {
  *     override fun onConnectionStateChanged(state: ConnectionState) { ... }
@@ -16,38 +20,47 @@ import com.panda.zvt_library.model.*
  *     override fun onPrintLine(line: String) { ... }
  * })
  * ```
+ *
+ * @author Erkan Kaplan
+ * @since 2026-02-10
  */
 interface ZvtCallback {
 
     /**
-     * Bağlantı durumu değiştiğinde çağrılır
-     * @param state Yeni bağlantı durumu
+     * Called when the connection state changes.
+     *
+     * @param state The new [ConnectionState].
      */
     fun onConnectionStateChanged(state: ConnectionState) {}
 
     /**
-     * Ara durum bilgisi geldiğinde çağrılır (04 FF)
-     * Örn: "Kart bekleniyor...", "PIN girişi bekleniyor..."
-     * @param status Ara durum bilgisi
+     * Called when an intermediate status message is received from the terminal (04 FF).
+     *
+     * Examples: "Insert card", "Enter PIN", "Please wait"
+     *
+     * @param status The [IntermediateStatus] containing the status code and message.
      */
     fun onIntermediateStatus(status: IntermediateStatus) {}
 
     /**
-     * Terminal'den yazdırma satırı geldiğinde çağrılır (06 D1)
-     * @param line Yazdırılacak metin satırı
+     * Called when a print line is received from the terminal (06 D1).
+     *
+     * @param line The text line to be printed on the receipt.
      */
     fun onPrintLine(line: String) {}
 
     /**
-     * Debug log mesajı
-     * @param tag Log etiketi
-     * @param message Log mesajı
+     * Called for debug log messages from the ZVT client.
+     *
+     * @param tag Log tag (e.g. "ZvtClient").
+     * @param message Log message content.
      */
     fun onDebugLog(tag: String, message: String) {}
 
     /**
-     * Hata oluştuğunda çağrılır
-     * @param error Hata detayı
+     * Called when a ZVT error occurs.
+     *
+     * @param error The [ZvtError] describing the error.
      */
     fun onError(error: ZvtError) {}
 }
