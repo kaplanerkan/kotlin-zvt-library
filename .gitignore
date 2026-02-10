@@ -9,6 +9,6 @@
 .cxx
 local.properties
 /app/build
-/zvt-library/build
+/panda-zvt-library/build
 .claude/
 *.pdf
