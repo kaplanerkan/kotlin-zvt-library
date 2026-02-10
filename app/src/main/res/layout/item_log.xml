@@ -1,32 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/logItemRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingHorizontal="12dp"
-    android:paddingVertical="3dp">
+    android:paddingVertical="4dp">
 
+    <!-- Level icon badge -->
     <TextView
-        android:id="@+id/tvLogTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="monospace"
-        android:textColor="@color/onSurfaceVariant"
-        android:textSize="10sp" />
+        android:id="@+id/tvLogIcon"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:background="@drawable/bg_log_icon"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold" />
 
-    <View
-        android:id="@+id/viewLogLevel"
-        android:layout_width="4dp"
-        android:layout_height="match_parent"
-        android:layout_marginHorizontal="6dp"
-        android:background="@color/success" />
-
-    <TextView
-        android:id="@+id/tvLogMessage"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvLogMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:textColor="@color/onSurface"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tvLogTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:fontFamily="monospace"
+            android:textColor="@color/onSurfaceVariant"
+            android:textSize="9sp" />
+    </LinearLayout>
+
+    <!-- Level label -->
+    <TextView
+        android:id="@+id/tvLogLevel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
         android:fontFamily="monospace"
-        android:textColor="@color/onSurface"
-        android:textSize="11sp" />
+        android:textSize="9sp"
+        android:textStyle="bold" />
 </LinearLayout>
