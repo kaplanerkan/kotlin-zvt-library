@@ -249,3 +249,11 @@ ECR → PT:  ACK (80 00 00)
 - Android SDK 36
 - Kotlin 1.9.22
 - Min SDK 24
+
+---
+
+## License / Lisans
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Bu proje MIT Lisansi ile lisanslanmistir - detaylar icin [LICENSE](LICENSE) dosyasina bakiniz.
