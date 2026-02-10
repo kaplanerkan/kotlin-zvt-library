@@ -104,6 +104,10 @@ Der Registrierungskonfigurationsdialog (Zahnrad-Symbol auf dem Verbindungsbildsc
 |:-:|:-:|:-:|
 | ![Logs](screenshots/scrcpy_Mj1fauW23I.png) | ![Konfiguration](screenshots/scrcpy_Z0vxa09x5T.png) | ![Hardware](screenshots/WhatsApp%20Image%202026-02-10%20at%2013.41.11.jpeg) |
 
+| Transaktionsergebnis (Detail-Popup) |
+|:-:|
+| ![Transaktionsergebnis](screenshots/scrcpy_9qoKBcqRmI.png) |
+
 ## ZVT-Befehls-Hex-Codes
 
 ### ECR -> Terminal Befehle

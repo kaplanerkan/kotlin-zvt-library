@@ -104,6 +104,10 @@ Baglanti ekranindaki disli ikonu ile acilan bu pencere, Registration (06 00) kom
 |:-:|:-:|:-:|
 | ![Loglar](screenshots/scrcpy_Mj1fauW23I.png) | ![Ayarlar](screenshots/scrcpy_Z0vxa09x5T.png) | ![Donanim](screenshots/WhatsApp%20Image%202026-02-10%20at%2013.41.11.jpeg) |
 
+| Islem Sonucu (Detay Popup) |
+|:-:|
+| ![Islem Sonucu](screenshots/scrcpy_9qoKBcqRmI.png) |
+
 ## ZVT Komut Hex Kodlari
 
 ### ECR -> Terminal Komutlari

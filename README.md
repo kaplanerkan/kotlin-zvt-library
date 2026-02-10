@@ -104,6 +104,10 @@ The Registration Config dialog (gear icon on connection screen) allows customizi
 |:-:|:-:|:-:|
 | ![Logs](screenshots/scrcpy_Mj1fauW23I.png) | ![Config](screenshots/scrcpy_Z0vxa09x5T.png) | ![Hardware](screenshots/WhatsApp%20Image%202026-02-10%20at%2013.41.11.jpeg) |
 
+| Transaction Result (Detail Popup) |
+|:-:|
+| ![Transaction Result](screenshots/scrcpy_9qoKBcqRmI.png) |
+
 ## ZVT Command Hex Codes
 
 ### ECR -> Terminal Commands
