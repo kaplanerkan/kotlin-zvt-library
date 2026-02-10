@@ -93,8 +93,9 @@ class MainActivity : AppCompatActivity() {
         // Observe simulator state
         viewModel.simulatorRunning.observe(this) { running ->
             if (running) {
-                // Server started — set localhost and show hint
-                binding.etHost.setText("127.0.0.1")
+                // Server started — set device IP and show hint
+                val deviceIp = getDeviceIpAddresses().firstOrNull() ?: "127.0.0.1"
+                binding.etHost.setText(deviceIp)
                 binding.etPort.setText("20007")
                 showDeviceIpHint()
             }

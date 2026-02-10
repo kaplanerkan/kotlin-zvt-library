@@ -23,7 +23,7 @@ class HttpApiServer(
 
     fun start() {
         val port = state.config.apiPort
-        server = embeddedServer(CIO, port = port) {
+        server = embeddedServer(CIO, host = "0.0.0.0", port = port) {
             install(ContentNegotiation) {
                 json(Json {
                     prettyPrint = true

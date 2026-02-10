@@ -73,6 +73,9 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
+    // SLF4J Simple (routes simulator logs to logcat via System.err)
+    implementation(libs.slf4j.simple)
+
     // Timber
     implementation(libs.timber)
 

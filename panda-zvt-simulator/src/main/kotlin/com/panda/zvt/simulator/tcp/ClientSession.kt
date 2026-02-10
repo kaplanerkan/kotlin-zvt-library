@@ -29,7 +29,7 @@ class ClientSession(
                 val dataHex = if (apdu.data.isNotEmpty()) {
                     " data=[${apdu.data.joinToString(" ") { "%02X".format(it) }}]"
                 } else ""
-                logger.debug("← ECR: cmd=[$cmdHex]$dataHex")
+                logger.info("← ECR: cmd=[$cmdHex]$dataHex")
 
                 val responses = router.route(apdu)
 
@@ -37,7 +37,7 @@ class ClientSession(
                     writeChannel.writeFully(response, 0, response.size)
 
                     val respHex = response.joinToString(" ") { "%02X".format(it) }
-                    logger.debug("→ ECR: [$respHex]")
+                    logger.info("→ ECR: [$respHex]")
 
                     // Wait for ECR ACK after each response except the last one
                     if (index < responses.size - 1) {
@@ -56,7 +56,7 @@ class ClientSession(
             }
         } catch (e: Exception) {
             if (!closed) {
-                logger.debug("Connection closed: ${e.message}")
+                logger.info("Connection closed: ${e.message}")
             }
         } finally {
             close()
