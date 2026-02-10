@@ -87,6 +87,8 @@ class MainViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        repository.destroy()
+        // Don't call repository.destroy() here — ZvtClient is a Koin singleton.
+        // Destroying it would break the client on Activity re-creation.
+        // The socket connection is managed explicitly via Connect/Disconnect buttons.
     }
 }

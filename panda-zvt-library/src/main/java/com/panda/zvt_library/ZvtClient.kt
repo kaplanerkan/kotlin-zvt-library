@@ -160,21 +160,31 @@ class ZvtClient(
 
     /**
      * Closes the TCP connection and releases all resources.
+     *
+     * Runs on [Dispatchers.IO] to avoid ANR from blocking socket I/O on the main thread.
      */
-    fun disconnect() {
+    suspend fun disconnect() = withContext(Dispatchers.IO) {
+        log("Disconnecting from ${config.host}:${config.port}")
+        closeResources()
+        updateState(ConnectionState.DISCONNECTED)
+        log("Disconnected")
+    }
+
+    /**
+     * Closes socket and stream resources without state updates.
+     * Safe to call from any thread (fast operation).
+     */
+    private fun closeResources() {
         try {
-            log("Disconnecting from ${config.host}:${config.port}")
             inputStream?.close()
             outputStream?.close()
             socket?.close()
         } catch (e: Exception) {
-            log("Disconnect error: ${e.message}")
+            Timber.tag(TAG).w("Error closing resources: %s", e.message)
         } finally {
             socket = null
             inputStream = null
             outputStream = null
-            updateState(ConnectionState.DISCONNECTED)
-            log("Disconnected")
         }
     }
 
@@ -795,9 +805,11 @@ class ZvtClient(
      * Cleans up all resources (connection, coroutine scope).
      *
      * Call this when the client is no longer needed.
+     * Uses [closeResources] directly (non-suspend) for synchronous cleanup.
      */
     fun destroy() {
-        disconnect()
+        closeResources()
+        _connectionState.value = ConnectionState.DISCONNECTED
         scope.cancel()
     }
 }

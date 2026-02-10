@@ -32,10 +32,10 @@ class ZvtRepository(
     private val _logMessages = MutableSharedFlow<LogEntry>(replay = 100)
     val logMessages: SharedFlow<LogEntry> = _logMessages.asSharedFlow()
 
-    private val _intermediateStatus = MutableSharedFlow<IntermediateStatus>(replay = 1)
+    private val _intermediateStatus = MutableSharedFlow<IntermediateStatus>(extraBufferCapacity = 1)
     val intermediateStatus: SharedFlow<IntermediateStatus> = _intermediateStatus.asSharedFlow()
 
-    private val _printLines = MutableSharedFlow<String>(replay = 50)
+    private val _printLines = MutableSharedFlow<String>(extraBufferCapacity = 50)
     val printLines: SharedFlow<String> = _printLines.asSharedFlow()
 
     val connectionState = client.connectionState
