@@ -73,6 +73,22 @@ Demo uygulama (`app/`), Material 3 arayuzlu tam islevsel bir ZVT istemcisidir.
 - Fis yazdirma destegi (terminalden gelen print line'lar)
 - Baglanti durum gostergesi (kirmizi/yesil nokta)
 - Dil degistirici (EN/TR/DE) toolbar'da
+- Kayit yapilandirma penceresi (configByte ozellestirme)
+
+### Kayit Yapilandirma Penceresi (Registration Config)
+
+Baglanti ekranindaki disli ikonu ile acilan bu pencere, Registration (06 00) komutunda gonderilen **configByte** degerini ozellestirmeye yarar. Her onay kutusu configByte'taki bir bite karsilik gelir:
+
+| Onay Kutusu | Bit | Hex | Aciklama |
+|-------------|-----|-----|----------|
+| Receipt Payment | 1 | `0x02` | Odeme fisini ECR yazdirir (aksi halde terminal yazdirir) |
+| Receipt Admin | 2 | `0x04` | Yonetim/kapanis fisini ECR yazdirir |
+| Intermediate Status | 3 | `0x08` | Terminal ara durum mesajlari gonderir ("Kartinizi takin", "PIN girin") |
+| Allow Payment | 4 | `0x10` | Odeme islevini ECR kontrol eder |
+| Allow Admin | 5 | `0x20` | Yonetim islevlerini ECR kontrol eder |
+| TLV Support | - | - | BMP 06 TLV container ile izin verilen komutlari gonderir (ayri bayrak) |
+
+**Varsayilan:** `0x08` (yalnizca Intermediate Status aktif). ConfigByte hex ve ondalik olarak gercek zamanli gosterilir. Ayarlar SharedPreferences'ta saklanir.
 
 ## Ekran Goruntuleri
 

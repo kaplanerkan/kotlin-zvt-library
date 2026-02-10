@@ -73,6 +73,22 @@ The demo application (`app/`) is a fully functional ZVT client with Material 3 U
 - Receipt printing support (print lines from terminal)
 - Connection state indicator (red/green dot)
 - Language switcher (EN/TR/DE) in toolbar
+- Registration Config dialog for configByte customization
+
+### Registration Config Dialog
+
+The Registration Config dialog (gear icon on connection screen) allows customizing the **configByte** sent during Registration (06 00). Each checkbox maps to a bit in the config byte:
+
+| Checkbox | Bit | Hex | Description |
+|----------|-----|-----|-------------|
+| Receipt Payment | 1 | `0x02` | ECR prints payment receipts (otherwise terminal prints) |
+| Receipt Admin | 2 | `0x04` | ECR prints admin/settlement receipts |
+| Intermediate Status | 3 | `0x08` | Terminal sends status messages ("Insert card", "Enter PIN") |
+| Allow Payment | 4 | `0x10` | ECR controls payment function |
+| Allow Admin | 5 | `0x20` | ECR controls admin functions |
+| TLV Support | - | - | Include BMP 06 TLV container with permitted commands (separate flag) |
+
+**Default:** `0x08` (only Intermediate Status enabled). The configByte is displayed in real-time as hex and decimal. Settings are persisted in SharedPreferences.
 
 ## Screenshots
 

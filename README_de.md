@@ -73,6 +73,22 @@ Die Demo-Anwendung (`app/`) ist ein voll funktionsfaehiger ZVT-Client mit Materi
 - Belegdruck-Unterstuetzung (Druckzeilen vom Terminal)
 - Verbindungsstatus-Anzeige (roter/gruener Punkt)
 - Sprachumschalter (EN/TR/DE) in der Toolbar
+- Registrierungskonfigurationsdialog zur Anpassung des ConfigBytes
+
+### Registrierungskonfiguration (Registration Config)
+
+Der Registrierungskonfigurationsdialog (Zahnrad-Symbol auf dem Verbindungsbildschirm) ermoeglicht die Anpassung des **configByte**, das bei der Registrierung (06 00) gesendet wird. Jede Checkbox entspricht einem Bit im Config-Byte:
+
+| Checkbox | Bit | Hex | Beschreibung |
+|----------|-----|-----|--------------|
+| Receipt Payment | 1 | `0x02` | ECR druckt Zahlungsbelege (sonst druckt das Terminal) |
+| Receipt Admin | 2 | `0x04` | ECR druckt Verwaltungs-/Abschlussbelege |
+| Intermediate Status | 3 | `0x08` | Terminal sendet Zwischenstatusmeldungen ("Karte einfuehren", "PIN eingeben") |
+| Allow Payment | 4 | `0x10` | ECR steuert die Zahlungsfunktion |
+| Allow Admin | 5 | `0x20` | ECR steuert Verwaltungsfunktionen |
+| TLV Support | - | - | BMP 06 TLV-Container mit erlaubten Befehlen senden (separates Flag) |
+
+**Standard:** `0x08` (nur Intermediate Status aktiviert). Das ConfigByte wird in Echtzeit als Hex- und Dezimalwert angezeigt. Einstellungen werden in SharedPreferences gespeichert.
 
 ## Screenshots
 
