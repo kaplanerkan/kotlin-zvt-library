@@ -546,6 +546,8 @@ Bir sorunla karsilastiginizda, hata bildirirken lutfen ilgili gunluk dosyasini e
 
 Gercek bir ZVT odeme terminalini simule eden saf Kotlin/JVM uygulamasi. **Gercek donanim olmadan** ECR istemcinizi gelistirin ve test edin — simulator, gercek bir CCV A920 terminalinin dondurdugu ayni ikili yanitlari dondurur.
 
+**Detayli simulator dokumantasyonu, tum curl ornekleri, yapilandirma secenekleri ve mimari icin:** bkz. [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md)
+
 ### Simulatoru Calistirma
 
 ```bash
@@ -644,7 +646,7 @@ curl -X PUT http://localhost:8080/api/card \
 curl -X POST http://localhost:8080/api/reset
 ```
 
-> Tam dokumantasyon: [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md)
+> **Tam dokumantasyon icin [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md) dosyasina bakin:** 22 REST endpoint'in curl ornekleri, yapilandirma, hata simulasyonu, mimari ve daha fazlasi.
 
 ## Gereksinimler & Teknoloji Yigini
 

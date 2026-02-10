@@ -546,6 +546,8 @@ Wenn ein Problem auftritt, fuegen Sie bitte die entsprechende Protokolldatei bei
 
 Eine reine Kotlin/JVM-Anwendung, die ein ZVT-Zahlungsterminal simuliert. Entwickeln und testen Sie Ihren ECR-Client **ohne echte Hardware** — der Simulator liefert exakt dieselben binaeren Antworten wie ein echtes CCV A920-Terminal.
 
+**Detaillierte Simulator-Dokumentation, alle Curl-Beispiele, Konfigurationsoptionen und Architektur:** siehe [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md)
+
 ### Simulator starten
 
 ```bash
@@ -644,7 +646,7 @@ curl -X PUT http://localhost:8080/api/card \
 curl -X POST http://localhost:8080/api/reset
 ```
 
-> Vollstaendige Dokumentation: [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md)
+> **Vollstaendige Dokumentation unter [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md):** alle 22 REST-Endpunkte mit Curl-Beispielen, Konfiguration, Fehlersimulation, Architektur und mehr.
 
 ## Voraussetzungen & Technologie-Stack
 
