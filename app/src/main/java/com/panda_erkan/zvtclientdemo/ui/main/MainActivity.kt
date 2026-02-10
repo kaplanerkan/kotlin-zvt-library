@@ -109,10 +109,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showDeviceIpHint() {
         val ips = getDeviceIpAddresses()
+        val simulatorHost = binding.etHost.text.toString().ifBlank { "10.0.2.2" }
+        val apiUrl = "http://$simulatorHost:8080"
         val hint = if (ips.isNotEmpty()) {
-            getString(R.string.simulator_device_ip, ips.joinToString(", "))
+            getString(R.string.simulator_device_ip, ips.joinToString(", ")) + "\nAPI: $apiUrl"
         } else {
-            getString(R.string.simulator_hint)
+            "API: $apiUrl"
         }
         binding.tvSimulatorHint.text = hint
         binding.tvSimulatorHint.visibility = View.VISIBLE
