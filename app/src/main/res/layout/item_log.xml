@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="monospace"
-        android:textColor="#9E9E9E"
+        android:textColor="@color/onSurfaceVariant"
         android:textSize="10sp" />
 
     <View
@@ -19,7 +19,7 @@
         android:layout_width="4dp"
         android:layout_height="match_parent"
         android:layout_marginHorizontal="6dp"
-        android:background="#4CAF50" />
+        android:background="@color/success" />
 
     <TextView
         android:id="@+id/tvLogMessage"
@@ -27,5 +27,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:fontFamily="monospace"
+        android:textColor="@color/onSurface"
         android:textSize="11sp" />
 </LinearLayout>

@@ -55,7 +55,7 @@ class MainViewModel(
             _isLoading.value = true
             _statusMessage.value = ctx.getString(R.string.status_connecting, host, port)
 
-            val result = repository.connectAndRegister()
+            val result = repository.connectAndRegister(host, port)
 
             result.fold(
                 onSuccess = { registered ->

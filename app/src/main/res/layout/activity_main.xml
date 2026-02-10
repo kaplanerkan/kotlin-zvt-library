@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:orientation="vertical">
 
     <!-- Toolbar -->
@@ -10,23 +11,25 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="@color/primary"
         app:title="@string/app_name"
-        app:titleTextColor="@android:color/white" />
+        app:titleTextColor="@color/onPrimary" />
 
-    <!-- Bağlantı Durumu Kartı -->
-    <androidx.cardview.widget.CardView
+    <!-- Connection Status Card -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="2dp">
+        android:layout_margin="12dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:strokeColor="@color/cardStroke"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -44,24 +47,28 @@
                     android:id="@+id/tvConnectionState"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="10dp"
                     android:layout_weight="1"
                     android:text="@string/disconnected"
+                    android:textColor="@color/onSurface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <ProgressBar
+                <com.google.android.material.progressindicator.CircularProgressIndicator
                     android:id="@+id/progressConnection"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    app:indicatorColor="@color/primary"
+                    app:indicatorSize="24dp"
+                    app:trackThickness="3dp" />
             </LinearLayout>
 
-            <!-- IP / Port Giriş -->
+            <!-- IP / Port Input -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -71,14 +78,18 @@
                     android:layout_weight="3"
                     android:hint="@string/hint_terminal_ip"
                     app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusTopStart="6dp"
-                    app:boxCornerRadiusTopEnd="6dp">
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxStrokeColor="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etHost"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="text"
+                        android:digits="0123456789."
+                        android:inputType="number|numberDecimal"
                         android:text="192.168.1.100"
                         android:textSize="13sp" />
                 </com.google.android.material.textfield.TextInputLayout>
@@ -86,12 +97,15 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:hint="@string/hint_port"
                     app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusTopStart="6dp"
-                    app:boxCornerRadiusTopEnd="6dp">
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxStrokeColor="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etPort"
@@ -103,29 +117,37 @@
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
-            <!-- Bağlan/Kes Butonları -->
+            <!-- Connect / Disconnect Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:gravity="end"
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDisconnect"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/btn_disconnect"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_disconnect"
+                    app:iconGravity="textStart"
+                    app:strokeColor="@color/error" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnConnect"
+                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="@string/btn_connect"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_connect"
+                    app:iconGravity="textStart" />
             </LinearLayout>
 
             <TextView
@@ -133,10 +155,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="@android:color/darker_gray"
+                android:textColor="@color/onSurfaceVariant"
                 android:textSize="12sp" />
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Fragment Container -->
     <androidx.fragment.app.FragmentContainerView
@@ -153,5 +175,7 @@
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/surface"
+        app:itemActiveIndicatorStyle="@style/BottomNavIndicator"
         app:menu="@menu/bottom_nav_menu" />
 </LinearLayout>

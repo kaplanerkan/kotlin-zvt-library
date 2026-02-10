@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -11,12 +12,14 @@
         android:orientation="vertical"
         android:padding="12dp">
 
-        <!-- Terminal İşlemleri -->
-        <androidx.cardview.widget.CardView
+        <!-- Terminal Operations -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/cardStroke"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -28,65 +31,80 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/terminal_operations"
+                    android:textColor="@color/primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDiagnosis"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="@string/btn_diagnosis"
-                    app:icon="@android:drawable/ic_menu_info_details" />
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_diagnosis"
+                    app:iconGravity="textStart" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnStatusEnquiry"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="@string/btn_status_enquiry"
-                    app:icon="@android:drawable/ic_menu_search" />
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_status_check"
+                    app:iconGravity="textStart" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnEndOfDay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:backgroundTint="#FF6F00"
+                    android:backgroundTint="@color/tertiary"
                     android:text="@string/btn_end_of_day"
-                    app:icon="@android:drawable/ic_menu_today" />
+                    android:textColor="@color/onTertiary"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_end_of_day"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/onTertiary" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Loading -->
-        <ProgressBar
+        <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progressTerminal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
-            android:visibility="gone" />
+            android:visibility="gone"
+            app:indicatorColor="@color/primary"
+            app:indicatorSize="40dp"
+            app:trackThickness="4dp" />
 
-        <!-- Durum Mesajı -->
+        <!-- Status Message -->
         <TextView
             android:id="@+id/tvTerminalStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:gravity="center"
+            android:textColor="@color/onSurfaceVariant"
             android:textSize="14sp" />
 
-        <!-- Sonuç Kartı -->
-        <androidx.cardview.widget.CardView
+        <!-- Result Card -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardTerminalResult"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:visibility="gone"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/cardStroke"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -98,22 +116,23 @@
                     android:id="@+id/tvResultTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/onSurface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <View
+                <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="8dp"
-                    android:background="#E0E0E0" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="8dp" />
 
                 <TextView
                     android:id="@+id/tvResultDetails"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
+                    android:textColor="@color/onSurfaceVariant"
                     android:textSize="12sp" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </ScrollView>

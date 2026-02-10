@@ -82,7 +82,8 @@ class ZvtRepository(
         client.register()
     }
 
-    suspend fun connectAndRegister(): Result<Boolean> = runSafe("Connect & Register") {
+    suspend fun connectAndRegister(host: String, port: Int): Result<Boolean> = runSafe("Connect & Register") {
+        client.updateConnectionParams(host, port)
         client.connect()
         client.register()
     }

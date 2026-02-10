@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/paymentFragment"
-        android:icon="@android:drawable/ic_menu_send"
+        android:icon="@drawable/ic_payment"
         android:title="@string/nav_payment" />
     <item
         android:id="@+id/terminalFragment"
-        android:icon="@android:drawable/ic_menu_manage"
+        android:icon="@drawable/ic_terminal"
         android:title="@string/nav_terminal" />
     <item
         android:id="@+id/logFragment"
-        android:icon="@android:drawable/ic_menu_recent_history"
+        android:icon="@drawable/ic_log"
         android:title="@string/nav_log" />
 </menu>

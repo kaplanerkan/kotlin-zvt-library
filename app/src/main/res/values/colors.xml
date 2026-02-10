@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Turquoise/Teal -->
+    <color name="primary">#00897B</color>
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="primaryContainer">#B2DFDB</color>
+    <color name="onPrimaryContainer">#00352F</color>
+
+    <!-- Secondary -->
+    <color name="secondary">#26A69A</color>
+    <color name="onSecondary">#FFFFFF</color>
+    <color name="secondaryContainer">#E0F2F1</color>
+    <color name="onSecondaryContainer">#00332E</color>
+
+    <!-- Tertiary -->
+    <color name="tertiary">#FF7043</color>
+    <color name="onTertiary">#FFFFFF</color>
+    <color name="tertiaryContainer">#FFE0B2</color>
+    <color name="onTertiaryContainer">#3E1500</color>
+
+    <!-- Error -->
+    <color name="error">#B3261E</color>
+    <color name="onError">#FFFFFF</color>
+    <color name="errorContainer">#FFEBEE</color>
+    <color name="onErrorContainer">#8C1D18</color>
+
+    <!-- Surface / Background -->
+    <color name="surface">#FAFFFE</color>
+    <color name="onSurface">#1C1B1F</color>
+    <color name="surfaceVariant">#E7F5F3</color>
+    <color name="onSurfaceVariant">#49454F</color>
+    <color name="background">#F5FDFC</color>
+    <color name="onBackground">#1C1B1F</color>
+
+    <!-- Outline -->
+    <color name="outline">#79747E</color>
+    <color name="outlineVariant">#CAC4D0</color>
+
+    <!-- Inverse -->
+    <color name="inverseSurface">#313033</color>
+    <color name="inverseOnSurface">#F4EFF4</color>
+    <color name="inversePrimary">#80CBC4</color>
+
+    <!-- Status bar -->
+    <color name="primaryDark">#00695C</color>
+
+    <!-- Custom UI colors -->
+    <color name="success">#2E7D32</color>
+    <color name="successContainer">#E8F5E9</color>
+    <color name="warning">#EF6C00</color>
+    <color name="warningContainer">#FFF3E0</color>
+    <color name="cardStroke">#E0E0E0</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="receiptBackground">#F5F5F5</color>
+
+</resources>

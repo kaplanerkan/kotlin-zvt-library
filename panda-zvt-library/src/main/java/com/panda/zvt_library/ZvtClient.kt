@@ -54,10 +54,21 @@ import java.net.SocketTimeoutException
  * @since 2026-02-10
  */
 class ZvtClient(
-    private val config: ZvtConfig
+    private var config: ZvtConfig
 ) {
     companion object {
         private const val TAG = "ZVT"
+    }
+
+    /**
+     * Updates the connection parameters (host and port) before connecting.
+     *
+     * @param host Terminal IP address.
+     * @param port Terminal TCP port (default 20007).
+     */
+    fun updateConnectionParams(host: String, port: Int) {
+        config = config.copy(host = host, port = port)
+        Timber.tag(TAG).d("Connection params updated: host=$host, port=$port")
     }
 
     // =====================================================

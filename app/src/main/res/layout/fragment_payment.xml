@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -11,12 +12,14 @@
         android:orientation="vertical"
         android:padding="12dp">
 
-        <!-- Tutar Girişi -->
-        <androidx.cardview.widget.CardView
+        <!-- Amount Input -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/cardStroke"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -28,6 +31,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/amount_eur"
+                    android:textColor="@color/primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -37,9 +41,12 @@
                     android:layout_marginTop="8dp"
                     android:hint="@string/hint_amount"
                     app:boxBackgroundMode="outline"
-                    app:prefixText="€"
-                    app:boxCornerRadiusTopStart="6dp"
-                    app:boxCornerRadiusTopEnd="6dp">
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxStrokeColor="@color/primary"
+                    app:prefixText="€">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etAmount"
@@ -50,7 +57,7 @@
                         android:textStyle="bold" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- İşlem Butonları -->
+                <!-- Transaction Buttons -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -63,17 +70,23 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/btn_payment"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_payment"
+                        app:iconGravity="textStart" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnRefund"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:text="@string/btn_refund"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_refund"
+                        app:iconGravity="textStart" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -84,37 +97,46 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnReversal"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/btn_reversal"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_reversal"
+                        app:iconGravity="textStart" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAbort"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:text="@string/btn_abort"
-                        android:textColor="@android:color/holo_red_dark"
-                        android:textSize="13sp" />
+                        android:textColor="@color/error"
+                        android:textSize="13sp"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_abort"
+                        app:iconGravity="textStart"
+                        app:iconTint="@color/error" />
                 </LinearLayout>
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
-        <!-- Ara Durum -->
-        <androidx.cardview.widget.CardView
+        <!-- Intermediate Status -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardIntermediateStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:visibility="gone"
-            app:cardBackgroundColor="#FFF3E0"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
+            app:cardBackgroundColor="@color/warningContainer"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/warning"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -123,29 +145,35 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <ProgressBar
+                <com.google.android.material.progressindicator.CircularProgressIndicator
                     android:layout_width="24dp"
-                    android:layout_height="24dp" />
+                    android:layout_height="24dp"
+                    app:indicatorColor="@color/warning"
+                    app:indicatorSize="24dp"
+                    app:trackThickness="3dp" />
 
                 <TextView
                     android:id="@+id/tvIntermediateStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
+                    android:textColor="@color/onSurface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
-        <!-- Sonuç Kartı -->
-        <androidx.cardview.widget.CardView
+        <!-- Result Card -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardResult"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:visibility="gone"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/cardStroke"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -171,34 +199,37 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+                        android:textColor="@color/onSurface"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <View
+                <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="8dp"
-                    android:background="#E0E0E0" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="8dp" />
 
                 <TextView
                     android:id="@+id/tvResultDetails"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
+                    android:textColor="@color/onSurfaceVariant"
                     android:textSize="12sp" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
-        <!-- Fiş Kartı -->
-        <androidx.cardview.widget.CardView
+        <!-- Receipt Card -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardReceipt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:visibility="gone"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/cardStroke"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -210,6 +241,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/receipt"
+                    android:textColor="@color/primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -218,31 +250,33 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="#F5F5F5"
+                    android:background="@color/receiptBackground"
                     android:fontFamily="monospace"
                     android:padding="12dp"
                     android:textSize="11sp" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
-        <!-- Hata Kartı -->
-        <androidx.cardview.widget.CardView
+        <!-- Error Card -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardError"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:visibility="gone"
-            app:cardBackgroundColor="#FFEBEE"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
+            app:cardBackgroundColor="@color/errorContainer"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/error"
+            app:strokeWidth="1dp">
 
             <TextView
                 android:id="@+id/tvError"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp"
-                android:textColor="#C62828"
+                android:textColor="@color/error"
                 android:textSize="14sp" />
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </ScrollView>
