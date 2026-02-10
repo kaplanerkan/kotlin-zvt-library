@@ -72,7 +72,7 @@
                         android:backgroundTint="@color/btnPayment"
                         android:text="@string/btn_payment"
                         app:icon="@drawable/ic_payment"
-                        app:iconGravity="textStart" />
+                        app:iconGravity="top" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnRefund"
@@ -84,7 +84,7 @@
                         android:backgroundTint="@color/btnRefund"
                         android:text="@string/btn_refund"
                         app:icon="@drawable/ic_refund"
-                        app:iconGravity="textStart" />
+                        app:iconGravity="top" />
                 </LinearLayout>
 
                 <!-- Row 2: Reversal + Abort -->
@@ -103,7 +103,7 @@
                         android:backgroundTint="@color/btnReversal"
                         android:text="@string/btn_reversal"
                         app:icon="@drawable/ic_reversal"
-                        app:iconGravity="textStart" />
+                        app:iconGravity="top" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAbort"
@@ -115,7 +115,7 @@
                         android:backgroundTint="@color/btnAbort"
                         android:text="@string/btn_abort"
                         app:icon="@drawable/ic_abort"
-                        app:iconGravity="textStart" />
+                        app:iconGravity="top" />
                 </LinearLayout>
 
                 <!-- Pre-Auth Section Divider -->
@@ -167,7 +167,7 @@
                         android:backgroundTint="@color/btnPreAuth"
                         android:text="@string/btn_pre_auth"
                         app:icon="@drawable/ic_pre_auth"
-                        app:iconGravity="textStart" />
+                        app:iconGravity="top" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnBookTotal"
@@ -179,7 +179,7 @@
                         android:backgroundTint="@color/btnBookTotal"
                         android:text="@string/btn_book_total"
                         app:icon="@drawable/ic_book_total"
-                        app:iconGravity="textStart" />
+                        app:iconGravity="top" />
                 </LinearLayout>
 
                 <!-- Row 4: Partial Reversal -->
@@ -192,7 +192,7 @@
                     android:backgroundTint="@color/btnPartialRev"
                     android:text="@string/btn_partial_reversal"
                     app:icon="@drawable/ic_partial_reversal"
-                    app:iconGravity="textStart" />
+                    app:iconGravity="top" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

@@ -35,54 +35,71 @@
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnDiagnosis"
-                    style="@style/ZvtButton"
+                <!-- Row 1: Diagnosis + Status Enquiry -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:backgroundTint="@color/btnDiagnosis"
-                    android:text="@string/btn_diagnosis"
-                    app:icon="@drawable/ic_diagnosis"
-                    app:iconGravity="textStart" />
+                    android:orientation="horizontal">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnStatusEnquiry"
-                    style="@style/ZvtButton"
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDiagnosis"
+                        style="@style/ZvtButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/btnDiagnosis"
+                        android:text="@string/btn_diagnosis"
+                        app:icon="@drawable/ic_diagnosis"
+                        app:iconGravity="top" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnStatusEnquiry"
+                        style="@style/ZvtButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/btnStatus"
+                        android:text="@string/btn_status_enquiry"
+                        app:icon="@drawable/ic_status_check"
+                        app:iconGravity="top" />
+                </LinearLayout>
+
+                <!-- Row 2: End of Day + Repeat Receipt -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:backgroundTint="@color/btnStatus"
-                    android:text="@string/btn_status_enquiry"
-                    app:icon="@drawable/ic_status_check"
-                    app:iconGravity="textStart" />
+                    android:orientation="horizontal">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnEndOfDay"
-                    style="@style/ZvtButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:backgroundTint="@color/btnEndOfDay"
-                    android:text="@string/btn_end_of_day"
-                    app:icon="@drawable/ic_end_of_day"
-                    app:iconGravity="textStart" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEndOfDay"
+                        style="@style/ZvtButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/btnEndOfDay"
+                        android:text="@string/btn_end_of_day"
+                        app:icon="@drawable/ic_end_of_day"
+                        app:iconGravity="top" />
 
-                <com.google.android.material.divider.MaterialDivider
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="12dp" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRepeatReceipt"
+                        style="@style/ZvtButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/btnRepeatReceipt"
+                        android:text="@string/btn_repeat_receipt"
+                        app:icon="@drawable/ic_repeat_receipt"
+                        app:iconGravity="top" />
+                </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnRepeatReceipt"
-                    style="@style/ZvtButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@color/btnRepeatReceipt"
-                    android:text="@string/btn_repeat_receipt"
-                    app:icon="@drawable/ic_repeat_receipt"
-                    app:iconGravity="textStart" />
-
+                <!-- Row 3: Log Off (centered, full width) -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogOff"
                     style="@style/ZvtButton"
@@ -92,7 +109,7 @@
                     android:backgroundTint="@color/btnLogOff"
                     android:text="@string/btn_log_off"
                     app:icon="@drawable/ic_log_off"
-                    app:iconGravity="textStart" />
+                    app:iconGravity="top" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

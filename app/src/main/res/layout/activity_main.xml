@@ -183,7 +183,7 @@
                     android:backgroundTint="@color/btnDisconnect"
                     android:text="@string/btn_disconnect"
                     app:icon="@drawable/ic_disconnect"
-                    app:iconGravity="textStart" />
+                    app:iconGravity="top" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnConnect"
@@ -194,7 +194,7 @@
                     android:backgroundTint="@color/btnConnect"
                     android:text="@string/btn_connect"
                     app:icon="@drawable/ic_connect"
-                    app:iconGravity="textStart" />
+                    app:iconGravity="top" />
             </LinearLayout>
 
             <TextView

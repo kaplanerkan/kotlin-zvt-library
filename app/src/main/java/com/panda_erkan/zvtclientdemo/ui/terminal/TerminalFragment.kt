@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import com.panda.zvt_library.model.ConnectionState
 import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.databinding.FragmentTerminalBinding
+import com.panda_erkan.zvtclientdemo.ui.common.ProgressStatusDialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class TerminalFragment : Fragment() {
@@ -15,6 +16,9 @@ class TerminalFragment : Fragment() {
     private var _binding: FragmentTerminalBinding? = null
     private val binding get() = _binding!!
     private val viewModel: TerminalViewModel by viewModel()
+    private var progressDialog: ProgressStatusDialog? = null
+    private var currentOperationName: String = ""
+    private var currentOperationIcon: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,24 +37,48 @@ class TerminalFragment : Fragment() {
 
     private fun setupButtons() {
         binding.btnDiagnosis.setOnClickListener {
+            setOperation(getString(R.string.op_diagnosis), "\uD83D\uDCCA")
             viewModel.diagnosis()
         }
 
         binding.btnStatusEnquiry.setOnClickListener {
+            setOperation(getString(R.string.op_status_enquiry), "\uD83D\uDD0D")
             viewModel.statusEnquiry()
         }
 
         binding.btnEndOfDay.setOnClickListener {
+            setOperation(getString(R.string.op_end_of_day), "\uD83D\uDCC5")
             viewModel.endOfDay()
         }
 
         binding.btnRepeatReceipt.setOnClickListener {
+            setOperation(getString(R.string.op_repeat_receipt), "\uD83D\uDDA8\uFE0F")
             viewModel.repeatReceipt()
         }
 
         binding.btnLogOff.setOnClickListener {
+            setOperation(getString(R.string.op_log_off), "\uD83D\uDEAA")
             viewModel.logOff()
         }
+    }
+
+    private fun setOperation(name: String, icon: String) {
+        currentOperationName = name
+        currentOperationIcon = icon
+    }
+
+    private fun showProgressDialog() {
+        if (progressDialog?.isAdded == true) return
+        progressDialog = ProgressStatusDialog.newInstance(
+            operationName = currentOperationName,
+            operationIcon = currentOperationIcon
+        )
+        progressDialog?.show(childFragmentManager, ProgressStatusDialog.TAG)
+    }
+
+    private fun dismissProgressDialog() {
+        progressDialog?.dismissAllowingStateLoss()
+        progressDialog = null
     }
 
     private fun updateButtonStates() {
@@ -68,10 +96,21 @@ class TerminalFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.connectionState.observe(viewLifecycleOwner) { updateButtonStates() }
-        viewModel.isLoading.observe(viewLifecycleOwner) { updateButtonStates() }
+        viewModel.isLoading.observe(viewLifecycleOwner) { loading ->
+            updateButtonStates()
+            if (loading == true) {
+                showProgressDialog()
+            } else {
+                dismissProgressDialog()
+            }
+        }
 
         viewModel.statusMessage.observe(viewLifecycleOwner) { message ->
             binding.tvTerminalStatus.text = message
+            // Update dialog status too
+            if (message.isNotEmpty()) {
+                progressDialog?.updateStatus(message)
+            }
         }
 
         viewModel.diagnosisResult.observe(viewLifecycleOwner) { result ->

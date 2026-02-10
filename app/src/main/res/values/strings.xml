@@ -87,6 +87,21 @@
     <string name="log_operation_error">✗ %1$s error: %2$s</string>
     <string name="log_operation_unexpected">✗ %1$s unexpected error: %2$s</string>
 
+    <!-- Progress Dialog -->
+    <string name="processing">Processing…</string>
+    <string name="please_wait">Please wait, communicating with terminal…</string>
+    <string name="op_payment">Payment</string>
+    <string name="op_refund">Refund</string>
+    <string name="op_reversal">Reversal</string>
+    <string name="op_pre_auth">Pre-Authorization</string>
+    <string name="op_book_total">Book Total</string>
+    <string name="op_partial_reversal">Partial Reversal</string>
+    <string name="op_diagnosis">Diagnosis</string>
+    <string name="op_status_enquiry">Status Enquiry</string>
+    <string name="op_end_of_day">End of Day</string>
+    <string name="op_repeat_receipt">Repeat Receipt</string>
+    <string name="op_log_off">Log Off</string>
+
     <!-- Navigation -->
     <string name="nav_payment">Payment</string>
     <string name="nav_terminal">Terminal</string>

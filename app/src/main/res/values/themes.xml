@@ -50,14 +50,19 @@
         <item name="android:statusBarColor">@color/primaryDark</item>
     </style>
 
-    <!-- Filled Button — turquoise primary with ripple -->
+    <!-- Filled Button — turquoise primary, icon-top layout -->
     <style name="ZvtButton" parent="Widget.Material3.Button">
-        <item name="android:textSize">12sp</item>
-        <item name="cornerRadius">12dp</item>
+        <item name="android:textSize">11sp</item>
+        <item name="cornerRadius">14dp</item>
         <item name="backgroundTint">@color/primary</item>
         <item name="android:textColor">@color/onPrimary</item>
         <item name="iconTint">@color/onPrimary</item>
         <item name="rippleColor">@color/primaryContainer</item>
+        <item name="iconGravity">top</item>
+        <item name="iconSize">26dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:minHeight">72dp</item>
     </style>
 
     <!-- Outlined Button — light turquoise fill + primary stroke with ripple -->
@@ -104,5 +109,15 @@
     <!-- Bottom Navigation Active Indicator -->
     <style name="BottomNavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:color">@color/primaryContainer</item>
+    </style>
+
+    <!-- Progress Dialog — fullscreen transparent overlay -->
+    <style name="ProgressDialogTheme" parent="Theme.Material3.Light.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:fontFamily">@font/montserrat_medium</item>
+        <item name="fontFamily">@font/montserrat_medium</item>
     </style>
 </resources>

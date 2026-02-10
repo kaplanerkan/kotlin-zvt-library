@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import com.panda.zvt_library.model.ConnectionState
 import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.databinding.FragmentPaymentBinding
+import com.panda_erkan.zvtclientdemo.ui.common.ProgressStatusDialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PaymentFragment : Fragment() {
@@ -15,6 +16,9 @@ class PaymentFragment : Fragment() {
     private var _binding: FragmentPaymentBinding? = null
     private val binding get() = _binding!!
     private val viewModel: PaymentViewModel by viewModel()
+    private var progressDialog: ProgressStatusDialog? = null
+    private var currentOperationName: String = ""
+    private var currentOperationIcon: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,6 +39,7 @@ class PaymentFragment : Fragment() {
         binding.btnAuthorize.setOnClickListener {
             val amount = binding.etAmount.text.toString()
             if (amount.isNotEmpty()) {
+                setOperation(getString(R.string.op_payment), "\uD83D\uDCB3")
                 viewModel.authorize(amount)
             } else {
                 binding.etAmount.error = getString(R.string.error_amount_required)
@@ -44,6 +49,7 @@ class PaymentFragment : Fragment() {
         binding.btnRefund.setOnClickListener {
             val amount = binding.etAmount.text.toString()
             if (amount.isNotEmpty()) {
+                setOperation(getString(R.string.op_refund), "\uD83D\uDD04")
                 viewModel.refund(amount)
             } else {
                 binding.etAmount.error = getString(R.string.error_amount_required)
@@ -51,6 +57,7 @@ class PaymentFragment : Fragment() {
         }
 
         binding.btnReversal.setOnClickListener {
+            setOperation(getString(R.string.op_reversal), "\u21A9\uFE0F")
             viewModel.reversal()
         }
 
@@ -61,6 +68,7 @@ class PaymentFragment : Fragment() {
         binding.btnPreAuth.setOnClickListener {
             val amount = binding.etAmount.text.toString()
             if (amount.isNotEmpty()) {
+                setOperation(getString(R.string.op_pre_auth), "\uD83D\uDD12")
                 viewModel.preAuthorize(amount)
             } else {
                 binding.etAmount.error = getString(R.string.error_amount_required)
@@ -75,6 +83,7 @@ class PaymentFragment : Fragment() {
             } else if (receiptNo == null) {
                 binding.etReceiptNumber.error = getString(R.string.receipt_no_required)
             } else {
+                setOperation(getString(R.string.op_book_total), "\u2705")
                 viewModel.bookTotal(amount, receiptNo)
             }
         }
@@ -87,9 +96,30 @@ class PaymentFragment : Fragment() {
             } else if (receiptNo == null) {
                 binding.etReceiptNumber.error = getString(R.string.receipt_no_required)
             } else {
+                setOperation(getString(R.string.op_partial_reversal), "\u2702\uFE0F")
                 viewModel.partialReversal(amount, receiptNo)
             }
         }
+    }
+
+    private fun setOperation(name: String, icon: String) {
+        currentOperationName = name
+        currentOperationIcon = icon
+    }
+
+    private fun showProgressDialog() {
+        if (progressDialog?.isAdded == true) return
+        progressDialog = ProgressStatusDialog.newInstance(
+            operationName = currentOperationName,
+            operationIcon = currentOperationIcon,
+            onCancel = { viewModel.abort() }
+        )
+        progressDialog?.show(childFragmentManager, ProgressStatusDialog.TAG)
+    }
+
+    private fun dismissProgressDialog() {
+        progressDialog?.dismissAllowingStateLoss()
+        progressDialog = null
     }
 
     private fun updateButtonStates() {
@@ -109,7 +139,14 @@ class PaymentFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.connectionState.observe(viewLifecycleOwner) { updateButtonStates() }
-        viewModel.isProcessing.observe(viewLifecycleOwner) { updateButtonStates() }
+        viewModel.isProcessing.observe(viewLifecycleOwner) { processing ->
+            updateButtonStates()
+            if (processing == true) {
+                showProgressDialog()
+            } else {
+                dismissProgressDialog()
+            }
+        }
 
         viewModel.intermediateStatus.observe(viewLifecycleOwner) { status ->
             if (status.isNullOrEmpty()) {
@@ -117,6 +154,8 @@ class PaymentFragment : Fragment() {
             } else {
                 binding.cardIntermediateStatus.visibility = View.VISIBLE
                 binding.tvIntermediateStatus.text = status
+                // Update dialog status too
+                progressDialog?.updateStatus(status)
             }
         }
 

@@ -87,6 +87,21 @@
     <string name="log_operation_error">✗ %1$s hatası: %2$s</string>
     <string name="log_operation_unexpected">✗ %1$s beklenmeyen hata: %2$s</string>
 
+    <!-- İlerleme Diyaloğu -->
+    <string name="processing">İşleniyor…</string>
+    <string name="please_wait">Lütfen bekleyin, terminal ile iletişim kuruluyor…</string>
+    <string name="op_payment">Ödeme</string>
+    <string name="op_refund">İade</string>
+    <string name="op_reversal">İptal</string>
+    <string name="op_pre_auth">Ön Yetki</string>
+    <string name="op_book_total">Ön Yetki Kapat</string>
+    <string name="op_partial_reversal">Kısmi İptal</string>
+    <string name="op_diagnosis">Tanılama</string>
+    <string name="op_status_enquiry">Durum Sorgu</string>
+    <string name="op_end_of_day">Gün Sonu</string>
+    <string name="op_repeat_receipt">Fiş Tekrarla</string>
+    <string name="op_log_off">Oturumu Kapat</string>
+
     <!-- Gezinme -->
     <string name="nav_payment">Ödeme</string>
     <string name="nav_terminal">Terminal</string>

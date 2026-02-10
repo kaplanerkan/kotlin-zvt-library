@@ -87,6 +87,21 @@
     <string name="log_operation_error">✗ %1$s Fehler: %2$s</string>
     <string name="log_operation_unexpected">✗ %1$s unerwarteter Fehler: %2$s</string>
 
+    <!-- Fortschrittsdialog -->
+    <string name="processing">Verarbeitung…</string>
+    <string name="please_wait">Bitte warten, Kommunikation mit Terminal…</string>
+    <string name="op_payment">Zahlung</string>
+    <string name="op_refund">Erstattung</string>
+    <string name="op_reversal">Storno</string>
+    <string name="op_pre_auth">Vorautorisierung</string>
+    <string name="op_book_total">Buchung</string>
+    <string name="op_partial_reversal">Teilstorno</string>
+    <string name="op_diagnosis">Diagnose</string>
+    <string name="op_status_enquiry">Statusabfrage</string>
+    <string name="op_end_of_day">Tagesabschluss</string>
+    <string name="op_repeat_receipt">Beleg wiederholen</string>
+    <string name="op_log_off">Abmelden</string>
+
     <!-- Navigation -->
     <string name="nav_payment">Zahlung</string>
     <string name="nav_terminal">Terminal</string>
