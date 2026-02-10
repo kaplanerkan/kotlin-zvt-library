@@ -67,6 +67,12 @@
     <!-- Log -->
     <string name="protocol_logs">Protocol Logs</string>
     <string name="btn_clear">Clear</string>
+    <string name="log_connection">Connection: %1$s</string>
+    <string name="log_error">Error: %1$s</string>
+    <string name="log_operation_starting">▶ %1$s starting…</string>
+    <string name="log_operation_completed">✓ %1$s completed</string>
+    <string name="log_operation_error">✗ %1$s error: %2$s</string>
+    <string name="log_operation_unexpected">✗ %1$s unexpected error: %2$s</string>
 
     <!-- Navigation -->
     <string name="nav_payment">Payment</string>

@@ -1,8 +1,10 @@
 package com.panda_erkan.zvtclientdemo.repository
 
+import android.content.Context
 import com.panda.zvt_library.ZvtCallback
 import com.panda.zvt_library.ZvtClient
 import com.panda.zvt_library.model.*
+import com.panda_erkan.zvtclientdemo.R
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -11,11 +13,12 @@ import timber.log.Timber
 /**
  * ZVT Repository
  *
- * ZvtClient'ı sararak ViewModel katmanına temiz bir API sunar.
- * Hataları yakalar ve Result tipine dönüştürür.
- * Log mesajlarını SharedFlow ile dışarı verir.
+ * Wraps ZvtClient and provides a clean API to the ViewModel layer.
+ * Catches errors and converts them to Result type.
+ * Emits log messages via SharedFlow.
  */
 class ZvtRepository(
+    private val context: Context,
     private val client: ZvtClient
 ) {
     companion object {
@@ -40,7 +43,7 @@ class ZvtRepository(
     init {
         client.setCallback(object : ZvtCallback {
             override fun onConnectionStateChanged(state: ConnectionState) {
-                addLog(LogLevel.INFO, "Bağlantı: $state")
+                addLog(LogLevel.INFO, context.getString(R.string.log_connection, state.name))
             }
 
             override fun onIntermediateStatus(status: IntermediateStatus) {
@@ -59,13 +62,13 @@ class ZvtRepository(
             }
 
             override fun onError(error: ZvtError) {
-                addLog(LogLevel.ERROR, "Hata: ${error.message}")
+                addLog(LogLevel.ERROR, context.getString(R.string.log_error, error.message))
             }
         })
     }
 
     // =====================================================
-    // Bağlantı
+    // Connection
     // =====================================================
 
     suspend fun connect(): Result<Boolean> = runSafe("Connect") {
@@ -89,7 +92,7 @@ class ZvtRepository(
     }
 
     // =====================================================
-    // İşlemler
+    // Operations
     // =====================================================
 
     suspend fun authorize(amountInCents: Long): Result<TransactionResult> =
@@ -133,20 +136,20 @@ class ZvtRepository(
         }
 
     // =====================================================
-    // Yardımcı
+    // Helper
     // =====================================================
 
     private suspend fun <T> runSafe(operation: String, block: suspend () -> T): Result<T> {
         return try {
-            addLog(LogLevel.INFO, "▶ $operation başlatılıyor...")
+            addLog(LogLevel.INFO, context.getString(R.string.log_operation_starting, operation))
             val result = block()
-            addLog(LogLevel.INFO, "✓ $operation tamamlandı")
+            addLog(LogLevel.INFO, context.getString(R.string.log_operation_completed, operation))
             Result.success(result)
         } catch (e: ZvtError) {
-            addLog(LogLevel.ERROR, "✗ $operation hatası: ${e.message}")
+            addLog(LogLevel.ERROR, context.getString(R.string.log_operation_error, operation, e.message))
             Result.failure(e)
         } catch (e: Exception) {
-            addLog(LogLevel.ERROR, "✗ $operation beklenmeyen hata: ${e.message}")
+            addLog(LogLevel.ERROR, context.getString(R.string.log_operation_unexpected, operation, e.message))
             Result.failure(e)
         }
     }
@@ -166,7 +169,7 @@ class ZvtRepository(
 }
 
 // =====================================================
-// Log Modelleri
+// Log Models
 // =====================================================
 
 data class LogEntry(

@@ -67,6 +67,12 @@
     <!-- Log -->
     <string name="protocol_logs">Protokol Logları</string>
     <string name="btn_clear">Temizle</string>
+    <string name="log_connection">Bağlantı: %1$s</string>
+    <string name="log_error">Hata: %1$s</string>
+    <string name="log_operation_starting">▶ %1$s başlatılıyor…</string>
+    <string name="log_operation_completed">✓ %1$s tamamlandı</string>
+    <string name="log_operation_error">✗ %1$s hatası: %2$s</string>
+    <string name="log_operation_unexpected">✗ %1$s beklenmeyen hata: %2$s</string>
 
     <!-- Gezinme -->
     <string name="nav_payment">Ödeme</string>

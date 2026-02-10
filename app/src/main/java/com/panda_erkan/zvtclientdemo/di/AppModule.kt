@@ -29,7 +29,7 @@ val appModule = module {
     single { ZvtClient(get()) }
 
     // Repository
-    single { ZvtRepository(get()) }
+    single { ZvtRepository(androidContext(), get()) }
 
     // ViewModels
     viewModel { MainViewModel(androidApplication(), get()) }

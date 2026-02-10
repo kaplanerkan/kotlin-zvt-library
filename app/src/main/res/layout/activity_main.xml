@@ -13,7 +13,60 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/primary"
         app:title="@string/app_name"
-        app:titleTextColor="@color/onPrimary" />
+        app:titleTextColor="@color/onPrimary">
+
+        <!-- Language Switcher -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="8dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLangEn"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="40dp"
+                android:layout_height="32dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text="EN"
+                android:textColor="@color/onPrimary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLangTr"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="40dp"
+                android:layout_height="32dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text="TR"
+                android:textColor="@color/onPrimary"
+                android:textSize="11sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLangDe"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="40dp"
+                android:layout_height="32dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text="DE"
+                android:textColor="@color/onPrimary"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
 
     <!-- Connection Status Card -->
     <com.google.android.material.card.MaterialCardView

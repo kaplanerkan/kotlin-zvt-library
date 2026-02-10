@@ -1,8 +1,11 @@
 package com.panda_erkan.zvtclientdemo.ui.main
 
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.panda.zvt_library.model.ConnectionState
@@ -22,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
         setupNavigation()
         setupConnectionUI()
+        setupLanguageSwitcher()
         observeViewModel()
     }
 
@@ -47,6 +51,44 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnDisconnect.setOnClickListener {
             viewModel.disconnect()
+        }
+    }
+
+    private fun setupLanguageSwitcher() {
+        highlightActiveLanguage()
+
+        binding.btnLangEn.setOnClickListener { setAppLocale("en") }
+        binding.btnLangTr.setOnClickListener { setAppLocale("tr") }
+        binding.btnLangDe.setOnClickListener { setAppLocale("de") }
+    }
+
+    private fun setAppLocale(languageTag: String) {
+        val localeList = LocaleListCompat.forLanguageTags(languageTag)
+        AppCompatDelegate.setApplicationLocales(localeList)
+    }
+
+    private fun highlightActiveLanguage() {
+        val currentLocale = AppCompatDelegate.getApplicationLocales()
+        val lang = if (!currentLocale.isEmpty) {
+            currentLocale.get(0)?.language ?: "en"
+        } else {
+            resources.configuration.locales.get(0)?.language ?: "en"
+        }
+
+        val buttons = mapOf(
+            "en" to binding.btnLangEn,
+            "tr" to binding.btnLangTr,
+            "de" to binding.btnLangDe
+        )
+
+        buttons.forEach { (code, btn) ->
+            if (code == lang) {
+                btn.setTypeface(null, Typeface.BOLD)
+                btn.alpha = 1.0f
+            } else {
+                btn.setTypeface(null, Typeface.NORMAL)
+                btn.alpha = 0.6f
+            }
         }
     }
 
