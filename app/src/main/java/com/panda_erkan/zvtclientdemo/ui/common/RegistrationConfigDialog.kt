@@ -83,7 +83,7 @@ class RegistrationConfigDialog : DialogFragment() {
         binding.cbIntermediateStatus.isChecked = prefs.getBoolean(KEY_INTERMEDIATE_STATUS, true)
         binding.cbAllowPayment.isChecked = prefs.getBoolean(KEY_ALLOW_PAYMENT, false)
         binding.cbAllowAdmin.isChecked = prefs.getBoolean(KEY_ALLOW_ADMIN, false)
-        binding.cbTlvSupport.isChecked = prefs.getBoolean(KEY_TLV_SUPPORT, true)
+        binding.cbTlvSupport.isChecked = prefs.getBoolean(KEY_TLV_SUPPORT, false)
     }
 
     private fun saveSettings() {
@@ -159,7 +159,7 @@ class RegistrationConfigDialog : DialogFragment() {
 
         fun isTlvEnabled(context: Context): Boolean {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            return prefs.getBoolean(KEY_TLV_SUPPORT, true)
+            return prefs.getBoolean(KEY_TLV_SUPPORT, false)
         }
     }
 }

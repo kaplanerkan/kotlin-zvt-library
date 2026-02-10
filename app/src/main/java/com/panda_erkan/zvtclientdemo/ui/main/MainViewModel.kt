@@ -50,12 +50,12 @@ class MainViewModel(
             .launchIn(viewModelScope)
     }
 
-    fun connectAndRegister(host: String, port: Int, configByte: Byte = 0x08) {
+    fun connectAndRegister(host: String, port: Int, configByte: Byte = 0x08, tlvEnabled: Boolean = false) {
         viewModelScope.launch {
             _isLoading.value = true
             _statusMessage.value = ctx.getString(R.string.status_connecting, host, port)
 
-            val result = repository.connectAndRegister(host, port, configByte)
+            val result = repository.connectAndRegister(host, port, configByte, tlvEnabled)
 
             result.fold(
                 onSuccess = { registered ->

@@ -73,6 +73,16 @@ Demo uygulama (`app/`), Material 3 arayuzlu tam islevsel bir ZVT istemcisidir.
 - Baglanti durum gostergesi (kirmizi/yesil nokta)
 - Dil degistirici (EN/TR/DE) toolbar'da
 
+## Ekran Goruntuleri
+
+| Odeme Ekrani | Odeme (kaydir) | Terminal Islemleri |
+|:-:|:-:|:-:|
+| ![Odeme](screenshots/scrcpy_9WEEeROGaO.png) | ![Odeme kaydir](screenshots/scrcpy_dA8DSZDT7u.png) | ![Terminal](screenshots/scrcpy_McYozJ43by.png) |
+
+| Protokol Loglari | Kayit Yapilandirmasi | CCV A920 ile Canli Odeme |
+|:-:|:-:|:-:|
+| ![Loglar](screenshots/scrcpy_Mj1fauW23I.png) | ![Ayarlar](screenshots/scrcpy_Z0vxa09x5T.png) | ![Donanim](screenshots/WhatsApp%20Image%202026-02-10%20at%2013.41.11.jpeg) |
+
 ## ZVT Komut Hex Kodlari
 
 ### ECR -> Terminal Komutlari

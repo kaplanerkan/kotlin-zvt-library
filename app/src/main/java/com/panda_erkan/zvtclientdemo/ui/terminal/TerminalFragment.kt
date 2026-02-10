@@ -100,8 +100,18 @@ class TerminalFragment : Fragment() {
             updateButtonStates()
             if (loading == true) {
                 showProgressDialog()
+            } else if (loading == false) {
+                // If loading finished but no result was shown (failure/logOff path),
+                // show the status message as result in the dialog
+                val dialog = progressDialog
+                if (dialog != null && dialog.isAdded && !dialog.resultShown) {
+                    val msg = viewModel.statusMessage.value ?: ""
+                    val isError = msg.contains("Error", ignoreCase = true)
+                            || msg.contains("Fehler", ignoreCase = true)
+                            || msg.contains("Hata", ignoreCase = true)
+                    dialog.showResult(!isError, msg)
+                }
             }
-            // Dialog is dismissed via showResult() auto-dismiss, not here
         }
 
         viewModel.statusMessage.observe(viewLifecycleOwner) { message ->

@@ -48,7 +48,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             val configByte = RegistrationConfigDialog.getSavedConfigByte(this)
-            viewModel.connectAndRegister(host, port, configByte)
+            val tlvEnabled = RegistrationConfigDialog.isTlvEnabled(this)
+            viewModel.connectAndRegister(host, port, configByte, tlvEnabled)
         }
 
         binding.btnDisconnect.setOnClickListener {

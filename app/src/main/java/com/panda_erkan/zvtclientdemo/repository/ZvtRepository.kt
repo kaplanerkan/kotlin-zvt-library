@@ -81,14 +81,14 @@ class ZvtRepository(
         true
     }
 
-    suspend fun register(configByte: Byte = 0x08): Result<Boolean> = runSafe("Register") {
-        client.register(configByte)
+    suspend fun register(configByte: Byte = 0x08, tlvEnabled: Boolean = false): Result<Boolean> = runSafe("Register") {
+        client.register(configByte, tlvEnabled)
     }
 
-    suspend fun connectAndRegister(host: String, port: Int, configByte: Byte = 0x08): Result<Boolean> = runSafe("Connect & Register") {
+    suspend fun connectAndRegister(host: String, port: Int, configByte: Byte = 0x08, tlvEnabled: Boolean = false): Result<Boolean> = runSafe("Connect & Register") {
         client.updateConnectionParams(host, port)
         client.connect()
-        client.register(configByte)
+        client.register(configByte, tlvEnabled)
     }
 
     // =====================================================

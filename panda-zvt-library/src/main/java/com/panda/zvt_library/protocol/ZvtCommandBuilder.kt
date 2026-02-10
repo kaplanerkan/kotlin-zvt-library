@@ -60,7 +60,8 @@ object ZvtCommandBuilder {
         password: String = "000000",
         configByte: Byte = ZvtConstants.REG_INTERMEDIATE_STATUS,
         currencyCode: Int = ZvtConstants.CURRENCY_EUR,
-        serviceByteValue: Byte = 0x00
+        serviceByteValue: Byte = 0x00,
+        tlvEnabled: Boolean = false
     ): ZvtPacket {
         val data = mutableListOf<Byte>()
 
@@ -80,13 +81,31 @@ object ZvtCommandBuilder {
         data.add(ZvtConstants.BMP_SERVICE_BYTE)
         data.add(serviceByteValue)
 
+        // TLV container (BMP 0x06) — only when TLV support is explicitly enabled.
+        // Not all terminals support TLV. Terminals that don't will respond with
+        // NACK 84-9A (ZVT protocol error) if TLV is included.
+        if (tlvEnabled) {
+            val permittedCmds = buildPermittedCommandsList()
+            val tag26Tlv = TlvParser.buildTlv(0x26, permittedCmds)
+            // BMP 0x06: [tag][BER-TLV length][TLV payload]
+            data.add(ZvtConstants.BMP_TLV_CONTAINER)
+            val payloadLen = tag26Tlv.size
+            if (payloadLen <= 0x7F) {
+                data.add(payloadLen.toByte())
+            } else {
+                data.add(0x81.toByte())
+                data.add(payloadLen.toByte())
+            }
+            data.addAll(tag26Tlv.toList())
+        }
+
         val packet = ZvtPacket(
             command = ZvtConstants.CMD_REGISTRATION,
             data = data.toByteArray()
         )
 
-        Timber.tag(TAG).d("[CommandBuilder] Built Registration: password=%s, configByte=0x%02X, currency=%d, data=%s",
-            password, configByte, currencyCode, data.toByteArray().toHexString())
+        Timber.tag(TAG).d("[CommandBuilder] Built Registration: password=%s, configByte=0x%02X, currency=%d, tlv=%b, data=%s",
+            password, configByte, currencyCode, tlvEnabled, data.toByteArray().toHexString())
 
         return packet
     }

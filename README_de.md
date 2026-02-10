@@ -73,6 +73,16 @@ Die Demo-Anwendung (`app/`) ist ein voll funktionsfaehiger ZVT-Client mit Materi
 - Verbindungsstatus-Anzeige (roter/gruener Punkt)
 - Sprachumschalter (EN/TR/DE) in der Toolbar
 
+## Screenshots
+
+| Zahlungsbildschirm | Zahlung (scrollen) | Terminal-Operationen |
+|:-:|:-:|:-:|
+| ![Zahlung](screenshots/scrcpy_9WEEeROGaO.png) | ![Zahlung scrollen](screenshots/scrcpy_dA8DSZDT7u.png) | ![Terminal](screenshots/scrcpy_McYozJ43by.png) |
+
+| Protokoll-Logs | Registrierungskonfiguration | Live-Zahlung mit CCV A920 |
+|:-:|:-:|:-:|
+| ![Logs](screenshots/scrcpy_Mj1fauW23I.png) | ![Konfiguration](screenshots/scrcpy_Z0vxa09x5T.png) | ![Hardware](screenshots/WhatsApp%20Image%202026-02-10%20at%2013.41.11.jpeg) |
+
 ## ZVT-Befehls-Hex-Codes
 
 ### ECR -> Terminal Befehle

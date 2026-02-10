@@ -73,6 +73,16 @@ The demo application (`app/`) is a fully functional ZVT client with Material 3 U
 - Connection state indicator (red/green dot)
 - Language switcher (EN/TR/DE) in toolbar
 
+## Screenshots
+
+| Payment Screen | Payment (scroll) | Terminal Operations |
+|:-:|:-:|:-:|
+| ![Payment](screenshots/scrcpy_9WEEeROGaO.png) | ![Payment scroll](screenshots/scrcpy_dA8DSZDT7u.png) | ![Terminal](screenshots/scrcpy_McYozJ43by.png) |
+
+| Protocol Logs | Registration Config | Live Payment with CCV A920 |
+|:-:|:-:|:-:|
+| ![Logs](screenshots/scrcpy_Mj1fauW23I.png) | ![Config](screenshots/scrcpy_Z0vxa09x5T.png) | ![Hardware](screenshots/WhatsApp%20Image%202026-02-10%20at%2013.41.11.jpeg) |
+
 ## ZVT Command Hex Codes
 
 ### ECR -> Terminal Commands

@@ -22,6 +22,8 @@ class ProgressStatusDialog : DialogFragment() {
     private var operationIcon: String = ""
     private var onCancelClick: (() -> Unit)? = null
     private var cancelSent = false
+    var resultShown = false
+        private set
 
     private val handler = Handler(Looper.getMainLooper())
     private var startTimeMs = 0L
@@ -129,8 +131,10 @@ class ProgressStatusDialog : DialogFragment() {
      * @param message result message to display
      * @param autoDismissMs delay before auto-dismiss (0 = no auto-dismiss)
      */
-    fun showResult(success: Boolean, message: String, autoDismissMs: Long = 2500) {
+    fun showResult(success: Boolean, message: String, autoDismissMs: Long = 4000) {
         if (_binding == null) return
+        if (resultShown) return
+        resultShown = true
 
         // Stop timer
         handler.removeCallbacks(timerRunnable)
@@ -174,9 +178,14 @@ class ProgressStatusDialog : DialogFragment() {
             (parent as? View)?.setBackgroundColor(headerBg)
         }
 
-        // Hide cancel button, show "Closing..." text
-        binding.btnDialogCancel.visibility = View.GONE
-        binding.dividerCancel.visibility = View.GONE
+        // Change cancel button to close button
+        binding.btnDialogCancel.visibility = View.VISIBLE
+        binding.btnDialogCancel.isEnabled = true
+        binding.btnDialogCancel.text = "\u2716"
+        binding.btnDialogCancel.setTextColor(resources.getColor(R.color.onSurfaceVariant, null))
+        binding.btnDialogCancel.iconTint = null
+        binding.btnDialogCancel.icon = null
+        binding.btnDialogCancel.setOnClickListener { dismissAllowingStateLoss() }
 
         // Auto-dismiss after delay
         if (autoDismissMs > 0) {

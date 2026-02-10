@@ -103,7 +103,6 @@
                     android:id="@+id/cbTlvSupport"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:checked="true"
                     android:fontFamily="@font/montserrat_medium"
                     android:text="@string/reg_tlv_support"
                     android:textSize="12sp" />

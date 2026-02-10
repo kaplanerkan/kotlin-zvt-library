@@ -211,7 +211,8 @@ class ZvtClient(
      * @throws ZvtError on protocol or connection errors.
      */
     suspend fun register(
-        configByte: Byte = ZvtConstants.REG_INTERMEDIATE_STATUS
+        configByte: Byte = ZvtConstants.REG_INTERMEDIATE_STATUS,
+        tlvEnabled: Boolean = false
     ): Boolean = withContext(Dispatchers.IO) {
         ensureConnected()
         updateState(ConnectionState.REGISTERING)
@@ -219,7 +220,8 @@ class ZvtClient(
         val packet = ZvtCommandBuilder.buildRegistration(
             password = config.password,
             configByte = configByte,
-            currencyCode = config.currencyCode
+            currencyCode = config.currencyCode,
+            tlvEnabled = tlvEnabled
         )
 
         log("=== REGISTRATION (06 00) ===")
