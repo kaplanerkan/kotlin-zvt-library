@@ -33,12 +33,14 @@ On startup you'll see:
 
 ## Connecting from Android
 
-| Environment | Simulator IP | Why |
-|-------------|-------------|-----|
-| **Android Emulator** | `10.0.2.2` | Emulator maps `10.0.2.2` to host machine's `localhost` |
-| **Real Android Device** | PC's LAN IP (e.g. `192.168.1.50`) | Device and PC must be on the same WiFi network |
+The demo app has a **Simulator Mode** toggle. When enabled, the Ktor simulator server starts **embedded on the Android device itself** (TCP:20007 + HTTP:8080).
 
-The demo app has a **Simulator Mode** toggle that automatically sets the correct IP.
+| Mode | Simulator IP | HTTP API | Description |
+|------|-------------|----------|-------------|
+| **Embedded (toggle ON)** | Device's own IP | `http://<device_ip>:8080` | Simulator runs on the Android device |
+| **Standalone (PC)** | PC's LAN IP | `http://<pc_ip>:8080` | Simulator runs as standalone JVM on PC |
+
+When embedded mode is active, the app connects to the simulator via the device's WiFi IP. The HTTP API is accessible from any PC on the same network.
 
 ## CLI Arguments
 
@@ -138,129 +140,223 @@ Trigger payment/terminal operations directly via HTTP — same logic as the TCP/
 | `POST` | `/api/operations/log-off` | _(empty)_ | Log Off |
 | `POST` | `/api/operations/abort` | _(empty)_ | Abort |
 
-### Examples
+### Curl Examples — All Endpoints
 
-**Check simulator status:**
+> Replace `localhost` with the device IP (e.g. `192.168.1.131`) when running embedded on Android.
+
+#### Management Endpoints
+
+**GET /api/status — Simulator status:**
 ```bash
 curl http://localhost:8080/api/status
 ```
 ```json
-{
-  "running": true,
-  "registered": false,
-  "busy": false,
-  "activeSessions": 0,
-  "transactionCount": 0,
-  "currentTrace": 1,
-  "currentReceipt": 1,
-  "zvtPort": 20007,
-  "apiPort": 8080
-}
+{"running":true,"registered":true,"busy":false,"activeSessions":1,"transactionCount":0,"currentTrace":1,"currentReceipt":1,"zvtPort":20007,"apiPort":8080}
 ```
 
-**Payment via REST:**
+**GET /api/config — Current configuration:**
 ```bash
-curl -X POST http://localhost:8080/api/operations/payment \
-  -H "Content-Type: application/json" \
-  -d '{"amount": 12.50}'
-```
-```json
-{
-  "success": true,
-  "operation": "Payment",
-  "resultCode": 0,
-  "resultMessage": "Success",
-  "amount": "12.50 EUR",
-  "amountCents": 1250,
-  "trace": 1,
-  "receipt": 1,
-  "turnover": 1,
-  "terminalId": "29001234",
-  "cardData": {
-    "pan": "6763890000001230",
-    "cardType": 6,
-    "cardName": "Mastercard",
-    "expiryDate": "2812",
-    "sequenceNumber": 1,
-    "aid": "A000000004101001"
-  },
-  "timestamp": "2026-02-10T18:30:00"
-}
+curl http://localhost:8080/api/config
 ```
 
-**Refund via REST:**
-```bash
-curl -X POST http://localhost:8080/api/operations/refund \
-  -H "Content-Type: application/json" \
-  -d '{"amount": 5.00}'
-```
-
-**Reversal via REST:**
-```bash
-curl -X POST http://localhost:8080/api/operations/reversal \
-  -H "Content-Type: application/json" \
-  -d '{"receiptNo": 1}'
-```
-
-**End of Day via REST:**
-```bash
-curl -X POST http://localhost:8080/api/operations/end-of-day
-```
-```json
-{
-  "success": true,
-  "operation": "End of Day",
-  "resultCode": 0,
-  "resultMessage": "Success",
-  "terminalId": "29001234",
-  "timestamp": "2026-02-10T18:35:00",
-  "transactionCount": 3,
-  "totalAmount": "30.00 EUR",
-  "receiptLines": [
-    "================================",
-    "       TAGESABSCHLUSS          ",
-    "...",
-    "================================"
-  ]
-}
-```
-
-**Change simulated card to Visa:**
-```bash
-curl -X PUT http://localhost:8080/api/card \
-  -H "Content-Type: application/json" \
-  -d '{"pan": "4111111111111111", "cardType": 10, "cardName": "Visa"}'
-```
-
-**Enable error simulation (30% failure rate):**
-```bash
-curl -X PUT http://localhost:8080/api/error \
-  -H "Content-Type: application/json" \
-  -d '{"enabled": true, "errorPercentage": 30}'
-```
-
-**Force a specific error code:**
-```bash
-curl -X PUT http://localhost:8080/api/error \
-  -H "Content-Type: application/json" \
-  -d '{"enabled": true, "errorCode": 108}'
-```
-
-**Adjust response delays:**
+**PUT /api/delays — Adjust response delays:**
 ```bash
 curl -X PUT http://localhost:8080/api/delays \
   -H "Content-Type: application/json" \
   -d '{"intermediateDelayMs": 1000, "processingDelayMs": 2000}'
 ```
 
-**View transactions:**
+**PUT /api/card — Change simulated card to Visa:**
+```bash
+curl -X PUT http://localhost:8080/api/card \
+  -H "Content-Type: application/json" \
+  -d '{"pan": "4111111111111111", "cardType": 10, "cardName": "Visa"}'
+```
+
+**PUT /api/error — Enable error simulation (forced error code):**
+```bash
+curl -X PUT http://localhost:8080/api/error \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true, "errorCode": 104}'
+```
+```json
+{"message":"Error simulation updated: enabled=true, rate=0%"}
+```
+
+**PUT /api/error — Enable random errors (30% failure rate):**
+```bash
+curl -X PUT http://localhost:8080/api/error \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true, "errorPercentage": 30}'
+```
+
+**PUT /api/error — Disable error simulation:**
+```bash
+curl -X PUT http://localhost:8080/api/error \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": false}'
+```
+
+**GET /api/transactions — List all transactions:**
 ```bash
 curl http://localhost:8080/api/transactions
 ```
 
-**Reset simulator:**
+**GET /api/transactions/last — Last transaction:**
+```bash
+curl http://localhost:8080/api/transactions/last
+```
+
+**DELETE /api/transactions — Clear all transactions:**
+```bash
+curl -X DELETE http://localhost:8080/api/transactions
+```
+
+**POST /api/reset — Full simulator reset:**
 ```bash
 curl -X POST http://localhost:8080/api/reset
+```
+
+#### Operation Endpoints
+
+**POST /api/operations/registration:**
+```bash
+curl -X POST http://localhost:8080/api/operations/registration
+```
+```json
+{"success":true,"operation":"Registration","resultCode":0,"resultMessage":"Success","terminalId":"29001234","timestamp":"2026-02-10T20:08:15"}
+```
+
+**POST /api/operations/payment — Payment (Authorization):**
+```bash
+curl -X POST http://localhost:8080/api/operations/payment \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 25.50}'
+```
+```json
+{"success":true,"operation":"Payment","resultCode":0,"resultMessage":"Success","amount":"25,50 EUR","amountCents":2550,"trace":1,"receipt":1,"turnover":1,"terminalId":"29001234","cardData":{"pan":"6763890000001230","cardType":6,"cardName":"Mastercard","expiryDate":"2812","sequenceNumber":1,"aid":"A000000004101001"},"timestamp":"2026-02-10T20:08:16"}
+```
+
+**POST /api/operations/refund:**
+```bash
+curl -X POST http://localhost:8080/api/operations/refund \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 5.00}'
+```
+```json
+{"success":true,"operation":"Refund","resultCode":0,"resultMessage":"Success","amount":"5,00 EUR","amountCents":500,"trace":2,"receipt":2,"turnover":2,"terminalId":"29001234","cardData":{"pan":"6763890000001230","cardType":6,"cardName":"Mastercard",...},"timestamp":"..."}
+```
+
+**POST /api/operations/reversal:**
+```bash
+curl -X POST http://localhost:8080/api/operations/reversal \
+  -H "Content-Type: application/json" \
+  -d '{"receiptNo": 2}'
+```
+```json
+{"success":true,"operation":"Reversal","resultCode":0,"resultMessage":"Success","amount":"5,00 EUR","amountCents":500,"trace":3,"receipt":2,"turnover":3,...}
+```
+
+**POST /api/operations/pre-auth — Pre-Authorization:**
+```bash
+curl -X POST http://localhost:8080/api/operations/pre-auth \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 100.00}'
+```
+```json
+{"success":true,"operation":"Pre-Authorization","resultCode":0,"resultMessage":"Success","amount":"100,00 EUR","amountCents":10000,"trace":4,"receipt":3,"turnover":4,...}
+```
+
+**POST /api/operations/book-total — Book Total (Capture):**
+```bash
+curl -X POST http://localhost:8080/api/operations/book-total \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 85.00, "receiptNo": 3}'
+```
+```json
+{"success":true,"operation":"Book Total","resultCode":0,"resultMessage":"Success","amount":"85,00 EUR","amountCents":8500,"trace":5,"receipt":3,"turnover":5,...}
+```
+
+**POST /api/operations/pre-auth-reversal:**
+```bash
+curl -X POST http://localhost:8080/api/operations/pre-auth-reversal \
+  -H "Content-Type: application/json" \
+  -d '{"receiptNo": 3}'
+```
+```json
+{"success":true,"operation":"Pre-Auth Reversal","resultCode":0,"resultMessage":"Success","amount":"85,00 EUR","amountCents":8500,...}
+```
+
+**POST /api/operations/diagnosis:**
+```bash
+curl -X POST http://localhost:8080/api/operations/diagnosis
+```
+```json
+{"success":true,"operation":"Diagnosis","resultCode":0,"resultMessage":"Success","terminalId":"29001234","timestamp":"..."}
+```
+
+**POST /api/operations/status-enquiry:**
+```bash
+curl -X POST http://localhost:8080/api/operations/status-enquiry
+```
+```json
+{"success":true,"operation":"Status Enquiry","resultCode":0,"resultMessage":"Success","terminalId":"29001234","timestamp":"..."}
+```
+
+**POST /api/operations/repeat-receipt:**
+```bash
+curl -X POST http://localhost:8080/api/operations/repeat-receipt
+```
+```json
+{"success":true,"operation":"Repeat Receipt","resultCode":0,"resultMessage":"Success","terminalId":"29001234","originalTransaction":{"type":"Pre-Auth Reversal","amountCents":8500,"amountFormatted":"85,00 EUR","trace":6,"receipt":4,...},"timestamp":"..."}
+```
+
+**POST /api/operations/end-of-day:**
+```bash
+curl -X POST http://localhost:8080/api/operations/end-of-day
+```
+```json
+{"success":true,"operation":"End of Day","resultCode":0,"resultMessage":"Success","terminalId":"29001234","transactionCount":6,"totalAmount":"305,50 EUR","receiptLines":["================================","       TAGESABSCHLUSS          ","================================","Terminal: 29001234","VU:       SIMULATOR123456","Datum:    10.02.2026","--------------------------------","Anzahl:   6","Gesamt:   305,50 EUR","================================","     BATCH ABGESCHLOSSEN       ","================================"],"timestamp":"..."}
+```
+
+**POST /api/operations/log-off:**
+```bash
+curl -X POST http://localhost:8080/api/operations/log-off
+```
+```json
+{"success":true,"operation":"Log Off","resultCode":0,"resultMessage":"Success","terminalId":"29001234","timestamp":"..."}
+```
+
+**POST /api/operations/abort:**
+```bash
+curl -X POST http://localhost:8080/api/operations/abort
+```
+```json
+{"success":true,"operation":"Abort","resultCode":0,"resultMessage":"Success","terminalId":"29001234","timestamp":"..."}
+```
+
+#### Error Simulation Example
+
+```bash
+# Enable forced error (0x68 = card expired)
+curl -X PUT http://localhost:8080/api/error \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true, "errorCode": 104}'
+
+# Payment will now fail
+curl -X POST http://localhost:8080/api/operations/payment \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 10.00}'
+```
+```json
+{"success":false,"operation":"Payment","resultCode":104,"resultMessage":"Card expired","terminalId":"29001234","timestamp":"..."}
+```
+
+```bash
+# Disable error simulation
+curl -X PUT http://localhost:8080/api/error \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": false}'
 ```
 
 ## Configuration
@@ -328,7 +424,7 @@ panda-zvt-simulator/
 |   |   +-- ZvtTcpServer.kt        # Ktor TCP server (port 20007)
 |   |   +-- ClientSession.kt       # Per-connection APDU read/write
 |   +-- api/
-|       +-- HttpApiServer.kt       # Ktor Netty HTTP server (port 8080)
+|       +-- HttpApiServer.kt       # Ktor CIO HTTP server (port 8080)
 |       +-- ApiRoutes.kt           # Management REST endpoints
 |       +-- ApiModels.kt           # Management request/response models
 |       +-- OperationRoutes.kt     # Operation REST endpoints (payment, refund, etc.)
@@ -343,7 +439,7 @@ panda-zvt-simulator/
 |-----------|-----------|
 | Language | Kotlin 2.3.10 (JVM) |
 | TCP Server | Ktor Network (`ktor-network`) |
-| HTTP Server | Ktor Server (Netty engine) |
+| HTTP Server | Ktor Server (CIO engine) |
 | Serialization | kotlinx.serialization JSON |
 | Logging | SLF4J + Logback |
 | Concurrency | Kotlin Coroutines |

@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
         val ips = getDeviceIpAddresses()
         val deviceIp = ips.firstOrNull() ?: "N/A"
         val lines = mutableListOf<String>()
-        lines.add("ZVT: 127.0.0.1:20007")
+        lines.add("ZVT: $deviceIp:20007")
         lines.add(getString(R.string.simulator_api_url, deviceIp))
         binding.tvSimulatorHint.text = lines.joinToString("\n")
         binding.tvSimulatorHint.visibility = View.VISIBLE

@@ -562,12 +562,12 @@ Der Simulator startet zwei Server:
 
 ### Verbindung von Android
 
-| Umgebung | Simulator-IP | Grund |
-|----------|-------------|-------|
-| Android-Emulator | `10.0.2.2` | Emulator leitet dies an den Localhost des Hosts weiter |
-| Echtes Android-Geraet | LAN-IP des PCs (z.B. `192.168.1.50`) | Gleiches WLAN-Netzwerk erforderlich |
+Die Demo-App hat einen **Simulator-Modus**-Schalter. Bei Aktivierung startet der Ktor-Simulator-Server **direkt auf dem Android-Geraet** (TCP:20007 + HTTP:8080).
 
-Die Demo-App hat einen **Simulator-Modus**-Schalter, der automatisch die richtige IP einstellt.
+| Modus | Simulator-IP | HTTP API | Beschreibung |
+|-------|-------------|----------|-------------|
+| **Eingebettet (Toggle AN)** | Eigene IP des Geraets | `http://<geraet_ip>:8080` | Simulator laeuft auf dem Android-Geraet |
+| **Eigenstaendig (PC)** | LAN-IP des PCs | `http://<pc_ip>:8080` | Simulator laeuft als JVM auf dem PC |
 
 ### REST-Management-API
 
@@ -580,14 +580,68 @@ Die Demo-App hat einen **Simulator-Modus**-Schalter, der automatisch die richtig
 | `PUT` | `/api/card` | Kartendaten aendern (PAN, Typ, Name, AID) |
 | `PUT` | `/api/delays` | Antwortzeiten (Zwischenstatus, Verarbeitung, ACK-Timeout) |
 | `GET` | `/api/transactions` | Transaktionen auflisten |
+| `GET` | `/api/transactions/last` | Letzte Transaktion |
 | `DELETE` | `/api/transactions` | Transaktionen loeschen |
 | `POST` | `/api/reset` | Vollstaendiger Reset |
 
-**Beispiel — 30% Fehlerrate aktivieren:**
+### Operations-Endpunkte (REST)
+
+| Methode | Pfad | Body | Beschreibung |
+|---------|------|------|-------------|
+| `POST` | `/api/operations/payment` | `{"amount": 12.50}` | Zahlung |
+| `POST` | `/api/operations/refund` | `{"amount": 12.50}` | Erstattung |
+| `POST` | `/api/operations/reversal` | `{"receiptNo": 1}` | Storno |
+| `POST` | `/api/operations/pre-auth` | `{"amount": 50.00}` | Vorautorisierung |
+| `POST` | `/api/operations/book-total` | `{"amount": 50.00, "receiptNo": 1}` | Buchung |
+| `POST` | `/api/operations/pre-auth-reversal` | `{"receiptNo": 1}` | Vorautorisierung-Storno |
+| `POST` | `/api/operations/end-of-day` | _(leer)_ | Tagesabschluss |
+| `POST` | `/api/operations/diagnosis` | _(leer)_ | Diagnose |
+| `POST` | `/api/operations/status-enquiry` | _(leer)_ | Statusabfrage |
+| `POST` | `/api/operations/repeat-receipt` | _(leer)_ | Beleg wiederholen |
+| `POST` | `/api/operations/registration` | _(leer)_ | Registrierung |
+| `POST` | `/api/operations/log-off` | _(leer)_ | Abmelden |
+| `POST` | `/api/operations/abort` | _(leer)_ | Abbruch |
+
+### Curl-Beispiele
+
 ```bash
+# Zahlung
+curl -X POST http://localhost:8080/api/operations/payment \
+  -H "Content-Type: application/json" -d '{"amount": 25.50}'
+
+# Erstattung
+curl -X POST http://localhost:8080/api/operations/refund \
+  -H "Content-Type: application/json" -d '{"amount": 5.00}'
+
+# Storno
+curl -X POST http://localhost:8080/api/operations/reversal \
+  -H "Content-Type: application/json" -d '{"receiptNo": 1}'
+
+# Vorautorisierung
+curl -X POST http://localhost:8080/api/operations/pre-auth \
+  -H "Content-Type: application/json" -d '{"amount": 100.00}'
+
+# Buchung
+curl -X POST http://localhost:8080/api/operations/book-total \
+  -H "Content-Type: application/json" -d '{"amount": 85.00, "receiptNo": 1}'
+
+# Tagesabschluss
+curl -X POST http://localhost:8080/api/operations/end-of-day
+
+# Diagnose
+curl -X POST http://localhost:8080/api/operations/diagnosis
+
+# Fehlersimulation aktivieren
 curl -X PUT http://localhost:8080/api/error \
+  -H "Content-Type: application/json" -d '{"enabled": true, "errorCode": 104}'
+
+# Kartendaten auf Visa aendern
+curl -X PUT http://localhost:8080/api/card \
   -H "Content-Type: application/json" \
-  -d '{"enabled": true, "errorPercentage": 30}'
+  -d '{"pan": "4111111111111111", "cardType": 10, "cardName": "Visa"}'
+
+# Simulator zuruecksetzen
+curl -X POST http://localhost:8080/api/reset
 ```
 
 > Vollstaendige Dokumentation: [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md)

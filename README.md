@@ -568,12 +568,12 @@ The simulator starts two servers:
 
 ### Connecting from Android
 
-| Environment | Simulator IP | Reason |
-|-------------|-------------|--------|
-| Android Emulator | `10.0.2.2` | Emulator maps this to host's localhost |
-| Real Android Device | PC's LAN IP (e.g. `192.168.1.50`) | Same WiFi network required |
+The demo app has a **Simulator Mode** toggle. When enabled, the Ktor simulator server starts **embedded on the Android device itself** (TCP:20007 + HTTP:8080).
 
-The demo app has a **Simulator Mode** toggle that automatically sets the correct IP.
+| Mode | Simulator IP | HTTP API | Description |
+|------|-------------|----------|-------------|
+| **Embedded (toggle ON)** | Device's own IP | `http://<device_ip>:8080` | Simulator runs on the Android device |
+| **Standalone (PC)** | PC's LAN IP | `http://<pc_ip>:8080` | Simulator runs as standalone JVM on PC |
 
 ### REST Management API
 
@@ -586,14 +586,68 @@ The demo app has a **Simulator Mode** toggle that automatically sets the correct
 | `PUT` | `/api/card` | Change card data (PAN, type, name, AID) |
 | `PUT` | `/api/delays` | Response timing (intermediate, processing, ACK timeout) |
 | `GET` | `/api/transactions` | List transactions |
+| `GET` | `/api/transactions/last` | Last transaction |
 | `DELETE` | `/api/transactions` | Clear transactions |
 | `POST` | `/api/reset` | Full reset |
 
-**Example — enable 30% error rate:**
+### Operation Endpoints (REST)
+
+| Method | Path | Body | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/operations/payment` | `{"amount": 12.50}` | Payment |
+| `POST` | `/api/operations/refund` | `{"amount": 12.50}` | Refund |
+| `POST` | `/api/operations/reversal` | `{"receiptNo": 1}` | Reversal |
+| `POST` | `/api/operations/pre-auth` | `{"amount": 50.00}` | Pre-Authorization |
+| `POST` | `/api/operations/book-total` | `{"amount": 50.00, "receiptNo": 1}` | Book Total (capture) |
+| `POST` | `/api/operations/pre-auth-reversal` | `{"receiptNo": 1}` | Pre-Auth Reversal |
+| `POST` | `/api/operations/end-of-day` | _(empty)_ | End of Day |
+| `POST` | `/api/operations/diagnosis` | _(empty)_ | Diagnosis |
+| `POST` | `/api/operations/status-enquiry` | _(empty)_ | Status Enquiry |
+| `POST` | `/api/operations/repeat-receipt` | _(empty)_ | Repeat Receipt |
+| `POST` | `/api/operations/registration` | _(empty)_ | Registration |
+| `POST` | `/api/operations/log-off` | _(empty)_ | Log Off |
+| `POST` | `/api/operations/abort` | _(empty)_ | Abort |
+
+### Curl Examples
+
 ```bash
+# Payment
+curl -X POST http://localhost:8080/api/operations/payment \
+  -H "Content-Type: application/json" -d '{"amount": 25.50}'
+
+# Refund
+curl -X POST http://localhost:8080/api/operations/refund \
+  -H "Content-Type: application/json" -d '{"amount": 5.00}'
+
+# Reversal
+curl -X POST http://localhost:8080/api/operations/reversal \
+  -H "Content-Type: application/json" -d '{"receiptNo": 1}'
+
+# Pre-Authorization
+curl -X POST http://localhost:8080/api/operations/pre-auth \
+  -H "Content-Type: application/json" -d '{"amount": 100.00}'
+
+# Book Total
+curl -X POST http://localhost:8080/api/operations/book-total \
+  -H "Content-Type: application/json" -d '{"amount": 85.00, "receiptNo": 1}'
+
+# End of Day
+curl -X POST http://localhost:8080/api/operations/end-of-day
+
+# Diagnosis
+curl -X POST http://localhost:8080/api/operations/diagnosis
+
+# Enable error simulation
 curl -X PUT http://localhost:8080/api/error \
+  -H "Content-Type: application/json" -d '{"enabled": true, "errorCode": 104}'
+
+# Change card to Visa
+curl -X PUT http://localhost:8080/api/card \
   -H "Content-Type: application/json" \
-  -d '{"enabled": true, "errorPercentage": 30}'
+  -d '{"pan": "4111111111111111", "cardType": 10, "cardName": "Visa"}'
+
+# Reset simulator
+curl -X POST http://localhost:8080/api/reset
 ```
 
 > Full documentation: [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md)

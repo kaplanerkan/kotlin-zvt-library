@@ -23,26 +23,30 @@ class HttpApiServer(
 
     fun start() {
         val port = state.config.apiPort
-        server = embeddedServer(CIO, host = "0.0.0.0", port = port) {
-            install(ContentNegotiation) {
-                json(Json {
-                    prettyPrint = true
-                    encodeDefaults = true
-                })
-            }
-            install(CORS) {
-                anyHost()
-                allowHeader(io.ktor.http.HttpHeaders.ContentType)
-                allowMethod(io.ktor.http.HttpMethod.Put)
-                allowMethod(io.ktor.http.HttpMethod.Delete)
-                allowMethod(io.ktor.http.HttpMethod.Post)
-            }
-            routing {
-                simulatorRoutes(state, store, tcpServer)
-                operationRoutes(state, store)
-            }
-        }.start(wait = false)
-        logger.info("HTTP API server listening on port $port")
+        try {
+            server = embeddedServer(CIO, host = "0.0.0.0", port = port) {
+                install(ContentNegotiation) {
+                    json(Json {
+                        prettyPrint = true
+                        encodeDefaults = true
+                    })
+                }
+                install(CORS) {
+                    anyHost()
+                    allowHeader(io.ktor.http.HttpHeaders.ContentType)
+                    allowMethod(io.ktor.http.HttpMethod.Put)
+                    allowMethod(io.ktor.http.HttpMethod.Delete)
+                    allowMethod(io.ktor.http.HttpMethod.Post)
+                }
+                routing {
+                    simulatorRoutes(state, store, tcpServer)
+                    operationRoutes(state, store)
+                }
+            }.start(wait = false)
+            logger.info("HTTP API server started on 0.0.0.0:$port")
+        } catch (e: Exception) {
+            logger.error("HTTP API server FAILED to start on port $port: ${e.message}", e)
+        }
     }
 
     fun stop() {
