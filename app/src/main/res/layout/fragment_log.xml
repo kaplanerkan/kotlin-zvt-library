@@ -24,9 +24,10 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClearLogs"
-            style="@style/ZvtButton.Text"
+            style="@style/ZvtButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="@color/btnClear"
             android:text="@string/btn_clear" />
     </LinearLayout>
 

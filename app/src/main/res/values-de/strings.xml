@@ -34,6 +34,7 @@
     <string name="transaction_success">Transaktion erfolgreich</string>
     <string name="transaction_failed">Transaktion fehlgeschlagen</string>
     <string name="invalid_amount">Ungültiger Betrag: %1$s</string>
+    <string name="error_amount_required">Betrag erforderlich</string>
     <string name="label_amount">Betrag</string>
     <string name="label_result">Ergebnis</string>
     <string name="label_trace_no">Trace-Nr</string>

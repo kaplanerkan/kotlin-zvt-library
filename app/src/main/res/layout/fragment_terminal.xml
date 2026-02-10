@@ -37,20 +37,22 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDiagnosis"
-                    style="@style/ZvtButton.Outlined"
+                    style="@style/ZvtButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
+                    android:backgroundTint="@color/btnDiagnosis"
                     android:text="@string/btn_diagnosis"
                     app:icon="@drawable/ic_diagnosis"
                     app:iconGravity="textStart" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnStatusEnquiry"
-                    style="@style/ZvtButton.Outlined"
+                    style="@style/ZvtButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:backgroundTint="@color/btnStatus"
                     android:text="@string/btn_status_enquiry"
                     app:icon="@drawable/ic_status_check"
                     app:iconGravity="textStart" />
@@ -61,12 +63,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:backgroundTint="@color/tertiary"
+                    android:backgroundTint="@color/btnEndOfDay"
                     android:text="@string/btn_end_of_day"
-                    android:textColor="@color/onTertiary"
                     app:icon="@drawable/ic_end_of_day"
-                    app:iconGravity="textStart"
-                    app:iconTint="@color/onTertiary" />
+                    app:iconGravity="textStart" />
 
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
@@ -75,19 +75,21 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRepeatReceipt"
-                    style="@style/ZvtButton.Outlined"
+                    style="@style/ZvtButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:backgroundTint="@color/btnRepeatReceipt"
                     android:text="@string/btn_repeat_receipt"
                     app:icon="@drawable/ic_repeat_receipt"
                     app:iconGravity="textStart" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogOff"
-                    style="@style/ZvtButton.Error"
+                    style="@style/ZvtButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:backgroundTint="@color/btnLogOff"
                     android:text="@string/btn_log_off"
                     app:icon="@drawable/ic_log_off"
                     app:iconGravity="textStart" />

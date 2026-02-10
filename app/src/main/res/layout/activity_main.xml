@@ -142,7 +142,7 @@
                         android:layout_height="wrap_content"
                         android:digits="0123456789."
                         android:inputType="number|numberDecimal"
-                        android:text="192.168.1.100" />
+                        android:text="192.168.1.135" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -177,20 +177,21 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDisconnect"
-                    style="@style/ZvtButton.Outlined"
+                    style="@style/ZvtButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:backgroundTint="@color/btnDisconnect"
                     android:text="@string/btn_disconnect"
                     app:icon="@drawable/ic_disconnect"
-                    app:iconGravity="textStart"
-                    app:strokeColor="@color/error" />
+                    app:iconGravity="textStart" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnConnect"
-                    style="@style/ZvtButton.Tonal"
+                    style="@style/ZvtButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/btnConnect"
                     android:text="@string/btn_connect"
                     app:icon="@drawable/ic_connect"
                     app:iconGravity="textStart" />

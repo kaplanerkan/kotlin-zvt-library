@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.panda.zvt_library.model.ConnectionState
 import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.databinding.FragmentPaymentBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -35,6 +36,8 @@ class PaymentFragment : Fragment() {
             val amount = binding.etAmount.text.toString()
             if (amount.isNotEmpty()) {
                 viewModel.authorize(amount)
+            } else {
+                binding.etAmount.error = getString(R.string.error_amount_required)
             }
         }
 
@@ -42,6 +45,8 @@ class PaymentFragment : Fragment() {
             val amount = binding.etAmount.text.toString()
             if (amount.isNotEmpty()) {
                 viewModel.refund(amount)
+            } else {
+                binding.etAmount.error = getString(R.string.error_amount_required)
             }
         }
 
@@ -57,39 +62,54 @@ class PaymentFragment : Fragment() {
             val amount = binding.etAmount.text.toString()
             if (amount.isNotEmpty()) {
                 viewModel.preAuthorize(amount)
+            } else {
+                binding.etAmount.error = getString(R.string.error_amount_required)
             }
         }
 
         binding.btnBookTotal.setOnClickListener {
             val amount = binding.etAmount.text.toString()
             val receiptNo = binding.etReceiptNumber.text.toString().toIntOrNull()
-            if (amount.isNotEmpty() && receiptNo != null) {
-                viewModel.bookTotal(amount, receiptNo)
+            if (amount.isEmpty()) {
+                binding.etAmount.error = getString(R.string.error_amount_required)
             } else if (receiptNo == null) {
                 binding.etReceiptNumber.error = getString(R.string.receipt_no_required)
+            } else {
+                viewModel.bookTotal(amount, receiptNo)
             }
         }
 
         binding.btnPartialReversal.setOnClickListener {
             val amount = binding.etAmount.text.toString()
             val receiptNo = binding.etReceiptNumber.text.toString().toIntOrNull()
-            if (amount.isNotEmpty() && receiptNo != null) {
-                viewModel.partialReversal(amount, receiptNo)
+            if (amount.isEmpty()) {
+                binding.etAmount.error = getString(R.string.error_amount_required)
             } else if (receiptNo == null) {
                 binding.etReceiptNumber.error = getString(R.string.receipt_no_required)
+            } else {
+                viewModel.partialReversal(amount, receiptNo)
             }
         }
     }
 
+    private fun updateButtonStates() {
+        val registered = viewModel.connectionState.value == ConnectionState.REGISTERED
+        val processing = viewModel.isProcessing.value == true
+        val enabled = registered && !processing
+
+        binding.btnAuthorize.isEnabled = enabled
+        binding.btnRefund.isEnabled = enabled
+        binding.btnReversal.isEnabled = enabled
+        binding.btnPreAuth.isEnabled = enabled
+        binding.btnBookTotal.isEnabled = enabled
+        binding.btnPartialReversal.isEnabled = enabled
+        // Abort is always enabled when connected (to cancel running operations)
+        binding.btnAbort.isEnabled = registered
+    }
+
     private fun observeViewModel() {
-        viewModel.isProcessing.observe(viewLifecycleOwner) { processing ->
-            binding.btnAuthorize.isEnabled = !processing
-            binding.btnRefund.isEnabled = !processing
-            binding.btnReversal.isEnabled = !processing
-            binding.btnPreAuth.isEnabled = !processing
-            binding.btnBookTotal.isEnabled = !processing
-            binding.btnPartialReversal.isEnabled = !processing
-        }
+        viewModel.connectionState.observe(viewLifecycleOwner) { updateButtonStates() }
+        viewModel.isProcessing.observe(viewLifecycleOwner) { updateButtonStates() }
 
         viewModel.intermediateStatus.observe(viewLifecycleOwner) { status ->
             if (status.isNullOrEmpty()) {

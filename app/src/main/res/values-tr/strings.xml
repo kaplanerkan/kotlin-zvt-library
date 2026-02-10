@@ -34,6 +34,7 @@
     <string name="transaction_success">İşlem Başarılı</string>
     <string name="transaction_failed">İşlem Başarısız</string>
     <string name="invalid_amount">Geçersiz tutar: %1$s</string>
+    <string name="error_amount_required">Tutar gerekli</string>
     <string name="label_amount">Tutar</string>
     <string name="label_result">Sonuç</string>
     <string name="label_trace_no">Trace No</string>

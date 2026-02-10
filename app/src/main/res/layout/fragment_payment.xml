@@ -69,17 +69,19 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:backgroundTint="@color/btnPayment"
                         android:text="@string/btn_payment"
                         app:icon="@drawable/ic_payment"
                         app:iconGravity="textStart" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnRefund"
-                        style="@style/ZvtButton.Outlined"
+                        style="@style/ZvtButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
+                        android:backgroundTint="@color/btnRefund"
                         android:text="@string/btn_refund"
                         app:icon="@drawable/ic_refund"
                         app:iconGravity="textStart" />
@@ -94,21 +96,23 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnReversal"
-                        style="@style/ZvtButton.Outlined"
+                        style="@style/ZvtButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:backgroundTint="@color/btnReversal"
                         android:text="@string/btn_reversal"
                         app:icon="@drawable/ic_reversal"
                         app:iconGravity="textStart" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAbort"
-                        style="@style/ZvtButton.Error"
+                        style="@style/ZvtButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
+                        android:backgroundTint="@color/btnAbort"
                         android:text="@string/btn_abort"
                         app:icon="@drawable/ic_abort"
                         app:iconGravity="textStart" />
@@ -156,21 +160,23 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnPreAuth"
-                        style="@style/ZvtButton.Tonal"
+                        style="@style/ZvtButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:backgroundTint="@color/btnPreAuth"
                         android:text="@string/btn_pre_auth"
                         app:icon="@drawable/ic_pre_auth"
                         app:iconGravity="textStart" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnBookTotal"
-                        style="@style/ZvtButton.Tonal"
+                        style="@style/ZvtButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
+                        android:backgroundTint="@color/btnBookTotal"
                         android:text="@string/btn_book_total"
                         app:icon="@drawable/ic_book_total"
                         app:iconGravity="textStart" />
@@ -179,10 +185,11 @@
                 <!-- Row 4: Partial Reversal -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnPartialReversal"
-                    style="@style/ZvtButton.Outlined"
+                    style="@style/ZvtButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:backgroundTint="@color/btnPartialRev"
                     android:text="@string/btn_partial_reversal"
                     app:icon="@drawable/ic_partial_reversal"
                     app:iconGravity="textStart" />

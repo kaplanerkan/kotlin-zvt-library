@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.panda.zvt_library.model.ConnectionState
 import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.databinding.FragmentTerminalBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -52,15 +53,22 @@ class TerminalFragment : Fragment() {
         }
     }
 
+    private fun updateButtonStates() {
+        val registered = viewModel.connectionState.value == ConnectionState.REGISTERED
+        val loading = viewModel.isLoading.value == true
+        val enabled = registered && !loading
+
+        binding.btnDiagnosis.isEnabled = enabled
+        binding.btnStatusEnquiry.isEnabled = enabled
+        binding.btnEndOfDay.isEnabled = enabled
+        binding.btnRepeatReceipt.isEnabled = enabled
+        binding.btnLogOff.isEnabled = enabled
+        binding.progressTerminal.visibility = if (loading) View.VISIBLE else View.GONE
+    }
+
     private fun observeViewModel() {
-        viewModel.isLoading.observe(viewLifecycleOwner) { loading ->
-            binding.progressTerminal.visibility = if (loading) View.VISIBLE else View.GONE
-            binding.btnDiagnosis.isEnabled = !loading
-            binding.btnStatusEnquiry.isEnabled = !loading
-            binding.btnEndOfDay.isEnabled = !loading
-            binding.btnRepeatReceipt.isEnabled = !loading
-            binding.btnLogOff.isEnabled = !loading
-        }
+        viewModel.connectionState.observe(viewLifecycleOwner) { updateButtonStates() }
+        viewModel.isLoading.observe(viewLifecycleOwner) { updateButtonStates() }
 
         viewModel.statusMessage.observe(viewLifecycleOwner) { message ->
             binding.tvTerminalStatus.text = message

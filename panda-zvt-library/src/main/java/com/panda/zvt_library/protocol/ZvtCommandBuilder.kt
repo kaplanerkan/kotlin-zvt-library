@@ -142,23 +142,26 @@ object ZvtCommandBuilder {
         data.add(ZvtConstants.BMP_AMOUNT)
         data.addAll(BcdHelper.amountToBcd(amountInCents).toList())
 
-        // Payment type (BMP 0x19)
+        // Payment type (BMP 0x19) — only if non-default
         if (paymentType != ZvtConstants.PAY_TYPE_DEFAULT) {
             data.add(ZvtConstants.BMP_PAYMENT_TYPE)
             data.add(paymentType)
         }
 
-        // Currency code (BMP 0x49)
-        data.add(ZvtConstants.BMP_CURRENCY_CODE)
-        data.addAll(BcdHelper.currencyToBcd(currencyCode).toList())
+        // Currency code (BMP 0x49) — optional, terminal uses Registration currency
+        // Some terminals reject if CC is included. Only send if explicitly specified.
+        if (currencyCode > 0) {
+            data.add(ZvtConstants.BMP_CURRENCY_CODE)
+            data.addAll(BcdHelper.currencyToBcd(currencyCode).toList())
+        }
 
         val packet = ZvtPacket(
             command = ZvtConstants.CMD_AUTHORIZATION,
             data = data.toByteArray()
         )
 
-        Timber.tag(TAG).d("[CommandBuilder] Built Authorization: amount=%d cents (%.2f EUR), paymentType=0x%02X, currency=%d",
-            amountInCents, amountInCents / 100.0, paymentType, currencyCode)
+        Timber.tag(TAG).d("[CommandBuilder] Built Authorization: amount=%d cents (%.2f EUR), paymentType=0x%02X",
+            amountInCents, amountInCents / 100.0, paymentType)
 
         return packet
     }

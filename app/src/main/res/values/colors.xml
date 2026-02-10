@@ -53,4 +53,21 @@
     <color name="divider">#E0E0E0</color>
     <color name="receiptBackground">#F5F5F5</color>
 
+    <!-- Button backgrounds by operation -->
+    <color name="btnConnect">#00897B</color>          <!-- Teal 600 — connect -->
+    <color name="btnDisconnect">#D32F2F</color>       <!-- Red 700 — disconnect -->
+    <color name="btnPayment">#00897B</color>           <!-- Teal 600 — payment -->
+    <color name="btnRefund">#0097A7</color>            <!-- Cyan 700 — refund -->
+    <color name="btnReversal">#FF8F00</color>          <!-- Amber 800 — reversal -->
+    <color name="btnAbort">#D32F2F</color>             <!-- Red 700 — abort -->
+    <color name="btnPreAuth">#00ACC1</color>           <!-- Cyan 600 — pre-auth -->
+    <color name="btnBookTotal">#009688</color>         <!-- Teal 500 — book total -->
+    <color name="btnPartialRev">#EF6C00</color>        <!-- Orange 800 — partial reversal -->
+    <color name="btnDiagnosis">#0097A7</color>         <!-- Cyan 700 — diagnosis -->
+    <color name="btnStatus">#00838F</color>            <!-- Cyan 800 — status enquiry -->
+    <color name="btnEndOfDay">#FF7043</color>          <!-- Deep Orange 400 — end of day -->
+    <color name="btnRepeatReceipt">#26A69A</color>     <!-- Teal 400 — repeat receipt -->
+    <color name="btnLogOff">#C62828</color>            <!-- Red 800 — log off -->
+    <color name="btnClear">#4DB6AC</color>             <!-- Teal 300 — clear logs -->
+
 </resources>

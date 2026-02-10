@@ -4,7 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.panda.zvt_library.model.ConnectionState
 import com.panda.zvt_library.model.TransactionResult
 import com.panda_erkan.zvtclientdemo.R
 import com.panda_erkan.zvtclientdemo.repository.ZvtRepository
@@ -33,6 +35,8 @@ class PaymentViewModel(
 
     private val _receiptText = MutableLiveData("")
     val receiptText: LiveData<String> = _receiptText
+
+    val connectionState: LiveData<ConnectionState> = repository.connectionState.asLiveData()
 
     private val receiptBuilder = StringBuilder()
 

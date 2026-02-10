@@ -4,7 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.panda.zvt_library.model.ConnectionState
 import com.panda.zvt_library.model.DiagnosisResult
 import com.panda.zvt_library.model.EndOfDayResult
 import com.panda.zvt_library.model.TerminalStatus
@@ -37,6 +39,8 @@ class TerminalViewModel(
 
     private val _statusMessage = MutableLiveData("")
     val statusMessage: LiveData<String> = _statusMessage
+
+    val connectionState: LiveData<ConnectionState> = repository.connectionState.asLiveData()
 
     fun diagnosis() {
         viewModelScope.launch {

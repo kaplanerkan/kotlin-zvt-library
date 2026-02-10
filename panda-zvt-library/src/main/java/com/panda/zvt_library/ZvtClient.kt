@@ -254,7 +254,7 @@ class ZvtClient(
         val packet = ZvtCommandBuilder.buildAuthorization(
             amountInCents = amountInCents,
             paymentType = paymentType,
-            currencyCode = config.currencyCode
+            currencyCode = 0 // Don't send CC — terminal uses Registration currency
         )
 
         log("=== AUTHORIZATION (06 01) === amount=${amountInCents} cents (${amountInCents / 100.0} EUR)")
@@ -652,9 +652,19 @@ class ZvtClient(
             // Also forward to callback
             callback?.onDebugLog(TAG, "ECR -> PT | TX $cmdName | ${bytes.size} bytes | ${bytes.toHexString()}")
 
-            outputStream?.write(bytes)
-            outputStream?.flush()
-                ?: throw ZvtError.ConnectionError("OutputStream is null - connection may be lost")
+            val out = outputStream
+                ?: run {
+                    handleConnectionLost("OutputStream is null")
+                    throw ZvtError.ConnectionError("OutputStream is null - connection lost")
+                }
+
+            try {
+                out.write(bytes)
+                out.flush()
+            } catch (e: IOException) {
+                handleConnectionLost("Send failed: ${e.message}")
+                throw ZvtError.ConnectionError("Send failed (Broken Pipe): ${e.message}", cause = e)
+            }
         }
     }
 
@@ -737,7 +747,7 @@ class ZvtClient(
             log("Read timeout (${config.readTimeoutMs}ms)")
             return null
         } catch (e: IOException) {
-            log("Read error: ${e.message}")
+            handleConnectionLost("Read error: ${e.message}")
             throw ZvtError.ConnectionError("Read error: ${e.message}", cause = e)
         }
     }
@@ -773,6 +783,21 @@ class ZvtClient(
         if (!isConnected) {
             throw ZvtError.ConnectionError("Not connected to terminal")
         }
+    }
+
+    /**
+     * Handles a broken connection (Broken Pipe, EOF, etc.).
+     *
+     * Closes all resources, transitions to [ConnectionState.DISCONNECTED],
+     * and notifies via callback so the UI can disable all operation buttons.
+     *
+     * @param reason Human-readable description of the disconnection cause.
+     */
+    private fun handleConnectionLost(reason: String) {
+        log("Connection lost: $reason")
+        closeResources()
+        updateState(ConnectionState.DISCONNECTED)
+        callback?.onError(ZvtError.ConnectionError("Connection lost: $reason"))
     }
 
     /**
