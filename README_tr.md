@@ -108,6 +108,41 @@ Baglanti ekranindaki disli ikonu ile acilan bu pencere, Registration (06 00) kom
 |:-:|
 | ![Islem Sonucu](screenshots/scrcpy_9qoKBcqRmI.png) |
 
+## Storno (Reversal) ve Gutschrift (Refund) Farki
+
+Bu iki islem siklikla karistirilir. Iste temel fark:
+
+**Storno / Reversal (06 30):**
+- Yapilan bir odemeyi **geri alir** (sanki hic olmamis gibi)
+- Orijinal isleme receipt number ile referans verir
+- Genellikle **ayni gun icinde** yapilmali (gun sonu kapanindan once)
+- Musteri kartini tekrar okutmasi **gerekebilir** (terminal bagli)
+- Host'ta orijinal islem **silinir/iptal edilir**
+- Komisyon/islem ucreti genellikle **alinmaz**
+- Ornek: Kasada yanlis tutar girildi, hemen duzeltme
+
+**Gutschrift / Refund (06 31):**
+- Tamamen **yeni ve bagimsiz** bir islem
+- Orijinal isleme referans **vermez**
+- Gun sonu kapanindan **sonra da** yapilabilir (haftalarca sonra bile)
+- Musteri kartini **okutmak zorunlu**
+- Host'ta **ayri bir islem** olarak kaydedilir
+- Komisyon/islem ucreti **alinir** (yeni islem oldugu icin)
+- Ornek: Musteri urun iade etti, parasini geri ver
+
+**Ozet:**
+
+| | Storno (Reversal) | Gutschrift (Refund) |
+|---|---|---|
+| Islem tipi | Orijinali iptal | Yeni bagimsiz islem |
+| Zaman siniri | Ayni gun (gun sonu oncesi) | Sinir yok |
+| Receipt no | Gerekli | Gerekli degil |
+| Komisyon | Yok | Var |
+| Kart | Terminal bagli | Okutmak zorunlu |
+| Host kaydi | Orijinal silinir | Ayri kayit olusur |
+
+Kisacasi: Storno = "bu islem hic olmadi", Gutschrift = "yeni bir para iadesi yap".
+
 ## ZVT Komut Hex Kodlari
 
 ### ECR -> Terminal Komutlari

@@ -108,6 +108,41 @@ The Registration Config dialog (gear icon on connection screen) allows customizi
 |:-:|
 | ![Transaction Result](screenshots/scrcpy_9qoKBcqRmI.png) |
 
+## Reversal (Storno) vs Refund (Gutschrift)
+
+These two operations are often confused. Here is the key difference:
+
+**Storno / Reversal (06 30):**
+- **Cancels** an existing payment (as if it never happened)
+- References the original transaction via receipt number
+- Must generally be done **on the same day** (before end-of-day settlement)
+- Customer may need to present the card again (terminal dependent)
+- The original transaction is **deleted/cancelled** on the host
+- Usually **no processing fee** is charged
+- Example: Wrong amount entered at the register, correct it immediately
+
+**Gutschrift / Refund (06 31):**
+- A completely **new and independent** transaction
+- Does **not** reference the original transaction
+- Can be done **days or weeks later** (no time limit)
+- Customer **must** present the card
+- Creates a **separate record** on the host
+- Processing fee **is charged** (it is a new transaction)
+- Example: Customer returns a product, give the money back
+
+**Summary:**
+
+| | Reversal (Storno) | Refund (Gutschrift) |
+|---|---|---|
+| Transaction type | Cancels original | New independent transaction |
+| Time limit | Same day (before end-of-day) | No limit |
+| Receipt number | Required | Not required |
+| Processing fee | None | Yes |
+| Card | Terminal dependent | Must be presented |
+| Host record | Original is deleted | Separate record created |
+
+In short: Reversal = "this transaction never happened", Refund = "make a new refund payment".
+
 ## ZVT Command Hex Codes
 
 ### ECR -> Terminal Commands

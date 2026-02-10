@@ -57,8 +57,9 @@ class PaymentFragment : Fragment() {
         }
 
         binding.btnReversal.setOnClickListener {
+            val receiptNo = binding.etReceiptNumber.text.toString().toIntOrNull()
             setOperation(getString(R.string.op_reversal), "\u21A9\uFE0F")
-            viewModel.reversal()
+            viewModel.reversal(receiptNo)
         }
 
         binding.btnAbort.setOnClickListener {

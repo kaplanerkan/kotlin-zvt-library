@@ -108,6 +108,41 @@ Der Registrierungskonfigurationsdialog (Zahnrad-Symbol auf dem Verbindungsbildsc
 |:-:|
 | ![Transaktionsergebnis](screenshots/scrcpy_9qoKBcqRmI.png) |
 
+## Storno (Reversal) vs Gutschrift (Refund)
+
+Diese beiden Vorgaenge werden oft verwechselt. Hier ist der wesentliche Unterschied:
+
+**Storno / Reversal (06 30):**
+- **Storniert** eine bestehende Zahlung (als waere sie nie passiert)
+- Referenziert die Originaltransaktion ueber die Belegnummer
+- Muss in der Regel **am selben Tag** erfolgen (vor dem Tagesabschluss)
+- Kunde muss die Karte ggf. erneut vorlegen (terminalabhaengig)
+- Die Originaltransaktion wird auf dem Host **geloescht/storniert**
+- In der Regel **keine Bearbeitungsgebuehr**
+- Beispiel: Falscher Betrag an der Kasse eingegeben, sofort korrigieren
+
+**Gutschrift / Refund (06 31):**
+- Eine voellig **neue und unabhaengige** Transaktion
+- Referenziert die Originaltransaktion **nicht**
+- Kann **Tage oder Wochen spaeter** durchgefuehrt werden (keine Frist)
+- Kunde **muss** die Karte vorlegen
+- Erstellt einen **separaten Datensatz** auf dem Host
+- Bearbeitungsgebuehr **wird berechnet** (es ist eine neue Transaktion)
+- Beispiel: Kunde gibt Ware zurueck, Geld zurueckerstatten
+
+**Zusammenfassung:**
+
+| | Storno (Reversal) | Gutschrift (Refund) |
+|---|---|---|
+| Transaktionstyp | Storniert Original | Neue unabhaengige Transaktion |
+| Zeitlimit | Gleicher Tag (vor Tagesabschluss) | Kein Limit |
+| Belegnummer | Erforderlich | Nicht erforderlich |
+| Bearbeitungsgebuehr | Keine | Ja |
+| Karte | Terminalabhaengig | Muss vorgelegt werden |
+| Host-Datensatz | Original wird geloescht | Separater Datensatz |
+
+Kurz gesagt: Storno = "diese Transaktion hat nie stattgefunden", Gutschrift = "eine neue Rueckerstattung durchfuehren".
+
 ## ZVT-Befehls-Hex-Codes
 
 ### ECR -> Terminal Befehle
