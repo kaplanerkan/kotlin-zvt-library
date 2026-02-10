@@ -132,6 +132,7 @@
     <string name="tcp_keep_alive">TCP Keep-Alive</string>
     <string name="simulator_mode">Simulator Mode</string>
     <string name="simulator_hint">Emulator: 10.0.2.2 | Real device: use PC\'s LAN IP</string>
+    <string name="simulator_device_ip">Device IP: %1$s</string>
     <string name="label_vu_number">VU No</string>
     <string name="label_expiry">Expiry</string>
     <string name="label_seq_no">Seq No</string>

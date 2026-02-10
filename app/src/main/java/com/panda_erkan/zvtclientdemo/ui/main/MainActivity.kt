@@ -5,6 +5,7 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import java.net.NetworkInterface
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.navigation.fragment.NavHostFragment
@@ -78,9 +79,8 @@ class MainActivity : AppCompatActivity() {
     private fun setupSimulatorToggle() {
         val simulatorMode = prefs.getBoolean("simulator_mode", false)
         binding.switchSimulator.isChecked = simulatorMode
-        binding.tvSimulatorHint.visibility = if (simulatorMode) View.VISIBLE else View.GONE
-
         if (simulatorMode) {
+            showDeviceIpHint()
             binding.etHost.setText(prefs.getString("simulator_host", "10.0.2.2"))
             binding.etPort.setText(prefs.getInt("simulator_port", 20007).toString())
         }
@@ -97,14 +97,44 @@ class MainActivity : AppCompatActivity() {
                 // Set simulator defaults
                 binding.etHost.setText(prefs.getString("simulator_host", "10.0.2.2"))
                 binding.etPort.setText(prefs.getInt("simulator_port", 20007).toString())
+                showDeviceIpHint()
             } else {
                 // Restore real terminal values
                 binding.etHost.setText(prefs.getString("real_terminal_host", "192.168.1.135"))
                 binding.etPort.setText(prefs.getInt("real_terminal_port", 20007).toString())
+                binding.tvSimulatorHint.visibility = View.GONE
             }
-
-            binding.tvSimulatorHint.visibility = if (isChecked) View.VISIBLE else View.GONE
         }
+    }
+
+    private fun showDeviceIpHint() {
+        val ips = getDeviceIpAddresses()
+        val hint = if (ips.isNotEmpty()) {
+            getString(R.string.simulator_device_ip, ips.joinToString(", "))
+        } else {
+            getString(R.string.simulator_hint)
+        }
+        binding.tvSimulatorHint.text = hint
+        binding.tvSimulatorHint.visibility = View.VISIBLE
+    }
+
+    private fun getDeviceIpAddresses(): List<String> {
+        val ips = mutableListOf<String>()
+        try {
+            val interfaces = NetworkInterface.getNetworkInterfaces() ?: return ips
+            for (ni in interfaces) {
+                if (ni.isLoopback || !ni.isUp) continue
+                for (addr in ni.inetAddresses) {
+                    if (addr.isLoopbackAddress) continue
+                    val hostAddr = addr.hostAddress ?: continue
+                    // IPv4 only
+                    if (hostAddr.contains('.') && !hostAddr.contains(':')) {
+                        ips.add(hostAddr)
+                    }
+                }
+            }
+        } catch (_: Exception) { }
+        return ips
     }
 
     private fun setupLanguageSwitcher() {
