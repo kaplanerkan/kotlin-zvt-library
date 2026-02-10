@@ -108,7 +108,14 @@
     <!-- Navigation -->
     <string name="nav_payment">Zahlung</string>
     <string name="nav_terminal">Terminal</string>
+    <string name="nav_journals">Journal</string>
     <string name="nav_log">Protokoll</string>
+
+    <!-- Journal -->
+    <string name="journal_filter_all">Alle</string>
+    <string name="journal_empty">Noch keine Journaleinträge.</string>
+    <string name="journal_detail_title">Journaldetail</string>
+    <string name="journal_clear_confirm">Alle Journaleinträge löschen?</string>
 
     <!-- Registrierungskonfiguration -->
     <string name="registration_config">Registrierungskonfiguration</string>

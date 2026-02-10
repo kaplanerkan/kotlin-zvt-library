@@ -108,7 +108,14 @@
     <!-- Gezinme -->
     <string name="nav_payment">Ödeme</string>
     <string name="nav_terminal">Terminal</string>
+    <string name="nav_journals">Günlük</string>
     <string name="nav_log">Log</string>
+
+    <!-- Günlük -->
+    <string name="journal_filter_all">Tümü</string>
+    <string name="journal_empty">Henüz günlük kaydı yok.</string>
+    <string name="journal_detail_title">Günlük Detayı</string>
+    <string name="journal_clear_confirm">Tüm günlük kayıtları silinsin mi?</string>
 
     <!-- Kayıt Yapılandırması -->
     <string name="registration_config">Kayıt Yapılandırması</string>

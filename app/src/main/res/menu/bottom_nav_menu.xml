@@ -9,6 +9,10 @@
         android:icon="@drawable/ic_terminal"
         android:title="@string/nav_terminal" />
     <item
+        android:id="@+id/journalsFragment"
+        android:icon="@drawable/ic_journals"
+        android:title="@string/nav_journals" />
+    <item
         android:id="@+id/logFragment"
         android:icon="@drawable/ic_log"
         android:title="@string/nav_log" />

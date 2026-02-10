@@ -15,6 +15,11 @@
         android:label="@string/nav_terminal" />
 
     <fragment
+        android:id="@+id/journalsFragment"
+        android:name="com.panda_erkan.zvtclientdemo.ui.journals.JournalsFragment"
+        android:label="@string/nav_journals" />
+
+    <fragment
         android:id="@+id/logFragment"
         android:name="com.panda_erkan.zvtclientdemo.ui.log.LogFragment"
         android:label="@string/nav_log" />
