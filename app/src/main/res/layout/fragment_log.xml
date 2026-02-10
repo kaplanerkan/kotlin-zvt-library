@@ -16,7 +16,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Protokol Logları"
+            android:text="@string/protocol_logs"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -25,7 +25,7 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Temizle"
+            android:text="@string/btn_clear"
             android:textSize="12sp" />
     </LinearLayout>
 

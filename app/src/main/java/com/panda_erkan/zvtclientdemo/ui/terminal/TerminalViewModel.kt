@@ -1,0 +1,93 @@
+package com.panda_erkan.zvtclientdemo.ui.terminal
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import com.panda.zvt_library.model.DiagnosisResult
+import com.panda.zvt_library.model.EndOfDayResult
+import com.panda.zvt_library.model.TerminalStatus
+import com.panda_erkan.zvtclientdemo.R
+import com.panda_erkan.zvtclientdemo.repository.ZvtRepository
+import kotlinx.coroutines.launch
+
+class TerminalViewModel(
+    application: Application,
+    private val repository: ZvtRepository
+) : AndroidViewModel(application) {
+
+    private val ctx get() = getApplication<Application>()
+
+    private val _diagnosisResult = MutableLiveData<DiagnosisResult?>()
+    val diagnosisResult: LiveData<DiagnosisResult?> = _diagnosisResult
+
+    private val _endOfDayResult = MutableLiveData<EndOfDayResult?>()
+    val endOfDayResult: LiveData<EndOfDayResult?> = _endOfDayResult
+
+    private val _terminalStatus = MutableLiveData<TerminalStatus?>()
+    val terminalStatus: LiveData<TerminalStatus?> = _terminalStatus
+
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
+    private val _statusMessage = MutableLiveData("")
+    val statusMessage: LiveData<String> = _statusMessage
+
+    fun diagnosis() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _statusMessage.value = ctx.getString(R.string.running_diagnosis)
+
+            val result = repository.diagnosis()
+            result.fold(
+                onSuccess = { diag ->
+                    _diagnosisResult.value = diag
+                    _statusMessage.value = if (diag.success) ctx.getString(R.string.diagnosis_successful) else diag.errorMessage
+                },
+                onFailure = { error ->
+                    _statusMessage.value = ctx.getString(R.string.status_error, error.message)
+                }
+            )
+            _isLoading.value = false
+        }
+    }
+
+    fun endOfDay() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _statusMessage.value = ctx.getString(R.string.running_end_of_day)
+
+            val result = repository.endOfDay()
+            result.fold(
+                onSuccess = { eod ->
+                    _endOfDayResult.value = eod
+                    _statusMessage.value = if (eod.success) ctx.getString(R.string.end_of_day_successful) else eod.message
+                },
+                onFailure = { error ->
+                    _statusMessage.value = ctx.getString(R.string.status_error, error.message)
+                }
+            )
+            _isLoading.value = false
+        }
+    }
+
+    fun statusEnquiry() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _statusMessage.value = ctx.getString(R.string.querying_status)
+
+            val result = repository.statusEnquiry()
+            result.fold(
+                onSuccess = { status ->
+                    _terminalStatus.value = status
+                    _statusMessage.value = ctx.getString(R.string.terminal_status_msg, status.statusMessage)
+                },
+                onFailure = { error ->
+                    _statusMessage.value = ctx.getString(R.string.status_error, error.message)
+                }
+            )
+            _isLoading.value = false
+        }
+    }
+}

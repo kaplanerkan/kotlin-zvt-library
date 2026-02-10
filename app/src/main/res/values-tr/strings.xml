@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Panda ZVT Client Demo</string>
+
+    <!-- Bağlantı -->
+    <string name="disconnected">Bağlı değil</string>
+    <string name="connecting">Bağlanıyor…</string>
+    <string name="connected_unregistered">Bağlı (kayıtsız)</string>
+    <string name="connected_registered">Bağlı ve Kayıtlı ✓</string>
+    <string name="connection_error">Hata!</string>
+    <string name="hint_terminal_ip">Terminal IP</string>
+    <string name="hint_port">Port</string>
+    <string name="btn_disconnect">Kes</string>
+    <string name="btn_connect">Bağlan</string>
+    <string name="error_ip_required">IP adresi gerekli</string>
+    <string name="status_connecting">Bağlanıyor: %1$s:%2$d…</string>
+    <string name="status_registered">Terminal kayıtlı ve hazır ✓</string>
+    <string name="status_connect_failed">Bağlandı ama kayıt başarısız</string>
+    <string name="status_error">Hata: %1$s</string>
+    <string name="status_disconnected">Bağlantı kesildi</string>
+
+    <!-- Ödeme -->
+    <string name="amount_eur">Tutar (EUR)</string>
+    <string name="hint_amount">Ör: 12.50</string>
+    <string name="btn_payment">Ödeme</string>
+    <string name="btn_refund">İade</string>
+    <string name="btn_reversal">Son İşlemi İptal</string>
+    <string name="btn_abort">İptal</string>
+    <string name="receipt">Fiş</string>
+    <string name="transaction_success">İşlem Başarılı</string>
+    <string name="transaction_failed">İşlem Başarısız</string>
+    <string name="invalid_amount">Geçersiz tutar: %1$s</string>
+    <string name="label_amount">Tutar</string>
+    <string name="label_result">Sonuç</string>
+    <string name="label_trace_no">Trace No</string>
+    <string name="label_receipt_no">Fiş No</string>
+    <string name="label_terminal">Terminal</string>
+    <string name="label_card_type">Kart Tipi</string>
+    <string name="label_card_no">Kart No</string>
+    <string name="label_card_name">Kart Adı</string>
+    <string name="label_date">Tarih</string>
+    <string name="label_time">Saat</string>
+
+    <!-- Terminal -->
+    <string name="terminal_operations">Terminal İşlemleri</string>
+    <string name="btn_diagnosis">Tanılama</string>
+    <string name="btn_status_enquiry">Durum Sorgula</string>
+    <string name="btn_end_of_day">Gün Sonu</string>
+    <string name="diagnosis_result">Tanılama Sonucu</string>
+    <string name="end_of_day_result">Gün Sonu Sonucu</string>
+    <string name="terminal_status">Terminal Durumu</string>
+    <string name="label_status">Durum</string>
+    <string name="label_connection">Bağlantı</string>
+    <string name="label_message">Mesaj</string>
+    <string name="label_error">Hata</string>
+    <string name="status_success">✓ Başarılı</string>
+    <string name="status_failed">✗ Başarısız</string>
+    <string name="connection_active">Aktif</string>
+    <string name="connection_lost">Kopuk</string>
+    <string name="running_diagnosis">Tanılama yapılıyor…</string>
+    <string name="diagnosis_successful">Tanılama başarılı</string>
+    <string name="running_end_of_day">Gün sonu yapılıyor…</string>
+    <string name="end_of_day_successful">Gün sonu başarılı</string>
+    <string name="querying_status">Durum sorgulanıyor…</string>
+    <string name="terminal_status_msg">Terminal: %1$s</string>
+
+    <!-- Log -->
+    <string name="protocol_logs">Protokol Logları</string>
+    <string name="btn_clear">Temizle</string>
+
+    <!-- Gezinme -->
+    <string name="nav_payment">Ödeme</string>
+    <string name="nav_terminal">Terminal</string>
+    <string name="nav_log">Log</string>
+</resources>

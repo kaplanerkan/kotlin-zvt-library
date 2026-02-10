@@ -17,8 +17,8 @@ ZVT (Zahlungsverkehrstechnik) is the German standard protocol for communication 
 ```
 zvt-project/
 ├── app/                          # Demo/test Android application
-├── zvt-library/                  # ZVT protocol library (reusable)
-│   └── src/main/java/com/erkan/zvt/
+├── panda-zvt-library/                  # ZVT protocol library (reusable)
+│   └── src/main/java/com/panda/zvt_library/
 │       ├── ZvtClient.kt          # Main client facade (TCP connection, command execution)
 │       ├── ZvtCallback.kt        # Event listener interface
 │       ├── model/
@@ -126,10 +126,32 @@ ECR → PT:  ACK (80 00 00)
 | `A0` | Result Code AS | 1 byte |
 | `BA` | AID Parameter | 5 byte fixed |
 
+## Troubleshooting / Log Files
+
+The application automatically writes log files to the device storage. Logs are kept for **30 days** and old files are automatically deleted.
+
+**Log file location:**
+```
+Android/data/com.panda_erkan.zvtclientdemo/files/Download/logs/zvt_YYYY-MM-DD.log
+```
+
+**How to access:**
+1. Connect the device to a computer via USB
+2. Open the device storage and navigate to the path above
+3. Or use a file manager app on the device
+
+**Log format:**
+```
+2026-02-10 14:30:15.123 D/ZvtClient: [ZvtResponseParser] Parsing BMP field 0x04
+2026-02-10 14:30:15.456 E/ZvtClient: Connection timeout after 5000ms
+```
+
+If you encounter a problem, please attach the relevant log file when reporting an issue.
+
 ## Build
 
 ```bash
-./gradlew :zvt-library:assembleDebug
+./gradlew :panda-zvt-library:assembleDebug
 ```
 
 ## Requirements

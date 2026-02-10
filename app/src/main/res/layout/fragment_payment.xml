@@ -27,7 +27,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tutar (EUR)"
+                    android:text="@string/amount_eur"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -35,7 +35,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:hint="Ör: 12.50"
+                    android:hint="@string/hint_amount"
                     app:boxBackgroundMode="outline"
                     app:prefixText="€"
                     app:boxCornerRadiusTopStart="6dp"
@@ -62,7 +62,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Ödeme"
+                        android:text="@string/btn_payment"
                         android:textSize="13sp" />
 
                     <com.google.android.material.button.MaterialButton
@@ -72,7 +72,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:text="İade"
+                        android:text="@string/btn_refund"
                         android:textSize="13sp" />
                 </LinearLayout>
 
@@ -88,7 +88,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Son İşlemi İptal"
+                        android:text="@string/btn_reversal"
                         android:textSize="13sp" />
 
                     <com.google.android.material.button.MaterialButton
@@ -98,7 +98,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:text="İptal (Abort)"
+                        android:text="@string/btn_abort"
                         android:textColor="@android:color/holo_red_dark"
                         android:textSize="13sp" />
                 </LinearLayout>
@@ -209,7 +209,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Fiş"
+                    android:text="@string/receipt"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 

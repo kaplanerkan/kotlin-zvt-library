@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.erkan.zvtclient"
+    namespace = "com.panda_erkan.zvtclientdemo"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.erkan.zvtclient"
+        applicationId = "com.panda_erkan.zvtclientdemo"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -24,6 +24,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -31,14 +32,17 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
 dependencies {
     // ZVT Library
-    implementation(project(":zvt-library"))
+    implementation(project(":panda-zvt-library"))
 
     // AndroidX
     implementation(libs.androidx.core.ktx)
@@ -62,6 +66,9 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
+    // Timber
+    implementation(libs.timber)
 
     // LeakCanary
     debugImplementation(libs.leakcanary)

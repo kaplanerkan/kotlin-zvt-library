@@ -17,8 +17,8 @@ ZVT (Zahlungsverkehrstechnik), satış noktası (POS) sistemleri ile ödeme term
 ```
 zvt-project/
 ├── app/                          # Tanıtım/test Android uygulaması
-├── zvt-library/                  # ZVT protokol kütüphanesi (yeniden kullanılabilir)
-│   └── src/main/java/com/erkan/zvt/
+├── panda-zvt-library/                  # ZVT protokol kütüphanesi (yeniden kullanılabilir)
+│   └── src/main/java/com/panda/zvt_library/
 │       ├── ZvtClient.kt          # Ana istemci (TCP bağlantı, komut yürütme)
 │       ├── ZvtCallback.kt        # Olay dinleyici arayüzü
 │       ├── model/
@@ -126,10 +126,32 @@ ECR → PT:  Onay (80 00 00)
 | `A0` | Sonuç Kodu AS | 1 bayt |
 | `BA` | AID Parametresi | 5 bayt sabit |
 
+## Sorun Giderme / Günlük Dosyaları
+
+Uygulama otomatik olarak cihaz depolamasına günlük dosyaları yazar. Günlükler **30 gün** boyunca saklanır ve eski dosyalar otomatik olarak silinir.
+
+**Günlük dosya konumu:**
+```
+Android/data/com.panda_erkan.zvtclientdemo/files/Download/logs/zvt_YYYY-AA-GG.log
+```
+
+**Erişim yöntemi:**
+1. Cihazı USB ile bilgisayara bağlayın
+2. Cihaz depolamasını açın ve yukarıdaki dizine gidin
+3. Veya cihaz üzerinde bir dosya yöneticisi uygulaması kullanın
+
+**Günlük biçimi:**
+```
+2026-02-10 14:30:15.123 D/ZvtClient: [ZvtResponseParser] BMP 0x04 alanı ayrıştırılıyor
+2026-02-10 14:30:15.456 E/ZvtClient: 5000ms sonra bağlantı zaman aşımı
+```
+
+Bir sorunla karşılaştığınızda, hata bildirirken lütfen ilgili günlük dosyasını ekleyin.
+
 ## Derleme
 
 ```bash
-./gradlew :zvt-library:assembleDebug
+./gradlew :panda-zvt-library:assembleDebug
 ```
 
 ## Gereksinimler

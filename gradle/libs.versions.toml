@@ -1,18 +1,19 @@
 [versions]
-agp = "8.2.2"
-kotlin = "1.9.22"
-core-ktx = "1.12.0"
-appcompat = "1.6.1"
-material = "1.11.0"
-constraintlayout = "2.1.4"
-recyclerview = "1.3.2"
+agp = "8.13.2"
+kotlin = "2.3.10"
+core-ktx = "1.17.0"
+appcompat = "1.7.1"
+material = "1.13.0"
+constraintlayout = "2.2.1"
+recyclerview = "1.4.0"
 cardview = "1.0.0"
-navigation = "2.7.7"
-lifecycle = "2.7.0"
-koin = "3.5.3"
-coroutines = "1.7.3"
+navigation = "2.9.7"
+lifecycle = "2.10.0"
+koin = "4.1.1"
+coroutines = "1.10.2"
 junit = "4.13.2"
 leakcanary = "2.14"
+timber = "5.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -32,6 +33,7 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

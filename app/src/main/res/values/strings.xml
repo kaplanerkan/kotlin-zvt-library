@@ -1,4 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ZVT Client</string>
+    <string name="app_name">Panda ZVT Client Demo</string>
+
+    <!-- Connection -->
+    <string name="disconnected">Disconnected</string>
+    <string name="connecting">Connecting…</string>
+    <string name="connected_unregistered">Connected (unregistered)</string>
+    <string name="connected_registered">Connected and Registered ✓</string>
+    <string name="connection_error">Error!</string>
+    <string name="hint_terminal_ip">Terminal IP</string>
+    <string name="hint_port">Port</string>
+    <string name="btn_disconnect">Disconnect</string>
+    <string name="btn_connect">Connect</string>
+    <string name="error_ip_required">IP address required</string>
+    <string name="status_connecting">Connecting: %1$s:%2$d…</string>
+    <string name="status_registered">Terminal registered and ready ✓</string>
+    <string name="status_connect_failed">Connected but registration failed</string>
+    <string name="status_error">Error: %1$s</string>
+    <string name="status_disconnected">Disconnected</string>
+
+    <!-- Payment -->
+    <string name="amount_eur">Amount (EUR)</string>
+    <string name="hint_amount">e.g. 12.50</string>
+    <string name="btn_payment">Payment</string>
+    <string name="btn_refund">Refund</string>
+    <string name="btn_reversal">Reverse Last</string>
+    <string name="btn_abort">Abort</string>
+    <string name="receipt">Receipt</string>
+    <string name="transaction_success">Transaction Successful</string>
+    <string name="transaction_failed">Transaction Failed</string>
+    <string name="invalid_amount">Invalid amount: %1$s</string>
+    <string name="label_amount">Amount</string>
+    <string name="label_result">Result</string>
+    <string name="label_trace_no">Trace No</string>
+    <string name="label_receipt_no">Receipt No</string>
+    <string name="label_terminal">Terminal</string>
+    <string name="label_card_type">Card Type</string>
+    <string name="label_card_no">Card No</string>
+    <string name="label_card_name">Card Name</string>
+    <string name="label_date">Date</string>
+    <string name="label_time">Time</string>
+
+    <!-- Terminal -->
+    <string name="terminal_operations">Terminal Operations</string>
+    <string name="btn_diagnosis">Diagnosis</string>
+    <string name="btn_status_enquiry">Status Enquiry</string>
+    <string name="btn_end_of_day">End of Day</string>
+    <string name="diagnosis_result">Diagnosis Result</string>
+    <string name="end_of_day_result">End of Day Result</string>
+    <string name="terminal_status">Terminal Status</string>
+    <string name="label_status">Status</string>
+    <string name="label_connection">Connection</string>
+    <string name="label_message">Message</string>
+    <string name="label_error">Error</string>
+    <string name="status_success">✓ Successful</string>
+    <string name="status_failed">✗ Failed</string>
+    <string name="connection_active">Active</string>
+    <string name="connection_lost">Lost</string>
+    <string name="running_diagnosis">Running diagnosis…</string>
+    <string name="diagnosis_successful">Diagnosis successful</string>
+    <string name="running_end_of_day">Running end of day…</string>
+    <string name="end_of_day_successful">End of day successful</string>
+    <string name="querying_status">Querying status…</string>
+    <string name="terminal_status_msg">Terminal: %1$s</string>
+
+    <!-- Log -->
+    <string name="protocol_logs">Protocol Logs</string>
+    <string name="btn_clear">Clear</string>
+
+    <!-- Navigation -->
+    <string name="nav_payment">Payment</string>
+    <string name="nav_terminal">Terminal</string>
+    <string name="nav_log">Log</string>
 </resources>

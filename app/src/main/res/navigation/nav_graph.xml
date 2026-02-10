@@ -6,16 +6,16 @@
 
     <fragment
         android:id="@+id/paymentFragment"
-        android:name="com.erkan.zvtclient.ui.payment.PaymentFragment"
-        android:label="Ödeme" />
+        android:name="com.panda_erkan.zvtclientdemo.ui.payment.PaymentFragment"
+        android:label="@string/nav_payment" />
 
     <fragment
         android:id="@+id/terminalFragment"
-        android:name="com.erkan.zvtclient.ui.terminal.TerminalFragment"
-        android:label="Terminal" />
+        android:name="com.panda_erkan.zvtclientdemo.ui.terminal.TerminalFragment"
+        android:label="@string/nav_terminal" />
 
     <fragment
         android:id="@+id/logFragment"
-        android:name="com.erkan.zvtclient.ui.log.LogFragment"
-        android:label="Log" />
+        android:name="com.panda_erkan.zvtclientdemo.ui.log.LogFragment"
+        android:label="@string/nav_log" />
 </navigation>

@@ -3,13 +3,13 @@
     <item
         android:id="@+id/paymentFragment"
         android:icon="@android:drawable/ic_menu_send"
-        android:title="Ödeme" />
+        android:title="@string/nav_payment" />
     <item
         android:id="@+id/terminalFragment"
         android:icon="@android:drawable/ic_menu_manage"
-        android:title="Terminal" />
+        android:title="@string/nav_terminal" />
     <item
         android:id="@+id/logFragment"
         android:icon="@android:drawable/ic_menu_recent_history"
-        android:title="Log" />
+        android:title="@string/nav_log" />
 </menu>

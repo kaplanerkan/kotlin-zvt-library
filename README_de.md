@@ -17,8 +17,8 @@ ZVT (Zahlungsverkehrstechnik) ist das deutsche Standardprotokoll für die Kommun
 ```
 zvt-project/
 ├── app/                          # Demo-/Test-Android-Anwendung
-├── zvt-library/                  # ZVT-Protokollbibliothek (wiederverwendbar)
-│   └── src/main/java/com/erkan/zvt/
+├── panda-zvt-library/                  # ZVT-Protokollbibliothek (wiederverwendbar)
+│   └── src/main/java/com/panda/zvt_library/
 │       ├── ZvtClient.kt          # Haupt-Client (TCP-Verbindung, Befehlsausführung)
 │       ├── ZvtCallback.kt        # Ereignis-Listener-Schnittstelle
 │       ├── model/
@@ -126,10 +126,32 @@ ECR → PT:  Bestätigung (80 00 00)
 | `A0` | Ergebniscode AS | 1 Byte |
 | `BA` | AID-Parameter | 5 Byte fest |
 
+## Fehlerbehebung / Protokolldateien
+
+Die Anwendung schreibt automatisch Protokolldateien auf den Gerätespeicher. Die Protokolle werden **30 Tage** lang aufbewahrt und alte Dateien werden automatisch gelöscht.
+
+**Speicherort der Protokolldateien:**
+```
+Android/data/com.panda_erkan.zvtclientdemo/files/Download/logs/zvt_JJJJ-MM-TT.log
+```
+
+**Zugriffsmethode:**
+1. Verbinden Sie das Gerät per USB mit einem Computer
+2. Öffnen Sie den Gerätespeicher und navigieren Sie zum obigen Pfad
+3. Oder verwenden Sie eine Dateimanager-App auf dem Gerät
+
+**Protokollformat:**
+```
+2026-02-10 14:30:15.123 D/ZvtClient: [ZvtResponseParser] BMP-Feld 0x04 wird geparst
+2026-02-10 14:30:15.456 E/ZvtClient: Verbindungszeitüberschreitung nach 5000ms
+```
+
+Wenn ein Problem auftritt, fügen Sie bitte die entsprechende Protokolldatei bei der Fehlermeldung bei.
+
 ## Erstellen
 
 ```bash
-./gradlew :zvt-library:assembleDebug
+./gradlew :panda-zvt-library:assembleDebug
 ```
 
 ## Voraussetzungen

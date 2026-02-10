@@ -1,4 +1,4 @@
 jdk:
   - openjdk17
 install:
-  - ./gradlew :zvt-library:publishToMavenLocal
+  - ./gradlew :panda-zvt-library:publishToMavenLocal
