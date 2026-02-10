@@ -46,6 +46,14 @@ zvt-project/
 |           +-- TlvParser.kt      # TLV (Tag-Laenge-Wert) Parser/Generator
 |           +-- BcdHelper.kt      # BCD-Kodierung/Dekodierung
 |           +-- ByteExtensions.kt # Byte-Array-Erweiterungsfunktionen
++-- panda-zvt-simulator/          # ZVT-Terminal-Simulator (Ktor, reines JVM)
+|   +-- src/main/kotlin/com/panda/zvt/simulator/
+|       +-- Main.kt               # Einstiegspunkt, CLI-Argumente
+|       +-- SimulatorServer.kt    # Orchestrator (TCP + HTTP Server)
+|       +-- protocol/             # APDU, BCD, BMP-Kodierung (eigenstaendig)
+|       +-- handler/              # 13 Befehlshandler (Registrierung, Zahlung usw.)
+|       +-- tcp/                  # Raw-TCP-Server (Port 20007)
+|       +-- api/                  # HTTP-REST-Management-API (Port 8080)
 +-- gradle/
     +-- libs.versions.toml        # Zentrale Abhaengigkeitsverwaltung
 ```
@@ -531,7 +539,58 @@ Wenn ein Problem auftritt, fuegen Sie bitte die entsprechende Protokolldatei bei
 ```bash
 ./gradlew :panda-zvt-library:assembleDebug   # Nur Bibliothek
 ./gradlew :app:assembleDebug                 # Demo-App
+./gradlew :panda-zvt-simulator:build         # Simulator
 ```
+
+## Terminal-Simulator (panda-zvt-simulator)
+
+Eine reine Kotlin/JVM-Anwendung, die ein ZVT-Zahlungsterminal simuliert. Entwickeln und testen Sie Ihren ECR-Client **ohne echte Hardware** — der Simulator liefert exakt dieselben binaeren Antworten wie ein echtes CCV A920-Terminal.
+
+### Simulator starten
+
+```bash
+# Mit Standardeinstellungen starten (ZVT: 20007, API: 8080)
+./gradlew :panda-zvt-simulator:run
+
+# Benutzerdefinierte Ports und Terminal-ID
+./gradlew :panda-zvt-simulator:run --args="--zvt-port 20007 --api-port 8080 --terminal-id 29001234"
+```
+
+Der Simulator startet zwei Server:
+- **ZVT TCP** auf Port `20007` — binaeres ZVT-Protokoll (verbinden Sie Ihre Android-App hier)
+- **HTTP API** auf Port `8080` — REST-Management-API (Kartendaten, Verzoegerungen, Fehler konfigurieren)
+
+### Verbindung von Android
+
+| Umgebung | Simulator-IP | Grund |
+|----------|-------------|-------|
+| Android-Emulator | `10.0.2.2` | Emulator leitet dies an den Localhost des Hosts weiter |
+| Echtes Android-Geraet | LAN-IP des PCs (z.B. `192.168.1.50`) | Gleiches WLAN-Netzwerk erforderlich |
+
+Die Demo-App hat einen **Simulator-Modus**-Schalter, der automatisch die richtige IP einstellt.
+
+### REST-Management-API
+
+| Methode | Pfad | Beschreibung |
+|---------|------|-------------|
+| `GET` | `/api/status` | Simulator-Status |
+| `GET` | `/api/config` | Aktuelle Konfiguration |
+| `PUT` | `/api/config` | Vollstaendige Konfiguration aktualisieren |
+| `PUT` | `/api/error` | Fehlersimulation (aktivieren, Prozentsatz, erzwungener Code) |
+| `PUT` | `/api/card` | Kartendaten aendern (PAN, Typ, Name, AID) |
+| `PUT` | `/api/delays` | Antwortzeiten (Zwischenstatus, Verarbeitung, ACK-Timeout) |
+| `GET` | `/api/transactions` | Transaktionen auflisten |
+| `DELETE` | `/api/transactions` | Transaktionen loeschen |
+| `POST` | `/api/reset` | Vollstaendiger Reset |
+
+**Beispiel — 30% Fehlerrate aktivieren:**
+```bash
+curl -X PUT http://localhost:8080/api/error \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true, "errorPercentage": 30}'
+```
+
+> Vollstaendige Dokumentation: [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md)
 
 ## Voraussetzungen & Technologie-Stack
 

@@ -10,5 +10,6 @@
 local.properties
 /app/build
 /panda-zvt-library/build
+/panda-zvt-simulator/build
 .claude/
 *.pdf

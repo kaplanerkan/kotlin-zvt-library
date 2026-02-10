@@ -1,5 +1,6 @@
 package com.panda_erkan.zvtclientdemo.ui.main
 
+import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
@@ -18,14 +19,18 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModel()
+    private lateinit var prefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        prefs = getSharedPreferences("zvt_settings", MODE_PRIVATE)
+
         setupNavigation()
         setupConnectionUI()
+        setupSimulatorToggle()
         setupLanguageSwitcher()
         observeViewModel()
     }
@@ -47,6 +52,14 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // Remember simulator IP if in simulator mode
+            if (binding.switchSimulator.isChecked) {
+                prefs.edit()
+                    .putString("simulator_host", host)
+                    .putInt("simulator_port", port)
+                    .apply()
+            }
+
             val configByte = RegistrationConfigDialog.getSavedConfigByte(this)
             val tlvEnabled = RegistrationConfigDialog.isTlvEnabled(this)
             val keepAlive = binding.cbKeepAlive.isChecked
@@ -59,6 +72,38 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnRegConfig.setOnClickListener {
             RegistrationConfigDialog.newInstance().show(supportFragmentManager, RegistrationConfigDialog.TAG)
+        }
+    }
+
+    private fun setupSimulatorToggle() {
+        val simulatorMode = prefs.getBoolean("simulator_mode", false)
+        binding.switchSimulator.isChecked = simulatorMode
+        binding.tvSimulatorHint.visibility = if (simulatorMode) View.VISIBLE else View.GONE
+
+        if (simulatorMode) {
+            binding.etHost.setText(prefs.getString("simulator_host", "10.0.2.2"))
+            binding.etPort.setText(prefs.getInt("simulator_port", 20007).toString())
+        }
+
+        binding.switchSimulator.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean("simulator_mode", isChecked).apply()
+
+            if (isChecked) {
+                // Save current real terminal values
+                prefs.edit()
+                    .putString("real_terminal_host", binding.etHost.text.toString())
+                    .putInt("real_terminal_port", binding.etPort.text.toString().toIntOrNull() ?: 20007)
+                    .apply()
+                // Set simulator defaults
+                binding.etHost.setText(prefs.getString("simulator_host", "10.0.2.2"))
+                binding.etPort.setText(prefs.getInt("simulator_port", 20007).toString())
+            } else {
+                // Restore real terminal values
+                binding.etHost.setText(prefs.getString("real_terminal_host", "192.168.1.135"))
+                binding.etPort.setText(prefs.getInt("real_terminal_port", 20007).toString())
+            }
+
+            binding.tvSimulatorHint.visibility = if (isChecked) View.VISIBLE else View.GONE
         }
     }
 

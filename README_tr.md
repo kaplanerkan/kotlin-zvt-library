@@ -46,6 +46,14 @@ zvt-project/
 |           +-- TlvParser.kt      # TLV (Etiket-Uzunluk-Deger) ayristirici/olusturucu
 |           +-- BcdHelper.kt      # BCD kodlama/cozme yardimcilari
 |           +-- ByteExtensions.kt # Bayt dizisi uzanti fonksiyonlari
++-- panda-zvt-simulator/          # ZVT terminal simulatoru (Ktor, saf JVM)
+|   +-- src/main/kotlin/com/panda/zvt/simulator/
+|       +-- Main.kt               # Giris noktasi, CLI argumanlari
+|       +-- SimulatorServer.kt    # Orkestrator (TCP + HTTP sunuculari)
+|       +-- protocol/             # APDU, BCD, BMP kodlama (bagimsiz)
+|       +-- handler/              # 13 komut isleyici (Kayit, Odeme vb.)
+|       +-- tcp/                  # Ham TCP sunucu (port 20007)
+|       +-- api/                  # HTTP REST yonetim API (port 8080)
 +-- gradle/
     +-- libs.versions.toml        # Merkezi bagimlilik yonetimi
 ```
@@ -531,7 +539,58 @@ Bir sorunla karsilastiginizda, hata bildirirken lutfen ilgili gunluk dosyasini e
 ```bash
 ./gradlew :panda-zvt-library:assembleDebug   # Sadece kutuphane
 ./gradlew :app:assembleDebug                 # Demo uygulama
+./gradlew :panda-zvt-simulator:build         # Simulator
 ```
+
+## Terminal Simulatoru (panda-zvt-simulator)
+
+Gercek bir ZVT odeme terminalini simule eden saf Kotlin/JVM uygulamasi. **Gercek donanim olmadan** ECR istemcinizi gelistirin ve test edin — simulator, gercek bir CCV A920 terminalinin dondurdugu ayni ikili yanitlari dondurur.
+
+### Simulatoru Calistirma
+
+```bash
+# Varsayilan ayarlarla baslat (ZVT: 20007, API: 8080)
+./gradlew :panda-zvt-simulator:run
+
+# Ozel portlar ve terminal ID
+./gradlew :panda-zvt-simulator:run --args="--zvt-port 20007 --api-port 8080 --terminal-id 29001234"
+```
+
+Simulator iki sunucu baslatir:
+- **ZVT TCP** port `20007` — ikili ZVT protokolu (Android uygulamanizi buraya baglayin)
+- **HTTP API** port `8080` — REST yonetim API (kart verisi, gecikmeler, hatalar yapilandirin)
+
+### Android'den Baglanti
+
+| Ortam | Simulator IP | Neden |
+|-------|-------------|-------|
+| Android Emulator | `10.0.2.2` | Emulator bunu host'un localhost'una yonlendirir |
+| Gercek Android Cihaz | PC'nin LAN IP'si (orn. `192.168.1.50`) | Ayni WiFi aginda olmali |
+
+Demo uygulamada otomatik olarak dogru IP'yi ayarlayan bir **Simulator Modu** acma/kapama dugmesi vardir.
+
+### REST Yonetim API
+
+| Metod | Yol | Aciklama |
+|-------|-----|----------|
+| `GET` | `/api/status` | Simulator durumu |
+| `GET` | `/api/config` | Guncel yapilandirma |
+| `PUT` | `/api/config` | Tam yapilandirmayi guncelle |
+| `PUT` | `/api/error` | Hata simulasyonu (etkinlestir, yuzde, zorunlu kod) |
+| `PUT` | `/api/card` | Kart verisini degistir (PAN, tip, isim, AID) |
+| `PUT` | `/api/delays` | Yanit zamanlama (ara durum, isleme, ACK zaman asimi) |
+| `GET` | `/api/transactions` | Islemleri listele |
+| `DELETE` | `/api/transactions` | Islemleri temizle |
+| `POST` | `/api/reset` | Tam sifirlama |
+
+**Ornek — %30 hata orani etkinlestir:**
+```bash
+curl -X PUT http://localhost:8080/api/error \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true, "errorPercentage": 30}'
+```
+
+> Tam dokumantasyon: [panda-zvt-simulator/README.md](panda-zvt-simulator/README.md)
 
 ## Gereksinimler & Teknoloji Yigini
 

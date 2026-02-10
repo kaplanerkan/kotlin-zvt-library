@@ -19,3 +19,4 @@ dependencyResolutionManagement {
 rootProject.name = "ZvtClient"
 include(":app")
 include(":panda-zvt-library")
+include(":panda-zvt-simulator")
