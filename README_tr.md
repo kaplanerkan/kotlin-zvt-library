@@ -108,6 +108,32 @@ Baglanti ekranindaki disli ikonu ile acilan bu pencere, Registration (06 00) kom
 |:-:|
 | ![Islem Sonucu](screenshots/scrcpy_9qoKBcqRmI.png) |
 
+## Tum Islem Turleri Bir Bakista
+
+| Buton | Komut | Ne yapar | Gerekli |
+|-------|-------|---------|---------|
+| **Odeme** | `06 01` | Musteri kartindan tutar tahsil eder | Tutar + Kart |
+| **Iade** | `06 31` | Yeni bagimsiz iade islemi — para musteriye geri doner | Tutar + Kart |
+| **Storno** | `06 30` | Onceki odemeyi iptal eder (sanki hic olmamis gibi) | Receipt no + Kart |
+| **On Yetki** | `06 22` | Kartta tutar bloke eder (tahsil etmeden) | Tutar + Kart |
+| **Book Total** | `06 24` | On Yetki'yi tamamlayarak gercek tutari tahsil eder | Receipt no + Tutar |
+| **Kismi Iptal** | `06 25` | On Yetki blokesinin bir kismini serbest birakir | Receipt no + Tutar |
+| **Islem Durdur** | `06 B0` | Devam eden islemi iptal eder | - |
+
+**Odeme (06 01):** Standart kart odemesi. Musteri kartini okutturur, tutar aninda tahsil edilir. Receipt number, trace number ve kart bilgileri doner.
+
+**Iade (06 31) - Gutschrift:** Tamamen yeni ve bagimsiz bir islem olarak musterinin kartina para geri gonderir. Onceki isleme referans vermez. Gunler veya haftalar sonra yapilabilir. Islem ucreti alinir.
+
+**Storno (06 30) - Reversal:** Mevcut bir odemeyi receipt number ile iptal eder. Orijinal islem host'ta silinir. Ayni gun icinde (gun sonu kapanindan once) yapilmalidir. Islem ucreti alinmaz.
+
+**On Yetki (06 22) - Vorautorisierung:** Kartta tutar bloke eder ama tahsil etmez. Otel, arac kiralama, restoran gibi senaryolarda kullanilir. Book Total icin gerekli olan receipt number doner.
+
+**Book Total (06 24) - Buchung:** On Yetki'yi tamamlayarak gercek tutari tahsil eder. Tahsil edilen tutar, bloke edilen tutardan az veya esit olabilir — aradaki fark otomatik serbest kalir. On Yetki'den gelen receipt number gereklidir. Karti tekrar okutmak **gerekmez**.
+
+**Kismi Iptal (06 25) - Teilstorno:** On Yetki blokesinin bir kismini tahsil etmeden serbest birakir. Son tutarin rezervasyondan az olacagi bilindiginde kullanislidir.
+
+**Islem Durdur (06 B0) - Abort:** Terminalde devam eden islemi iptal eder (ornegin musteri kart okunurken fikrini degistirirse).
+
 ## Storno (Reversal) ve Gutschrift (Refund) Farki
 
 Bu iki islem siklikla karistirilir. Iste temel fark:

@@ -432,8 +432,7 @@ object ZvtCommandBuilder {
      */
     fun buildBookTotal(
         amountInCents: Long,
-        receiptNumber: Int,
-        currencyCode: Int = ZvtConstants.CURRENCY_EUR
+        receiptNumber: Int
     ): ZvtPacket {
         require(amountInCents > 0) { "Amount must be greater than 0" }
 
@@ -445,10 +444,6 @@ object ZvtCommandBuilder {
         // Amount (BMP 0x04, 6 byte BCD)
         data.add(ZvtConstants.BMP_AMOUNT)
         data.addAll(BcdHelper.amountToBcd(amountInCents).toList())
-
-        // Currency (BMP 0x49)
-        data.add(ZvtConstants.BMP_CURRENCY_CODE)
-        data.addAll(BcdHelper.currencyToBcd(currencyCode).toList())
 
         // Receipt number (BMP 0x87, BCD 2 bytes)
         data.add(ZvtConstants.BMP_RECEIPT_NR)

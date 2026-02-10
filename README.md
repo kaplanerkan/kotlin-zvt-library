@@ -108,6 +108,32 @@ The Registration Config dialog (gear icon on connection screen) allows customizi
 |:-:|
 | ![Transaction Result](screenshots/scrcpy_9qoKBcqRmI.png) |
 
+## All Transaction Types at a Glance
+
+| Button | Command | What it does | Requires |
+|--------|---------|-------------|----------|
+| **Payment** | `06 01` | Charges the customer's card | Amount + Card |
+| **Refund** | `06 31` | New independent refund transaction — money goes back to customer | Amount + Card |
+| **Reversal** | `06 30` | Cancels a previous payment (as if it never happened) | Receipt number + Card |
+| **Pre-Auth** | `06 22` | Blocks (reserves) an amount on the card without charging | Amount + Card |
+| **Book Total** | `06 24` | Completes a Pre-Auth by charging the actual amount | Receipt number + Amount |
+| **Partial Reversal** | `06 25` | Releases part of a Pre-Auth blocked amount | Receipt number + Amount |
+| **Abort** | `06 B0` | Cancels the currently running operation | - |
+
+**Payment (06 01):** Standard card payment. Customer presents card, amount is charged immediately. Returns receipt number, trace number, and card data.
+
+**Refund (06 31) - Gutschrift:** A completely new, independent transaction that sends money back to the customer's card. Does not reference any previous transaction. Can be done days or weeks later. Processing fees apply.
+
+**Reversal (06 30) - Storno:** Cancels an existing payment using its receipt number. The original transaction is deleted on the host. Must be done on the same day (before end-of-day settlement). No processing fees.
+
+**Pre-Auth (06 22) - Vorautorisierung:** Blocks an amount on the card without actually charging it. Used for hotels, car rentals, restaurants. Returns a receipt number needed for Book Total.
+
+**Book Total (06 24) - Buchung:** Completes a Pre-Auth by charging the final amount. The charged amount can be less than or equal to the reserved amount — the difference is automatically released. Requires the receipt number from the Pre-Auth step. Does **not** require the card again.
+
+**Partial Reversal (06 25) - Teilstorno:** Releases part of a Pre-Auth blocked amount without charging. Useful when the final amount is known to be less than the reservation.
+
+**Abort (06 B0) - Abbruch:** Cancels the currently running operation on the terminal (e.g., if the customer changes their mind while the card is being read).
+
 ## Reversal (Storno) vs Refund (Gutschrift)
 
 These two operations are often confused. Here is the key difference:

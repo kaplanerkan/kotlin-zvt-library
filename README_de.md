@@ -108,6 +108,32 @@ Der Registrierungskonfigurationsdialog (Zahnrad-Symbol auf dem Verbindungsbildsc
 |:-:|
 | ![Transaktionsergebnis](screenshots/scrcpy_9qoKBcqRmI.png) |
 
+## Alle Transaktionstypen auf einen Blick
+
+| Button | Befehl | Was er tut | Erfordert |
+|--------|--------|-----------|-----------|
+| **Zahlung** | `06 01` | Belastet die Kundenkarte | Betrag + Karte |
+| **Gutschrift** | `06 31` | Neue unabhaengige Erstattung — Geld geht zurueck an den Kunden | Betrag + Karte |
+| **Storno** | `06 30` | Storniert eine vorherige Zahlung (als waere sie nie passiert) | Belegnr. + Karte |
+| **Vorautorisierung** | `06 22` | Blockiert (reserviert) einen Betrag auf der Karte ohne Abbuchung | Betrag + Karte |
+| **Buchung** | `06 24` | Schliesst eine Vorautorisierung durch Abbuchung des Betrags ab | Belegnr. + Betrag |
+| **Teilstorno** | `06 25` | Gibt einen Teil des blockierten Betrags frei | Belegnr. + Betrag |
+| **Abbruch** | `06 B0` | Bricht die laufende Operation ab | - |
+
+**Zahlung (06 01):** Standard-Kartenzahlung. Kunde legt die Karte vor, der Betrag wird sofort abgebucht. Gibt Belegnummer, Verfolgungsnummer und Kartendaten zurueck.
+
+**Gutschrift (06 31) - Refund:** Eine voellig neue, unabhaengige Transaktion, die Geld auf die Kundenkarte zuruecksendet. Referenziert keine vorherige Transaktion. Kann Tage oder Wochen spaeter durchgefuehrt werden. Bearbeitungsgebuehren fallen an.
+
+**Storno (06 30) - Reversal:** Storniert eine bestehende Zahlung anhand der Belegnummer. Die Originaltransaktion wird auf dem Host geloescht. Muss am selben Tag (vor dem Tagesabschluss) erfolgen. Keine Bearbeitungsgebuehren.
+
+**Vorautorisierung (06 22) - Pre-Auth:** Blockiert einen Betrag auf der Karte, ohne ihn tatsaechlich abzubuchen. Wird fuer Hotels, Autovermietungen, Restaurants verwendet. Gibt eine Belegnummer zurueck, die fuer die Buchung benoetigt wird.
+
+**Buchung (06 24) - Book Total:** Schliesst eine Vorautorisierung ab, indem der endgueltige Betrag abgebucht wird. Der abgebuchte Betrag kann kleiner oder gleich dem reservierten Betrag sein — die Differenz wird automatisch freigegeben. Die Belegnummer aus dem Vorautorisierungs-Schritt ist erforderlich. Die Karte muss **nicht** erneut vorgelegt werden.
+
+**Teilstorno (06 25) - Partial Reversal:** Gibt einen Teil des blockierten Vorautorisierungsbetrags frei, ohne abzubuchen. Nuetzlich, wenn der Endbetrag voraussichtlich geringer als die Reservierung ist.
+
+**Abbruch (06 B0) - Abort:** Bricht die aktuell laufende Operation am Terminal ab (z.B. wenn der Kunde seine Meinung aendert, waehrend die Karte gelesen wird).
+
 ## Storno (Reversal) vs Gutschrift (Refund)
 
 Diese beiden Vorgaenge werden oft verwechselt. Hier ist der wesentliche Unterschied:

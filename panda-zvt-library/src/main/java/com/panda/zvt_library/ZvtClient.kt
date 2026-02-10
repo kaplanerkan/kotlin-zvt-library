@@ -431,8 +431,7 @@ class ZvtClient(
 
             val packet = ZvtCommandBuilder.buildBookTotal(
                 amountInCents = amountInCents,
-                receiptNumber = receiptNumber,
-                currencyCode = config.currencyCode
+                receiptNumber = receiptNumber
             )
             log("=== BOOK TOTAL (06 24) === amount=$amountInCents cents, receipt=$receiptNumber")
             val result = executeCommand(packet)
