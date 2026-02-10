@@ -1,8 +1,16 @@
 # ZVT Client Library for Android (Kotlin)
 
+> **Available languages / Mevcut diller / Verfügbare Sprachen:**
+>
+> [🇬🇧 English](#-english) | [🇹🇷 Türkçe](#-türkçe) | [🇩🇪 Deutsch](#-deutsch)
+
+---
+
+## 🇬🇧 English
+
 A Kotlin/Android library implementing the **ZVT Protocol (v13.13)** for communication between an Electronic Cash Register (ECR) and Payment Terminals (PT) over TCP/IP.
 
-## What is ZVT?
+### What is ZVT?
 
 ZVT (Zahlungsverkehrstechnik) is the German standard protocol for communication between point-of-sale systems and payment terminals. It is widely used in Germany, Austria, and Switzerland for card payment processing.
 
@@ -10,7 +18,7 @@ ZVT (Zahlungsverkehrstechnik) is the German standard protocol for communication 
 - **Transport**: TCP/IP, default port **20007**
 - **Encoding**: Binary APDU (Application Protocol Data Unit)
 
-## Project Structure
+### Project Structure
 
 ```
 zvt-project/
@@ -34,7 +42,7 @@ zvt-project/
     └── libs.versions.toml        # Centralized dependency management
 ```
 
-## Supported Commands
+### Supported Commands
 
 | Command | Code | Description |
 |---------|------|-------------|
@@ -48,7 +56,7 @@ zvt-project/
 | Diagnosis | `06 70` | Query terminal status |
 | Status Enquiry | `05 01` | Check terminal state |
 
-## Usage
+### Usage
 
 ```kotlin
 val config = ZvtConfig(
@@ -81,7 +89,7 @@ val eod = client.endOfDay()
 client.disconnect()
 ```
 
-## Protocol Flow
+### Protocol Flow
 
 ```
 ECR → PT:  Command APDU (e.g. 06 01 for Authorization)
@@ -96,9 +104,7 @@ PT  → ECR: Completion (06 0F) or Abort (06 1E)
 ECR → PT:  ACK (80 00 00)
 ```
 
-## BMP Fields Parsed
-
-The library parses the following BMP (Bitmap) data fields from Status Information responses:
+### BMP Fields Parsed
 
 | BMP | Name | Format |
 |-----|------|--------|
@@ -126,13 +132,13 @@ The library parses the following BMP (Bitmap) data fields from Status Informatio
 | `A0` | Result Code AS | 1 byte |
 | `BA` | AID Parameter | 5 byte fixed |
 
-## Build
+### Build
 
 ```bash
 ./gradlew :zvt-library:assembleDebug
 ```
 
-## Requirements
+### Requirements
 
 - Android SDK 36
 - Kotlin 1.9.22
@@ -140,57 +146,57 @@ The library parses the following BMP (Bitmap) data fields from Status Informatio
 
 ---
 
-# ZVT Client Library - Android (Kotlin) [TR]
+## 🇹🇷 Türkçe
 
-Android icin **ZVT Protokolu (v13.13)** uygulayan bir Kotlin kutuphanesi. Yazar Kasa (ECR) ile Odeme Terminalleri (PT) arasinda TCP/IP uzerinden iletisim saglar.
+Android için **ZVT Protokolü (v13.13)** uygulayan bir Kotlin kütüphanesi. Yazar Kasa (ECR) ile Ödeme Terminalleri (PT) arasında TCP/IP üzerinden iletişim sağlar.
 
-## ZVT Nedir?
+### ZVT Nedir?
 
-ZVT (Zahlungsverkehrstechnik), satis noktasi (POS) sistemleri ile odeme terminalleri arasindaki iletisimi saglayan Alman standart protokoludur. Almanya, Avusturya ve Isvicre'de kartli odeme islemlerinde yaygin olarak kullanilir.
+ZVT (Zahlungsverkehrstechnik), satış noktası (POS) sistemleri ile ödeme terminalleri arasındaki iletişimi sağlayan Alman standart protokolüdür. Almanya, Avusturya ve İsviçre'de kartlı ödeme işlemlerinde yaygın olarak kullanılır.
 
 - **Spesifikasyon**: ZVT Protocol Specification v13.13 (PA00P015_13.13_final)
-- **Iletisim**: TCP/IP, varsayilan port **20007**
+- **İletişim**: TCP/IP, varsayılan port **20007**
 - **Kodlama**: Binary APDU (Application Protocol Data Unit)
 
-## Proje Yapisi
+### Proje Yapısı
 
 ```
 zvt-project/
-├── app/                          # Demo/test Android uygulamasi
-├── zvt-library/                  # ZVT protokol kutuphanesi (yeniden kullanilabilir)
+├── app/                          # Demo/test Android uygulaması
+├── zvt-library/                  # ZVT protokol kütüphanesi (yeniden kullanılabilir)
 │   └── src/main/java/com/erkan/zvt/
-│       ├── ZvtClient.kt          # Ana istemci (TCP baglanti, komut yurutme)
-│       ├── ZvtCallback.kt        # Olay dinleyici arayuzu
+│       ├── ZvtClient.kt          # Ana istemci (TCP bağlantı, komut yürütme)
+│       ├── ZvtCallback.kt        # Olay dinleyici arayüzü
 │       ├── model/
 │       │   └── Models.kt         # Veri modelleri (TransactionResult, CardData, vb.)
 │       ├── protocol/
-│       │   ├── ZvtConstants.kt   # Tum protokol sabitleri (komutlar, BMP'ler, hata kodlari)
+│       │   ├── ZvtConstants.kt   # Tüm protokol sabitleri (komutlar, BMP'ler, hata kodları)
 │       │   ├── ZvtPacket.kt      # APDU paket serializasyon/deserializasyon
-│       │   ├── ZvtCommandBuilder.kt  # Komut olusturucular (Registration, Authorization, vb.)
-│       │   └── ZvtResponseParser.kt  # Yanit parcalayici (BMP alanlari, TLV containerlari)
+│       │   ├── ZvtCommandBuilder.kt  # Komut oluşturucular (Registration, Authorization, vb.)
+│       │   └── ZvtResponseParser.kt  # Yanıt ayrıştırıcı (BMP alanları, TLV containerları)
 │       └── util/
 │           ├── TlvParser.kt      # TLV (Tag-Length-Value) parser/builder
-│           ├── BcdHelper.kt      # BCD kodlama/cozme yardimcilari
-│           └── ByteExtensions.kt # Byte dizisi uzanti fonksiyonlari
+│           ├── BcdHelper.kt      # BCD kodlama/çözme yardımcıları
+│           └── ByteExtensions.kt # Byte dizisi uzantı fonksiyonları
 └── gradle/
-    └── libs.versions.toml        # Merkezi bagimlilik yonetimi
+    └── libs.versions.toml        # Merkezi bağımlılık yönetimi
 ```
 
-## Desteklenen Komutlar
+### Desteklenen Komutlar
 
-| Komut | Kod | Aciklama |
+| Komut | Kod | Açıklama |
 |-------|-----|----------|
 | Registration | `06 00` | ECR'yi terminale kaydet |
-| Authorization | `06 01` | Odeme islemi |
-| Log Off | `06 02` | Terminal baglantisini sonlandir |
-| Pre-Authorization | `06 22` | On yetkilendirme (otel, arac kiralama) |
-| Reversal | `06 30` | Onceki islemi iptal et |
-| Refund | `06 31` | Iade islemi |
-| End of Day | `06 50` | Gun sonu kapanisi |
+| Authorization | `06 01` | Ödeme işlemi |
+| Log Off | `06 02` | Terminal bağlantısını sonlandır |
+| Pre-Authorization | `06 22` | Ön yetkilendirme (otel, araç kiralama) |
+| Reversal | `06 30` | Önceki işlemi iptal et |
+| Refund | `06 31` | İade işlemi |
+| End of Day | `06 50` | Gün sonu kapanışı |
 | Diagnosis | `06 70` | Terminal durumunu sorgula |
 | Status Enquiry | `05 01` | Terminal durumunu kontrol et |
 
-## Kullanim
+### Kullanım
 
 ```kotlin
 val config = ZvtConfig(
@@ -203,48 +209,33 @@ val config = ZvtConfig(
 
 val client = ZvtClient(config)
 
-// Baglan ve kayit ol
+// Bağlan ve kayıt ol
 client.connect()
 client.register(configByte = ZvtConstants.REG_INTERMEDIATE_STATUS)
 
-// Odeme yap (12.50 EUR)
+// Ödeme yap (12.50 EUR)
 val result = client.authorize(amountInCents = 1250)
 if (result.success) {
-    println("Odeme basarili! Trace: ${result.traceNumber}")
+    println("Ödeme başarılı! Trace: ${result.traceNumber}")
     println("Kart: ${result.cardData?.cardType}")
 } else {
-    println("Odeme basarisiz: ${result.resultMessage}")
+    println("Ödeme başarısız: ${result.resultMessage}")
 }
 
-// Gun sonu
+// Gün sonu
 val eod = client.endOfDay()
 
-// Baglanti kapat
+// Bağlantıyı kapat
 client.disconnect()
 ```
 
-## Protokol Akisi
-
-```
-ECR → PT:  Komut APDU (orn: Authorization icin 06 01)
-PT  → ECR: ACK (80 00 00)
-PT  → ECR: Ara Durum (04 FF) [tekrarlanan] - "Kart takin", "PIN girin"...
-ECR → PT:  ACK (80 00 00) [her biri icin]
-PT  → ECR: Durum Bilgisi (04 0F) - BMP alanlariyla islem sonucu
-ECR → PT:  ACK (80 00 00)
-PT  → ECR: Yazdir Satiri (06 D1) [tekrarlanan] - Fis satirlari
-ECR → PT:  ACK (80 00 00) [her biri icin]
-PT  → ECR: Tamamlandi (06 0F) veya Iptal (06 1E)
-ECR → PT:  ACK (80 00 00)
-```
-
-## Derleme
+### Derleme
 
 ```bash
 ./gradlew :zvt-library:assembleDebug
 ```
 
-## Gereksinimler
+### Gereksinimler
 
 - Android SDK 36
 - Kotlin 1.9.22
@@ -252,8 +243,107 @@ ECR → PT:  ACK (80 00 00)
 
 ---
 
-## License / Lisans
+## 🇩🇪 Deutsch
+
+Eine Kotlin/Android-Bibliothek, die das **ZVT-Protokoll (v13.13)** für die Kommunikation zwischen einer Elektronischen Registrierkasse (ECR) und Zahlungsterminals (PT) über TCP/IP implementiert.
+
+### Was ist ZVT?
+
+ZVT (Zahlungsverkehrstechnik) ist das deutsche Standardprotokoll für die Kommunikation zwischen Kassensystemen und Zahlungsterminals. Es wird in Deutschland, Österreich und der Schweiz häufig für die Kartenzahlungsabwicklung eingesetzt.
+
+- **Spezifikation**: ZVT Protocol Specification v13.13 (PA00P015_13.13_final)
+- **Transport**: TCP/IP, Standardport **20007**
+- **Kodierung**: Binäre APDU (Application Protocol Data Unit)
+
+### Projektstruktur
+
+```
+zvt-project/
+├── app/                          # Demo-/Test-Android-Anwendung
+├── zvt-library/                  # ZVT-Protokollbibliothek (wiederverwendbar)
+│   └── src/main/java/com/erkan/zvt/
+│       ├── ZvtClient.kt          # Haupt-Client (TCP-Verbindung, Befehlsausführung)
+│       ├── ZvtCallback.kt        # Ereignis-Listener-Schnittstelle
+│       ├── model/
+│       │   └── Models.kt         # Datenmodelle (TransactionResult, CardData, usw.)
+│       ├── protocol/
+│       │   ├── ZvtConstants.kt   # Alle Protokollkonstanten (Befehle, BMPs, Fehlercodes)
+│       │   ├── ZvtPacket.kt      # APDU-Paket-Serialisierung/Deserialisierung
+│       │   ├── ZvtCommandBuilder.kt  # Befehlsgeneratoren (Registration, Authorization, usw.)
+│       │   └── ZvtResponseParser.kt  # Antwort-Parser (BMP-Felder, TLV-Container)
+│       └── util/
+│           ├── TlvParser.kt      # TLV (Tag-Length-Value) Parser/Builder
+│           ├── BcdHelper.kt      # BCD-Kodierung/Dekodierung
+│           └── ByteExtensions.kt # Byte-Array-Erweiterungsfunktionen
+└── gradle/
+    └── libs.versions.toml        # Zentrale Abhängigkeitsverwaltung
+```
+
+### Unterstützte Befehle
+
+| Befehl | Code | Beschreibung |
+|--------|------|--------------|
+| Registration | `06 00` | ECR am Terminal registrieren |
+| Authorization | `06 01` | Zahlungstransaktion |
+| Log Off | `06 02` | Verbindung zum Terminal trennen |
+| Pre-Authorization | `06 22` | Vorautorisierung (Hotel, Mietwagen) |
+| Reversal | `06 30` | Vorherige Transaktion stornieren |
+| Refund | `06 31` | Erstattung durchführen |
+| End of Day | `06 50` | Tagesabschluss |
+| Diagnosis | `06 70` | Terminalstatus abfragen |
+| Status Enquiry | `05 01` | Terminalzustand prüfen |
+
+### Verwendung
+
+```kotlin
+val config = ZvtConfig(
+    host = "192.168.1.100",
+    port = 20007,
+    password = "000000",
+    currencyCode = 978, // EUR
+    debugMode = true
+)
+
+val client = ZvtClient(config)
+
+// Verbinden und registrieren
+client.connect()
+client.register(configByte = ZvtConstants.REG_INTERMEDIATE_STATUS)
+
+// Zahlung durchführen (12,50 EUR)
+val result = client.authorize(amountInCents = 1250)
+if (result.success) {
+    println("Zahlung erfolgreich! Trace: ${result.traceNumber}")
+    println("Karte: ${result.cardData?.cardType}")
+} else {
+    println("Zahlung fehlgeschlagen: ${result.resultMessage}")
+}
+
+// Tagesabschluss
+val eod = client.endOfDay()
+
+// Verbindung trennen
+client.disconnect()
+```
+
+### Erstellen
+
+```bash
+./gradlew :zvt-library:assembleDebug
+```
+
+### Voraussetzungen
+
+- Android SDK 36
+- Kotlin 1.9.22
+- Min SDK 24
+
+---
+
+## License / Lisans / Lizenz
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Bu proje MIT Lisansi ile lisanslanmistir - detaylar icin [LICENSE](LICENSE) dosyasina bakiniz.
+Bu proje MIT Lisansı ile lisanslanmıştır - detaylar için [LICENSE](LICENSE) dosyasına bakınız.
+
+Dieses Projekt ist unter der MIT-Lizenz lizenziert - siehe [LICENSE](LICENSE) für Details.
