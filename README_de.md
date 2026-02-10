@@ -90,6 +90,10 @@ Der Registrierungskonfigurationsdialog (Zahnrad-Symbol auf dem Verbindungsbildsc
 
 **Standard:** `0x08` (nur Intermediate Status aktiviert). Das ConfigByte wird in Echtzeit als Hex- und Dezimalwert angezeigt. Einstellungen werden in SharedPreferences gespeichert.
 
+| Registrierungskonfigurationsdialog |
+|:-:|
+| ![Registrierungskonfiguration](screenshots/scrcpy_ojUZoVHZXh.png) |
+
 ## Screenshots
 
 | Zahlungsbildschirm | Zahlung (scrollen) | Terminal-Operationen |

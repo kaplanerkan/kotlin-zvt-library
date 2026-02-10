@@ -90,6 +90,10 @@ The Registration Config dialog (gear icon on connection screen) allows customizi
 
 **Default:** `0x08` (only Intermediate Status enabled). The configByte is displayed in real-time as hex and decimal. Settings are persisted in SharedPreferences.
 
+| Registration Config Dialog |
+|:-:|
+| ![Registration Config](screenshots/scrcpy_ojUZoVHZXh.png) |
+
 ## Screenshots
 
 | Payment Screen | Payment (scroll) | Terminal Operations |

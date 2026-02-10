@@ -90,6 +90,10 @@ Baglanti ekranindaki disli ikonu ile acilan bu pencere, Registration (06 00) kom
 
 **Varsayilan:** `0x08` (yalnizca Intermediate Status aktif). ConfigByte hex ve ondalik olarak gercek zamanli gosterilir. Ayarlar SharedPreferences'ta saklanir.
 
+| Kayit Yapilandirma Penceresi |
+|:-:|
+| ![Kayit Yapilandirma](screenshots/scrcpy_ojUZoVHZXh.png) |
+
 ## Ekran Goruntuleri
 
 | Odeme Ekrani | Odeme (kaydir) | Terminal Islemleri |
