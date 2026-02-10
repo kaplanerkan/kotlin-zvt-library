@@ -23,7 +23,7 @@ import timber.log.Timber
  * - Refund (06 31)
  * - End of Day (06 50)
  * - Diagnosis (06 70)
- * - Abort (06 1E)
+ * - Abort (06 B0)
  * - Status Enquiry (05 01)
  *
  * Reference: ZVT Protocol Specification v13.13
@@ -337,11 +337,13 @@ object ZvtCommandBuilder {
     }
 
     // =====================================================
-    // Abort (06 1E)
+    // Abort (06 B0)
     // =====================================================
 
     /**
-     * Builds an Abort command (06 1E) to cancel an ongoing operation.
+     * Builds an Abort command (06 B0) to cancel an ongoing operation.
+     *
+     * Note: 06 B0 is the ECR→PT abort command. 06 1E is the PT→ECR abort response.
      *
      * @return [ZvtPacket] containing the Abort command.
      */

@@ -93,7 +93,7 @@ Demo uygulama (`app/`), Material 3 arayuzlu tam islevsel bir ZVT istemcisidir.
 | Kayit (Registration) | `06 00` | ECR'yi terminale kaydet, para birimi ve konfigurasyonu ayarla |
 | Yetkilendirme (Authorization) | `06 01` | Odeme islemi (tutar BCD formatinda) |
 | Oturum Kapatma (Log Off) | `06 02` | Terminalden duzgun sekilde ayril |
-| Islem Durdur (Abort) | `06 1E` | Devam eden islemi iptal et |
+| Islem Durdur (Abort) | `06 B0` | Devam eden islemi iptal et (ECR→PT) |
 | Fis Tekrarlama (Repeat Receipt) | `06 20` | Son fisi tekrar yazdir |
 | On Yetkilendirme (Pre-Auth) | `06 22` | Tutar ayir (otel, arac kiralama) |
 | On Yetki Kapatma (Book Total) | `06 24` | On yetkilendirmeyi tamamla |
@@ -116,6 +116,8 @@ Demo uygulama (`app/`), Material 3 arayuzlu tam islevsel bir ZVT istemcisidir.
 | Yazdir (Print Line) | `06 D1` | Tek fis satiri |
 | Metin Blogu (Print Text Block) | `06 D3` | Fis metin blogu |
 | Islem Durduruldu (Abort) | `06 1E` | Terminal tarafindan islem durduruldu |
+
+> **Abort Hakkinda Not (06 B0 ve 06 1E):** ZVT protokolunde iki farkli abort kodu vardir. `06 B0` ECR→PT yonunde kullanilir — ECR tarafindan devam eden islemi iptal etmek icin gonderilir. `06 1E` ise PT→ECR yonunde terminalin ECR'ye "islem iptal edildi" bildirimi gondermesidir (ornegin kullanici terminalden iptal tusuna bastiginda). `06 1E`'yi ECR→PT komutu olarak gondermek calismaz — terminal bu kodu tanimaz cunku bu bir yanit kodudur, komut degil.
 
 ### APDU Paket Formati
 

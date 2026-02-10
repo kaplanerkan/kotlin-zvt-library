@@ -149,9 +149,9 @@ data class ZvtPacket(
         }
 
         /** Creates an ACK (positive acknowledgement) packet: `80 00 00`. */
-        fun ack(): ZvtPacket = ZvtPacket(ZvtConstants.ACK)
+        fun ack(): ZvtPacket = ZvtPacket(command = byteArrayOf(0x80.toByte(), 0x00))
 
         /** Creates a NACK (negative acknowledgement) packet: `84 00 00`. */
-        fun nack(): ZvtPacket = ZvtPacket(ZvtConstants.NACK)
+        fun nack(): ZvtPacket = ZvtPacket(command = byteArrayOf(0x84.toByte(), 0x00))
     }
 }

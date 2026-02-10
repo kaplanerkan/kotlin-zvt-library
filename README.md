@@ -93,7 +93,7 @@ The demo application (`app/`) is a fully functional ZVT client with Material 3 U
 | Registration | `06 00` | Register ECR with terminal, set currency and config |
 | Authorization | `06 01` | Payment transaction (amount in BCD) |
 | Log Off | `06 02` | Graceful disconnect from terminal |
-| Abort | `06 1E` | Cancel an ongoing operation |
+| Abort | `06 B0` | Cancel an ongoing operation (ECR→PT) |
 | Repeat Receipt | `06 20` | Re-print last receipt |
 | Pre-Authorization | `06 22` | Reserve amount (hotel, car rental) |
 | Book Total | `06 24` | Complete a pre-authorization |
@@ -116,6 +116,8 @@ The demo application (`app/`) is a fully functional ZVT client with Material 3 U
 | Print Line | `06 D1` | Single receipt line |
 | Print Text Block | `06 D3` | Block of receipt text |
 | Abort | `06 1E` | Transaction aborted by terminal |
+
+> **Note on Abort (06 B0 vs 06 1E):** The ZVT protocol uses two different abort codes depending on the direction. `06 B0` is the ECR→PT command used to cancel an ongoing transaction from the ECR side. `06 1E` is the PT→ECR response sent by the terminal to inform the ECR that a transaction was aborted (e.g. user pressed cancel on the terminal). Using `06 1E` as an ECR→PT command does not work — the terminal ignores it because it is a response code, not a command.
 
 ### APDU Packet Format
 

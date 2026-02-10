@@ -39,8 +39,8 @@ object ZvtConstants {
     /** Diagnosis command (06 70) */
     val CMD_DIAGNOSIS = byteArrayOf(0x06, 0x70)
 
-    /** Abort command (06 1E) */
-    val CMD_ABORT = byteArrayOf(0x06, 0x1E)
+    /** Abort command ECR→PT (06 B0) */
+    val CMD_ABORT = byteArrayOf(0x06, 0xB0.toByte())
 
     /** Print Line command (06 D1) */
     val CMD_PRINT_LINE = byteArrayOf(0x06, 0xD1.toByte())

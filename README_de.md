@@ -93,7 +93,7 @@ Die Demo-Anwendung (`app/`) ist ein voll funktionsfaehiger ZVT-Client mit Materi
 | Registrierung | `06 00` | ECR am Terminal registrieren, Waehrung und Konfiguration setzen |
 | Autorisierung | `06 01` | Zahlungstransaktion (Betrag in BCD) |
 | Abmeldung (Log Off) | `06 02` | Ordnungsgemaesse Trennung vom Terminal |
-| Abbruch (Abort) | `06 1E` | Laufende Operation abbrechen |
+| Abbruch (Abort) | `06 B0` | Laufende Operation abbrechen (ECR→PT) |
 | Belegwiederholung | `06 20` | Letzten Beleg erneut drucken |
 | Vorautorisierung | `06 22` | Betrag reservieren (Hotel, Mietwagen) |
 | Buchung (Book Total) | `06 24` | Vorautorisierung abschliessen |
@@ -116,6 +116,8 @@ Die Demo-Anwendung (`app/`) ist ein voll funktionsfaehiger ZVT-Client mit Materi
 | Druckzeile (Print Line) | `06 D1` | Einzelne Belegzeile |
 | Textblock (Print Text) | `06 D3` | Beleg-Textblock |
 | Abbruch (Abort) | `06 1E` | Transaktion vom Terminal abgebrochen |
+
+> **Hinweis zu Abort (06 B0 vs 06 1E):** Das ZVT-Protokoll verwendet zwei verschiedene Abort-Codes je nach Richtung. `06 B0` ist der ECR→PT-Befehl, um eine laufende Transaktion von der ECR-Seite abzubrechen. `06 1E` ist die PT→ECR-Antwort, die das Terminal sendet, um die ECR darueber zu informieren, dass eine Transaktion abgebrochen wurde (z.B. wenn der Benutzer die Abbruchtaste am Terminal drueckt). `06 1E` als ECR→PT-Befehl zu senden funktioniert nicht — das Terminal ignoriert es, da es ein Antwortcode ist und kein Befehl.
 
 ### APDU-Paketformat
 

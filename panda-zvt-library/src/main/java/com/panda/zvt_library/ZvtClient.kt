@@ -58,6 +58,8 @@ class ZvtClient(
 ) {
     companion object {
         private const val TAG = "ZVT"
+        private const val PRE_CHECK_TIMEOUT_MS = 5_000
+        private const val ABORT_TIMEOUT_MS = 3_000
     }
 
     /**
@@ -477,15 +479,23 @@ class ZvtClient(
         }
 
     /**
-     * Sends an Abort command (06 1E) to cancel an ongoing operation.
+     * Sends an Abort command (06 B0) to cancel an ongoing operation.
+     *
+     * Also shortens the socket read timeout so the running response loop
+     * exits quickly instead of blocking for the full 90 s read timeout.
+     * The timeout is restored at the end of [executeCommand].
      *
      * @return `true` if the abort was sent successfully.
      */
     suspend fun abort(): Boolean = withContext(Dispatchers.IO) {
         if (!isConnected) return@withContext false
 
+        // Shorten read timeout so the response loop exits quickly
+        socket?.soTimeout = ABORT_TIMEOUT_MS
+        log("Abort requested — read timeout shortened to ${ABORT_TIMEOUT_MS}ms")
+
         val packet = ZvtCommandBuilder.buildAbort()
-        log("=== ABORT (06 1E) ===")
+        log("=== ABORT (06 B0) ===")
         sendPacket(packet)
         true
     }
@@ -524,7 +534,7 @@ class ZvtClient(
      *    - `06 D1` (Print Line) -> Send ACK, continue
      *    - `04 0F` (Status Info) -> Send ACK, record result, continue
      *    - `06 0F` (Completion) -> Transaction finished
-     *    - `06 1E` (Abort) -> Transaction aborted
+     *    - `06 1E` (Abort from PT) -> Transaction aborted
      *
      * @param command The [ZvtPacket] command to execute.
      * @return [TransactionResult] with the final outcome.
@@ -605,6 +615,7 @@ class ZvtClient(
                     if (!finalResult.success && finalResult.resultMessage == "No response received") {
                         finalResult = ZvtResponseParser.parseCompletion(response)
                     }
+                    if (config.autoAck) sendAck()
                     log("Completion received -> transaction finished")
                     transactionComplete = true
                 }
@@ -612,6 +623,7 @@ class ZvtClient(
                 // Abort (06 1E) - Transaction aborted by terminal
                 response.isAbort -> {
                     finalResult = ZvtResponseParser.parseAbort(response)
+                    if (config.autoAck) sendAck()
                     log("Abort received: ${finalResult.resultMessage}")
                     transactionComplete = true
                 }
@@ -625,6 +637,8 @@ class ZvtClient(
         }
 
         _intermediateStatus.value = null
+        // Restore read timeout (may have been shortened by abort())
+        socket?.soTimeout = config.readTimeoutMs
         log("=== Command completed: success=${finalResult.success}, message='${finalResult.resultMessage}' ===")
         return finalResult
     }
@@ -802,13 +816,19 @@ class ZvtClient(
      */
     private suspend fun ensureTerminalReady() {
         log("Pre-check: Status Enquiry to verify terminal is idle")
-        val packet = ZvtCommandBuilder.buildStatusEnquiry()
-        val result = executeCommand(packet)
-        if (!result.success) {
-            throw ZvtError.TerminalError(
-                resultCode = result.resultCode,
-                message = "Terminal not ready: ${result.resultMessage}"
-            )
+        val originalTimeout = socket?.soTimeout ?: config.readTimeoutMs
+        try {
+            socket?.soTimeout = PRE_CHECK_TIMEOUT_MS
+            val packet = ZvtCommandBuilder.buildStatusEnquiry()
+            val result = executeCommand(packet)
+            if (!result.success) {
+                throw ZvtError.TerminalError(
+                    resultCode = result.resultCode,
+                    message = "Terminal not ready: ${result.resultMessage}"
+                )
+            }
+        } finally {
+            socket?.soTimeout = originalTimeout
         }
         log("Pre-check: Terminal is idle, proceeding with command")
     }
