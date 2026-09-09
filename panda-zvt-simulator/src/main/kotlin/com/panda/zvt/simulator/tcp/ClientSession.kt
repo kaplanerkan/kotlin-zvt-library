@@ -17,42 +17,26 @@ class ClientSession(
     private val logger = LoggerFactory.getLogger("Session-$sessionId")
     private var closed = false
 
+    // Frames that arrived while we were waiting for an ACK (e.g. a 06 B0
+    // abort mid-burst). They are dispatched after the current response
+    // burst instead of being swallowed.
+    private val pendingFrames = mutableListOf<ApduParser.ParsedApdu>()
+
     suspend fun run() {
         val readChannel = socket.openReadChannel()
         val writeChannel = socket.openWriteChannel(autoFlush = true)
 
         try {
             while (!closed) {
-                val apdu = readApdu(readChannel) ?: break
-
-                val cmdHex = apdu.command.joinToString(" ") { "%02X".format(it) }
-                val dataHex = if (apdu.data.isNotEmpty()) {
-                    " data=[${apdu.data.joinToString(" ") { "%02X".format(it) }}]"
-                } else ""
-                logger.info("← ECR: cmd=[$cmdHex]$dataHex")
-
-                val responses = router.route(apdu)
-
-                for ((index, response) in responses.withIndex()) {
-                    writeChannel.writeFully(response, 0, response.size)
-
-                    val respHex = response.joinToString(" ") { "%02X".format(it) }
-                    logger.info("→ ECR: [$respHex]")
-
-                    // Wait for ECR ACK after each response except the last one
-                    if (index < responses.size - 1) {
-                        val ackReceived = waitForAck(readChannel)
-                        if (!ackReceived) {
-                            logger.warn("ECR did not send ACK, continuing anyway")
-                        }
-                    }
-
-                    // Apply configurable delay between responses
-                    val delay = state.config.delays.betweenResponsesMs
-                    if (delay > 0) {
-                        kotlinx.coroutines.delay(delay)
-                    }
+                // Dispatch frames buffered during waitForAck
+                while (pendingFrames.isNotEmpty() && !closed) {
+                    val buffered = pendingFrames.removeAt(0)
+                    handleApdu(buffered, readChannel, writeChannel)
                 }
+                if (closed) break
+
+                val apdu = readApdu(readChannel) ?: break
+                handleApdu(apdu, readChannel, writeChannel)
             }
         } catch (e: Exception) {
             if (!closed) {
@@ -60,6 +44,41 @@ class ClientSession(
             }
         } finally {
             close()
+        }
+    }
+
+    private suspend fun handleApdu(
+        apdu: ApduParser.ParsedApdu,
+        readChannel: ByteReadChannel,
+        writeChannel: ByteWriteChannel
+    ) {
+        val cmdHex = apdu.command.joinToString(" ") { "%02X".format(it) }
+        val dataHex = if (apdu.data.isNotEmpty()) {
+            " data=[${apdu.data.joinToString(" ") { "%02X".format(it) }}]"
+        } else ""
+        logger.info("← ECR: cmd=[$cmdHex]$dataHex")
+
+        val responses = router.route(apdu)
+
+        for ((index, response) in responses.withIndex()) {
+            writeChannel.writeFully(response, 0, response.size)
+
+            val respHex = response.joinToString(" ") { "%02X".format(it) }
+            logger.info("→ ECR: [$respHex]")
+
+            // Wait for ECR ACK after each response except the last one
+            if (index < responses.size - 1) {
+                val ackReceived = waitForAck(readChannel)
+                if (!ackReceived) {
+                    logger.warn("ECR did not send ACK, continuing anyway")
+                }
+            }
+
+            // Apply configurable delay between responses
+            val delay = state.config.delays.betweenResponsesMs
+            if (delay > 0) {
+                kotlinx.coroutines.delay(delay)
+            }
         }
     }
 
@@ -113,7 +132,16 @@ class ClientSession(
     private suspend fun waitForAck(channel: ByteReadChannel): Boolean {
         return withTimeoutOrNull(state.config.delays.ackTimeoutMs) {
             val apdu = readApdu(channel)
-            apdu != null && ApduParser.isAck(apdu.command)
+            when {
+                apdu == null -> false
+                ApduParser.isAck(apdu.command) -> true
+                // Buffer instead of swallowing - e.g. a 06 B0 abort that
+                // arrives mid-burst must not get lost
+                else -> {
+                    pendingFrames.add(apdu)
+                    false
+                }
+            }
         } ?: false
     }
 
