@@ -5,6 +5,7 @@ import com.panda.zvt.simulator.config.SimulatedCardData
 import com.panda.zvt.simulator.config.SimulatorConfig
 import com.panda.zvt.simulator.protocol.ApduParser
 import com.panda.zvt.simulator.protocol.BcdEncoder
+import com.panda.zvt.simulator.protocol.PrintLineAttribute
 import com.panda.zvt.simulator.state.SimulatorState
 import com.panda.zvt.simulator.state.TransactionStore
 import kotlinx.coroutines.test.runTest
@@ -149,6 +150,29 @@ class CommandHandlerTest {
             it.size >= 2 && it[0] == 0x06.toByte() && it[1] == 0xD1.toByte()
         }
         assertEquals(responses.size - 2, lastPrintIndex)
+    }
+
+    @Test
+    fun authorizationHandler_withPrintLines_onlyTheFinalLineIsMarkedAsLast() = runTest {
+        val printState = SimulatorState(defaultConfig.copy(paymentPrintLines = true))
+        val handler = AuthorizationHandler(printState, store)
+        val data = byteArrayOf(0x04) + BcdEncoder.amountToBcd(1250)
+
+        val responses = handler.handle(buildApdu(data))
+        val printLines = responses.filter {
+            it.size >= 2 && it[0] == 0x06.toByte() && it[1] == 0xD1.toByte()
+        }
+        // 06 D1 | length | <attribute> | <text> - short lines use a 1-byte length
+        val attributes = printLines.map { it[3] }
+
+        assertTrue(
+            "Closing line must carry the last-line marker",
+            PrintLineAttribute.isLastLine(attributes.last())
+        )
+        assertTrue(
+            "Only the closing line may be marked as last",
+            attributes.dropLast(1).none { PrintLineAttribute.isLastLine(it) }
+        )
     }
 
     @Test

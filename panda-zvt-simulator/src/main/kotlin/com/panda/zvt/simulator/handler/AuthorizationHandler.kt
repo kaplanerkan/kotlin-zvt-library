@@ -47,7 +47,8 @@ class AuthorizationHandler(
         responses.add(StatusInfoBuilder.buildPaymentStatusInfo(amount, trace, receipt, turnover, now, config))
 
         // Terminal without its own printer: send the card receipt to the
-        // ECR as print lines (06 D1) before the completion.
+        // ECR as print lines (06 D1) before the completion. The closing line
+        // carries the last-line attribute so the ECR knows the slip is done.
         if (config.paymentPrintLines) {
             val amountText = AmountFormatter.format(amount, config.currencyCode)
             responses.add(PrintLineBuilder.build(" "))
@@ -57,7 +58,7 @@ class AuthorizationHandler(
             responses.add(PrintLineBuilder.build("Betrag     %s".format(amountText)))
             responses.add(PrintLineBuilder.build(now.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))))
             responses.add(PrintLineBuilder.build("Beleg-Nr: %d  Trace: %d".format(receipt, trace)))
-            responses.add(PrintLineBuilder.build("Terminal-ID: %s".format(config.terminalId)))
+            responses.add(PrintLineBuilder.buildLastLine("Terminal-ID: %s".format(config.terminalId)))
         }
 
         // 4. Store transaction
