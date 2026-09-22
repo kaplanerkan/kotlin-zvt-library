@@ -296,4 +296,51 @@ class CommandHandlerTest {
         assertEquals(0, store.getTransactionCount())
         assertNull(store.getLastTransaction())
     }
+
+    // =========================================================================
+    // AbortHandler
+    // =========================================================================
+
+    /** Builds an abort APDU (06 B0). */
+    private fun buildAbortApdu(): ApduParser.ParsedApdu {
+        val command = byteArrayOf(0x06, 0xB0.toByte())
+        return ApduParser.ParsedApdu(command = command, data = byteArrayOf(), totalLength = 3)
+    }
+
+    @Test
+    fun abortHandler_returns2Responses() = runTest {
+        val responses = AbortHandler().handle(buildAbortApdu())
+        // ACK + 06 1E abort response = 2
+        assertEquals(2, responses.size)
+    }
+
+    @Test
+    fun abortHandler_firstResponseIsAck() = runTest {
+        val responses = AbortHandler().handle(buildAbortApdu())
+        assertEquals(0x80.toByte(), responses[0][0])
+        assertEquals(0x00.toByte(), responses[0][1])
+    }
+
+    @Test
+    fun abortHandler_respondsWithAbortNotCompletion() = runTest {
+        val responses = AbortHandler().handle(buildAbortApdu())
+        val abort = responses[1]
+
+        // 06 1E, never 06 0F - a completion would make the ECR book the
+        // aborted transaction as a successful payment.
+        assertEquals(0x06.toByte(), abort[0])
+        assertEquals(0x1E.toByte(), abort[1])
+        assertFalse(responses.any { it.size >= 2 && it[0] == 0x06.toByte() && it[1] == 0x0F.toByte() })
+    }
+
+    @Test
+    fun abortHandler_carriesErrorCode6C() = runTest {
+        val responses = AbortHandler().handle(buildAbortApdu())
+        val abort = responses[1]
+
+        // 06 1E | length | 6C
+        assertEquals(4, abort.size)
+        assertEquals(0x01.toByte(), abort[2])
+        assertEquals(0x6C.toByte(), abort[3])
+    }
 }
