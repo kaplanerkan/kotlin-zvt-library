@@ -105,8 +105,9 @@ class CommandHandlerTest {
         val apdu = buildApdu(data)
 
         val responses = handler.handle(apdu)
-        // ACK + 3 intermediate + StatusInfo + Completion = 6
-        assertEquals(6, responses.size)
+        // ACK + 3 intermediate + StatusInfo + 8 print lines (paymentPrintLines
+        // default true) + Completion = 14
+        assertEquals(14, responses.size)
     }
 
     @Test

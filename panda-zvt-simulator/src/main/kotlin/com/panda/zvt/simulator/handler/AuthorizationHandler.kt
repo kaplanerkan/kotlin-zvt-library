@@ -4,11 +4,13 @@ import com.panda.zvt.simulator.protocol.ApduBuilder
 import com.panda.zvt.simulator.protocol.ApduParser
 import com.panda.zvt.simulator.protocol.ZvtProtocolConstants
 import com.panda.zvt.simulator.response.IntermediateStatusBuilder
+import com.panda.zvt.simulator.response.PrintLineBuilder
 import com.panda.zvt.simulator.response.StatusInfoBuilder
 import com.panda.zvt.simulator.state.SimulatorState
 import com.panda.zvt.simulator.state.StoredTransaction
 import com.panda.zvt.simulator.state.TransactionStore
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class AuthorizationHandler(
     private val state: SimulatorState,
@@ -42,6 +44,20 @@ class AuthorizationHandler(
         val now = LocalDateTime.now()
 
         responses.add(StatusInfoBuilder.buildPaymentStatusInfo(amount, trace, receipt, turnover, now, config))
+
+        // Terminal without its own printer: send the card receipt to the
+        // ECR as print lines (06 D1) before the completion.
+        if (config.paymentPrintLines) {
+            val amountText = "%d,%02d EUR".format(amount / 100, amount % 100)
+            responses.add(PrintLineBuilder.build(" "))
+            responses.add(PrintLineBuilder.build("Terminal-Beleg"))
+            responses.add(PrintLineBuilder.build("Kartenzahlung"))
+            responses.add(PrintLineBuilder.build("Karte: %s".format(config.cardData.cardName)))
+            responses.add(PrintLineBuilder.build("Betrag     %s".format(amountText)))
+            responses.add(PrintLineBuilder.build(now.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))))
+            responses.add(PrintLineBuilder.build("Beleg-Nr: %d  Trace: %d".format(receipt, trace)))
+            responses.add(PrintLineBuilder.build("Terminal-ID: %s".format(config.terminalId)))
+        }
 
         // 4. Store transaction
         store.recordTransaction(StoredTransaction(

@@ -46,3 +46,8 @@ data class DelayConfigRequest(
 data class MessageResponse(
     val message: String
 )
+
+@Serializable
+data class PrintLinesRequest(
+    val enabled: Boolean? = null
+)

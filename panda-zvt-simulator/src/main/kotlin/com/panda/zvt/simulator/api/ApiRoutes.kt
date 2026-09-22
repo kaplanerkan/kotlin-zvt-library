@@ -48,6 +48,14 @@ fun Route.simulatorRoutes(
             call.respond(MessageResponse("Config updated"))
         }
 
+        // PUT /api/printlines — toggle card-receipt print lines on payment
+        put("/printlines") {
+            val req = call.receive<PrintLinesRequest>()
+            val updated = req.enabled ?: !state.config.paymentPrintLines
+            state.updateConfig(state.config.copy(paymentPrintLines = updated))
+            call.respond(MessageResponse("Payment print lines: ${updated}"))
+        }
+
         // PUT /api/error — configure error simulation
         put("/error") {
             val req = call.receive<ErrorConfigRequest>()
