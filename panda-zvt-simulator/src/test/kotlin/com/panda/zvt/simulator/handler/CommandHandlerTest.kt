@@ -105,9 +105,50 @@ class CommandHandlerTest {
         val apdu = buildApdu(data)
 
         val responses = handler.handle(apdu)
-        // ACK + 3 intermediate + StatusInfo + 8 print lines (paymentPrintLines
-        // default true) + Completion = 14
+        // ACK + 3 intermediate + StatusInfo + Completion = 6
+        // (paymentPrintLines is opt-in and off by default)
+        assertEquals(6, responses.size)
+    }
+
+    @Test
+    fun authorizationHandler_withoutPrintLines_sendsNoPrintLine() = runTest {
+        val handler = AuthorizationHandler(state, store)
+        val data = byteArrayOf(0x04) + BcdEncoder.amountToBcd(1250)
+
+        val responses = handler.handle(buildApdu(data))
+        assertFalse(
+            "No 06 D1 print line expected while paymentPrintLines is disabled",
+            responses.any { it.size >= 2 && it[0] == 0x06.toByte() && it[1] == 0xD1.toByte() }
+        )
+    }
+
+    @Test
+    fun authorizationHandler_withPrintLines_returns14Responses() = runTest {
+        val printState = SimulatorState(defaultConfig.copy(paymentPrintLines = true))
+        val handler = AuthorizationHandler(printState, store)
+        val data = byteArrayOf(0x04) + BcdEncoder.amountToBcd(1250)
+
+        val responses = handler.handle(buildApdu(data))
+        // ACK + 3 intermediate + StatusInfo + 8 print lines + Completion = 14
         assertEquals(14, responses.size)
+    }
+
+    @Test
+    fun authorizationHandler_withPrintLines_printLinesSitBeforeCompletion() = runTest {
+        val printState = SimulatorState(defaultConfig.copy(paymentPrintLines = true))
+        val handler = AuthorizationHandler(printState, store)
+        val data = byteArrayOf(0x04) + BcdEncoder.amountToBcd(1250)
+
+        val responses = handler.handle(buildApdu(data))
+        val printLines = responses.filter {
+            it.size >= 2 && it[0] == 0x06.toByte() && it[1] == 0xD1.toByte()
+        }
+        assertEquals(8, printLines.size)
+
+        val lastPrintIndex = responses.indexOfLast {
+            it.size >= 2 && it[0] == 0x06.toByte() && it[1] == 0xD1.toByte()
+        }
+        assertEquals(responses.size - 2, lastPrintIndex)
     }
 
     @Test

@@ -11,7 +11,9 @@ data class SimulatorConfig(
     val currencyCode: Int = 978,
     // Simulate a terminal WITHOUT its own printer (e.g. hobex link): after a
     // successful payment the card receipt is sent to the ECR as 06 D1 lines.
-    val paymentPrintLines: Boolean = true,
+    // Opt-in: terminals with their own printer send no print lines at all,
+    // which is what most ECR integrations expect by default.
+    val paymentPrintLines: Boolean = false,
     val delays: SimulatorDelays = SimulatorDelays(),
     val errorSimulation: ErrorSimulation = ErrorSimulation(),
     val cardData: SimulatedCardData = SimulatedCardData()

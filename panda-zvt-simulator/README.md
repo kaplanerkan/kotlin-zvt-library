@@ -117,6 +117,7 @@ Base URL: `http://localhost:8080`
 | `PUT` | `/api/error` | Configure error simulation |
 | `PUT` | `/api/card` | Update simulated card data |
 | `PUT` | `/api/delays` | Configure response delays |
+| `PUT` | `/api/printlines` | Toggle card-receipt print lines on payment (off by default) |
 | `GET` | `/api/transactions` | List all stored transactions |
 | `GET` | `/api/transactions/last` | Get last transaction |
 | `DELETE` | `/api/transactions` | Clear all transactions |
@@ -167,6 +168,18 @@ curl -X PUT http://localhost:8080/api/delays \
   -H "Content-Type: application/json" \
   -d '{"intermediateDelayMs": 1000, "processingDelayMs": 2000}'
 ```
+
+**PUT /api/printlines — Simulate a terminal without its own printer:**
+
+With print lines enabled the simulator sends the card receipt to the ECR as
+ZVT print lines (`06 D1`) after the status info and before the completion,
+the way a printer-less terminal (e.g. hobex link) behaves. Off by default.
+
+```bash
+curl -X PUT http://localhost:8080/api/printlines   -H "Content-Type: application/json"   -d '{"enabled": true}'
+```
+
+Omitting `enabled` toggles the current value.
 
 **PUT /api/card — Change simulated card to Visa:**
 ```bash
