@@ -152,6 +152,20 @@ class CommandHandlerTest {
     }
 
     @Test
+    fun authorizationHandler_withPrintLines_amountUsesConfiguredCurrency() = runTest {
+        val printState = SimulatorState(
+            defaultConfig.copy(paymentPrintLines = true, currencyCode = 756)
+        )
+        val handler = AuthorizationHandler(printState, store)
+        val data = byteArrayOf(0x04) + BcdEncoder.amountToBcd(1250)
+
+        val responses = handler.handle(buildApdu(data))
+        val text = responses.joinToString(" ") { String(it, Charsets.US_ASCII) }
+        assertTrue("Print lines should use CHF, not a hardcoded EUR", text.contains("12,50 CHF"))
+        assertFalse(text.contains("EUR"))
+    }
+
+    @Test
     fun authorizationHandler_firstResponseIsAck() = runTest {
         val handler = AuthorizationHandler(state, store)
         val data = byteArrayOf(0x04) + BcdEncoder.amountToBcd(1250)

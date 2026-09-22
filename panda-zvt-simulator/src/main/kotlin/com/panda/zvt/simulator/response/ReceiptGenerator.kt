@@ -21,7 +21,7 @@ object ReceiptGenerator {
             "Datum:    $dateStr",
             "--------------------------------",
             "Anzahl:   ${transactions.size}",
-            "Gesamt:   ${formatAmount(total)}",
+            "Gesamt:   ${formatAmount(total, config.currencyCode)}",
             "================================",
             "     BATCH ABGESCHLOSSEN       ",
             "================================"
@@ -40,14 +40,13 @@ object ReceiptGenerator {
             "Trace:    ${txn.trace}",
             "Beleg:    ${txn.receipt}",
             "Karte:    ${txn.cardData.cardName}",
-            "Betrag:   ${formatAmount(txn.amount)}",
+            "Betrag:   ${formatAmount(txn.amount, config.currencyCode)}",
             "================================",
             "       GENEHMIGT               ",
             "================================"
         )
     }
 
-    private fun formatAmount(cents: Long): String {
-        return "%d,%02d EUR".format(cents / 100, cents % 100)
-    }
+    private fun formatAmount(cents: Long, currencyCode: Int): String =
+        AmountFormatter.format(cents, currencyCode)
 }

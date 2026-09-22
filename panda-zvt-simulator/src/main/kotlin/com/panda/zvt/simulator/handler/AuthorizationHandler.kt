@@ -3,6 +3,7 @@ package com.panda.zvt.simulator.handler
 import com.panda.zvt.simulator.protocol.ApduBuilder
 import com.panda.zvt.simulator.protocol.ApduParser
 import com.panda.zvt.simulator.protocol.ZvtProtocolConstants
+import com.panda.zvt.simulator.response.AmountFormatter
 import com.panda.zvt.simulator.response.IntermediateStatusBuilder
 import com.panda.zvt.simulator.response.PrintLineBuilder
 import com.panda.zvt.simulator.response.StatusInfoBuilder
@@ -48,7 +49,7 @@ class AuthorizationHandler(
         // Terminal without its own printer: send the card receipt to the
         // ECR as print lines (06 D1) before the completion.
         if (config.paymentPrintLines) {
-            val amountText = "%d,%02d EUR".format(amount / 100, amount % 100)
+            val amountText = AmountFormatter.format(amount, config.currencyCode)
             responses.add(PrintLineBuilder.build(" "))
             responses.add(PrintLineBuilder.build("Terminal-Beleg"))
             responses.add(PrintLineBuilder.build("Kartenzahlung"))
